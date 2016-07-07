@@ -1,0 +1,143 @@
+(ns arachne.core.config-test
+  (:require [clojure.test :refer :all]
+            [clojure.set :as set]
+            [arachne.core.modules :as m]
+            [arachne.core.config :as cfg]))
+
+(def test-schema-1 (constantly [{:db/ident       :test/basic
+                                 :db/cardinality :db.cardinality/one
+                                 :db/valueType   :db.type/string
+                                 :db.install/_attribute :db.part/db}]))
+
+
+(def test-schema-2 (constantly [{:db/ident :test/card-many
+                                 :db/cardinality :db.cardinality/many
+                                 :db/valueType :db.type/string
+                                 :db.install/_attribute :db.part/db}]))
+
+(def test-schema-3 (constantly [{:db/ident       :test/ref
+                                 :db/cardinality :db.cardinality/one
+                                 :db/valueType   :db.type/ref
+                                 :db.install/_attribute :db.part/db}]))
+
+
+(def test-schema-4 (constantly [{:db/ident :test/ref-card-many
+                                 :db/cardinality :db.cardinality/many
+                                 :db/valueType :db.type/ref
+                                 :db.install/_attribute :db.part/db}]))
+
+(def test-schema-5 (constantly [{:db/ident :test/identity
+                                 :db/cardinality :db.cardinality/one
+                                 :db/valueType :db.type/string
+                                 :db/unique :db.unique/identity
+                                 :db.install/_attribute :db.part/db}]))
+
+(def test-schema-6 (constantly [{:db/ident :test/unique
+                                 :db/cardinality :db.cardinality/one
+                                 :db/valueType :db.type/string
+                                 :db/unique :db.unique/value
+                                 :db.install/_attribute :db.part/db}]))
+
+(def m1 {:arachne.module/schema 'arachne.core.config-test/test-schema-1})
+(def m2 {:arachne.module/schema 'arachne.core.config-test/test-schema-2})
+(def m3 {:arachne.module/schema 'arachne.core.config-test/test-schema-3})
+(def m4 {:arachne.module/schema 'arachne.core.config-test/test-schema-4})
+(def m5 {:arachne.module/schema 'arachne.core.config-test/test-schema-5})
+(def m6 {:arachne.module/schema 'arachne.core.config-test/test-schema-6})
+
+(defn- setup
+  []
+  (cfg/new [m1 m2 m3 m4 m5 m6]))
+
+(deftest schema-loads-correctly
+  (let [cfg (setup)
+        attrs #{:test/basic :test/card-many :test/ref
+                :test/ref-card-many :test/identity :test/unique}]
+
+    (is (= (set (cfg/q cfg '[:find [?attr ...]
+                     :in $ [?attr ...]
+                     :where [_ :db/ident ?attr]] attrs))
+          attrs))))
+
+
+;; Run some spot checks on datalog semantics...
+
+(deftest refs-work-correctly
+  (let [cfg (setup)
+        cfg (cfg/update cfg [{:test/basic "Hello"
+                              :test/ref   {:test/basic "world"}}
+                             {:test/basic "booleans"
+                              :test/ref-card-many
+                                          #{{:test/basic "true"}
+                                            {:test/basic "false"}}}])]
+    (testing "cardinality-one refs"
+          (is (= #{["Hello" "world"]}
+                (cfg/q cfg '[:find ?parent-val ?child-val
+                             :where
+                             [?parent :test/basic ?parent-val]
+                             [?parent :test/ref ?child]
+                             [?child :test/basic ?child-val]]))))
+    (testing "cardinality-many refs"
+          (is (= #{["booleans" "true"]
+                   ["booleans" "false"]}
+                (cfg/q cfg '[:find ?parent-val ?child-val
+                             :where
+                             [?parent :test/basic ?parent-val]
+                             [?parent :test/ref-card-many ?child]
+                             [?child :test/basic ?child-val]]))))))
+
+
+(deftest identity-works-correctly
+  (let [cfg (setup)
+        cfg (cfg/update cfg [{:test/identity  "ident"
+                              :test/card-many "foo"}
+                             {:test/identity  "ident"
+                              :test/card-many "bar"}])]
+    (is (= #{"foo" "bar"}
+          (set (cfg/q  cfg '[:find [?val ...]
+                             :where
+                             [?e :test/identity "ident"]
+                             [?e :test/card-many ?val]]))))))
+(deftest uniqueness
+  (let [cfg (setup)
+        cfg (cfg/update cfg [{:test/unique "unique"}])]
+    (is (thrown-with-msg? Throwable #"unique"
+          (cfg/update cfg [{:test/unique "unique"}])))))
+
+(deftest pull
+  (let [cfg (setup)
+        cfg (cfg/update cfg [{:test/identity "my identity"
+                              :test/basic "Hello"
+                              :test/ref   {:test/basic "world"}}])]
+      (is (= {:test/basic "Hello"}
+            (cfg/pull cfg [:test/basic] [:test/identity "my identity"])))
+      (is (= {:test/ref {:test/basic "world"}}
+            (cfg/pull cfg [{:test/ref [:test/basic]}]
+                          [:test/identity "my identity"])))))
+
+(deftest lookup-refs-in-txdata
+  (let [cfg (setup)
+        cfg (cfg/update cfg [{:test/basic "a-value"
+                              :test/identity "a"}])
+        cfg (cfg/update cfg [{:test/identity "b"
+                              :test/basic "b-value"
+                              :test/ref [:test/identity "a"]}])]
+    (is (= #{["a-value" "b-value"]}
+          (cfg/q cfg '[:find ?a-value ?b-value
+                       :where
+                       [?a :test/identity "a"]
+                       [?b :test/identity "b"]
+                       [?b :test/ref ?a]
+                       [?a :test/basic ?a-value]
+                       [?b :test/basic ?b-value]])))))
+
+(deftest explicit-tempids-unify
+  (let [cfg (setup)
+        cfg (cfg/update cfg [{:db/id (cfg/tempid -42)
+                              :test/identity "a"
+                              :test/card-many "a"}
+                             {:db/id (cfg/tempid -42)
+                              :test/card-many "b"}])]
+    (is (= #{"a" "b"}
+          (set (:test/card-many (cfg/pull cfg [:test/card-many]
+                                              [:test/identity "a"])))))))

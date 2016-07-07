@@ -1,0 +1,8 @@
+dependencies:
+  pre:
+    - sudo ./.ci/install-boot.sh
+    - ./.ci/install-buildtools.sh
+
+test:
+  override:
+    - echo "running tests!"

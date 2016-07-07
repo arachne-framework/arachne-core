@@ -1,0 +1,41 @@
+;; Schema for core module
+[
+ ;; Object IDs
+ {:db/id          #arachne/tempid[]
+  :db/ident       :arachne/id
+  :db/valueType   :db.type/keyword
+  :db/cardinality :db.cardinality/one
+  :db/unique      :db.unique/identity
+  :db/doc         "A unique name for an entity in an Arachne config"
+  :db.install/_attribute :db.part/db}
+
+ ;; Dependency Injection via Component
+ {:db/id          #arachne/tempid[]
+  :db/ident       :arachne.component/dependencies
+  :db/isComponent true
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/many
+  :db/doc         "The dependencies of a component. Reference to one or more dependency mappings"
+  :db.install/_attribute :db.part/db}
+ {:db/id          #arachne/tempid[]
+  :db/ident       :arachne.component.dependency/entity
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Links a component dependency to another component entity."
+  :db.install/_attribute :db.part/db}
+ ;; TODO: how to resolve conflicts for key names
+ {:db/id          #arachne/tempid[]
+  :db/ident       :arachne.component.dependency/key
+  :db/valueType   :db.type/keyword
+  :db/cardinality :db.cardinality/one
+  :db/doc         "The key with which to inject a dependency."
+  :db.install/_attribute :db.part/db}
+ {:db/id          #arachne/tempid[]
+  :db/ident       :arachne.component/constructor
+  :db/valueType   :db.type/keyword
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Namespaced keyword indicating the fully-qualified name of a function that returns an uninitialized instance of a component.The function must take two arguments; the configuration, and the entity ID of the component definition to instantiate."
+  :db.install/_attribute :db.part/db}
+
+ ]
+
