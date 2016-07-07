@@ -1,8 +1,15 @@
+machine:
+  environment:
+    BOOT_JVM_OPTIONS: "-Xmx3g"
 dependencies:
+  cache_directories:
+    - ~/.boot
+    - ~/bin
   pre:
-    - sudo ./.ci/install-boot.sh
-    - ./.ci/install-buildtools.sh
+    - .ci/install-boot.sh
+    - .ci/install-buildtools.sh
+    - boot
 
 test:
   override:
-    - echo "running tests!"
+    - .ci/run-tests.sh

@@ -2,4 +2,4 @@ project.clj
 .idea
 *.iml
 .nrepl-*
-.target
+target
