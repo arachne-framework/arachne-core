@@ -40,12 +40,3 @@
           (:c (rt/lookup rt :test/b))))
 
     (component/stop rt)))
-
-
-
-
-
-
-
-
-
