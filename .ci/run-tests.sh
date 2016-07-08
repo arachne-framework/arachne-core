@@ -23,9 +23,10 @@ fi
 export MERGE_TARGET=master # hardcoded for now
 
 # Test intermediate commits
-echo -e "\nTesting each intermediate commit between $MERGE_TARGET and HEAD..."
-for sha in $( git rev-list origin/$MERGE_TARGET...HEAD ); do
+echo -e "\nTesting each other intermediate commit between $MERGE_TARGET and HEAD..."
+for sha in $( git rev-list origin/$MERGE_TARGET...HEAD | tail -n +2 ); do
     echo -e "\nTesting at $sha..."
+    git show --summary $sha
     git checkout -q $sha
     if boot test; then
         echo -e "\nTests at $sha successful"
