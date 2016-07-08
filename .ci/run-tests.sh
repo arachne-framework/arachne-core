@@ -2,22 +2,6 @@
 
 set -e
 
-# echo "debugging..."
-
-# echo "git status (current)"
-# git status
-# git rev-list HEAD
-
-# echo "git status (master)"
-# git checkout master
-# git status
-# git rev-list HEAD
-
-# echo "git status (origin/master)"
-# git checkout origin/master
-# git status
-# git rev-list HEAD
-
 # Run tests
 echo "running tests..."
 boot test -j junit 2>&1
@@ -37,28 +21,6 @@ if [ -z "$CI_PULL_REQUESTS" ]; then
 fi
 
 export MERGE_TARGET=master # hardcoded for now
-
-# Test a hypothetical merge
-echo -e "\nTesting result of hypothetical merge with $MERGE_TARGET..."
-
-# Necessary so Git doesn't barf later on...
-git config user.email "ci@arachne-framework.org"
-git config user.name "Arachne CI"
-
-git fetch origin $MERGE_TARGET
-if git merge --no-commit origin/$MERGE_TARGET; then
-    if boot test; then
-        echo -e "Hypothetical merge successful. Resetting GIT repository..."
-        git stash
-    else
-        echo -e "\nTests on HEAD passed, however, tests failed after hypothetical merge with $MERGE_TARGET"
-        exit 1
-    fi
-else
-    echo -e "\nTests on HEAD passed, however, the branch could not be cleanly merged with $MERGE_TARGET"
-    exit 1
-fi
-
 
 # Test intermediate commits
 echo -e "\nTesting each intermediate commit between $MERGE_TARGET and HEAD..."
