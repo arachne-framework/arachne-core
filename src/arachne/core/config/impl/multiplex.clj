@@ -13,20 +13,13 @@
   (and (instance? java.util.Collection v)
     (not (instance? java.util.Map v))))
 
-(defn- multiset
-  "Turn a collection into a multiset"
-  [coll]
-  (reduce (fn [acc val]
-            (update acc val (fnil inc 0)))
-    {} coll))
-
 (defn- normalize
   "Normalize the returned value to make it possible to compare equivalencies"
   [value]
   (w/postwalk (fn [form]
                 (cond
                   (number? form) 0
-                  (value-coll? form) (multiset form)
+                  (value-coll? form) (frequencies form)
                   :else form))
     value))
 
