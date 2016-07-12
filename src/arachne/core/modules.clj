@@ -6,7 +6,7 @@
             [clojure.spec :as spec]
             [loom.graph :as loom]
             [loom.alg :as loom-alg]
-            [arachne.core.util :as util]
+            [arachne.core.util :as u]
             [arachne.core.modules.specs]))
 
 (def ^:private missing-module-msg
@@ -64,15 +64,15 @@
   "Throw a friendly exception if the given module definition does not conform to
   a the module spec"
   [def]
-  (when-not (spec/valid? :arachne.module/definition def)
-    (let [explain-str (spec/explain-str :arachne.module/definition def)]
+  (when-not (spec/valid? :arachne.core.modules.specs/definition def)
+    (let [explain-str (spec/explain-str :arachne.core.modules.specs/definition def)]
       (throw
         (ex-info
           (format "Module definition with name %s did not conform to spec: %s"
             (:arachne.module/name def)
             explain-str)
           {:explain-str explain-str
-           :spec :arachne.module/definition
+           :spec :arachne.core.modules.specs/definition
            :definition def}))))
   def)
 
@@ -116,18 +116,21 @@
   "Return a seq of validated module definitions for all modules on the classpath
   that are required by the specified modules, in dependency order."
   [root-modules]
+  (u/assert-args load root-modules)
   (->> (reachable (discover) root-modules)
        (topological-sort)))
 
 (defn schema
   "Given a module definition, invoke the module's schema function."
   [definition]
-  (let [v (util/require-and-resolve (:arachne.module/schema definition))]
+  (u/assert-args schema definition)
+  (let [v (u/require-and-resolve (:arachne.module/schema definition))]
     (@v)))
 
 (defn configure
-  [definition cfg]
   "Given a module and a configuration value, invoke the module's configure
   function."
-  (let [v (util/require-and-resolve (:arachne.module/configure definition))]
+  [definition cfg]
+  (u/assert-args definition cfg)
+  (let [v (u/require-and-resolve (:arachne.module/configure definition))]
     (@v cfg)))
