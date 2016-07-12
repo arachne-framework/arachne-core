@@ -1,6 +1,6 @@
 (ns arachne.core
   "The core Arachne module that bootstraps everything else"
-  (:require [arachne.core.modules :as m]
+  (:require [arachne.core.module :as m]
             [arachne.core.config :as cfg]
             [arachne.core.config.init :as init]
             [arachne.core.util :as util]))

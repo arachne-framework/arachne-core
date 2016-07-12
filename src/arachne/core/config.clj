@@ -1,7 +1,7 @@
 (ns arachne.core.config
   "Handles building and managing Arachne's central Config object"
   (:refer-clojure :exclude [new update])
-  (:require [arachne.core.modules :as m]))
+  (:require [arachne.core.module :as m]))
 
 (defprotocol Configuration
   "An abstraction over a configuration, with schema, queryable via Datalog"

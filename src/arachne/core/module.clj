@@ -1,4 +1,4 @@
-(ns arachne.core.modules
+(ns arachne.core.module
   "The namespace used for defining and loading Arachne modules"
   (:refer-clojure :exclude [load sort])
   (:require [clojure.edn :as edn]
@@ -7,7 +7,7 @@
             [loom.graph :as loom]
             [loom.alg :as loom-alg]
             [arachne.core.util :as u]
-            [arachne.core.modules.specs]))
+            [arachne.core.module.specs]))
 
 (def ^:private missing-module-msg
   "Module %s declared a dependency on modules %s, which were not found on the
@@ -64,15 +64,15 @@
   "Throw a friendly exception if the given module definition does not conform to
   a the module spec"
   [def]
-  (when-not (spec/valid? :arachne.core.modules.specs/definition def)
-    (let [explain-str (spec/explain-str :arachne.core.modules.specs/definition def)]
+  (when-not (spec/valid? :arachne.core.module.specs/definition def)
+    (let [explain-str (spec/explain-str :arachne.core.module.specs/definition def)]
       (throw
         (ex-info
           (format "Module definition with name %s did not conform to spec: %s"
             (:arachne.module/name def)
             explain-str)
           {:explain-str explain-str
-           :spec :arachne.core.modules.specs/definition
+           :spec :arachne.core.module.specs/definition
            :definition def}))))
   def)
 

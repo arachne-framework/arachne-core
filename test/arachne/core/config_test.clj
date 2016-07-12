@@ -1,7 +1,7 @@
 (ns arachne.core.config-test
   (:require [clojure.test :refer :all]
             [clojure.set :as set]
-            [arachne.core.modules :as m]
+            [arachne.core.module :as m]
             [arachne.core.config :as cfg]))
 
 (def test-schema-1 (constantly [{:db/ident       :test/basic

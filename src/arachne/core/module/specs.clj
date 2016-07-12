@@ -1,4 +1,4 @@
-(ns arachne.core.modules.specs
+(ns arachne.core.module.specs
   (:require [clojure.spec :as s]
             [arachne.core.config.specs :as config-specs]))
 
@@ -13,11 +13,11 @@
                 :arachne.module/configure]
           :opt [:arachne.module/dependencies]))
 
-(s/fdef arachne.core.modules/load
+(s/fdef arachne.core.module/load
   :args (s/cat :module-names (s/coll-of ::name))
   :ret (s/coll-of ::definition))
 
-(s/fdef arachne.core.modules/schema
+(s/fdef arachne.core.module/schema
   :args (s/cat :module-definition ::definition))
 
 (s/fdef arachne.core.mdoules/configure
