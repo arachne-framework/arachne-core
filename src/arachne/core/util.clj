@@ -52,24 +52,38 @@
   Is a macro instead of a function, so as not to make stack traces more
   complicated."
   [fn-sym & args]
-  `(let [fn-var# (resolve '~fn-sym)
-         argspec# (:args (spec/get-spec fn-var#))
-         argseq# [~@args]]
-     (when-not (spec/valid? argspec# argseq#)
-       (let [explain-str# (spec/explain-str argspec# argseq#)]
-         (throw
-           (ex-info
-             (format "Arguments to %s did not conform to registered spec:\n %s"
-                     fn-var#
-                     explain-str#)
-             {:sym         ~fn-sym
-              :var         fn-var#
-              :argspec     argspec#
-              :explain-str explain-str#}))))))
+  (let [spec-anchor
+        (or (resolve fn-sym)
+            (if (namespace fn-sym)
+              '(quote fn-sym)
+              (throw (ex-info (format "Couldn't resolve unqualified symbol %s"
+                                      fn-sym)
+                              {:fn-sym fn-sym}))))]
+    `(let [argspec# (:args (spec/get-spec ~spec-anchor))
+           argseq# [~@args]]
+       (when-not (spec/valid? argspec# argseq#)
+         (let [explain-str# (spec/explain-str argspec# argseq#)]
+           (throw
+             (ex-info
+               (format "Arguments to %s did not conform to registered spec:\n %s"
+                       ~spec-anchor
+                       explain-str#)
+               {:sym         ~fn-sym
+                 :argspec     argspec#
+                :explain-str explain-str#})))))))
 
-(defmacro satisfies-pred
-  "Yield a predicate function that tests if a value satisfies the given
-  protocol. The protocol is not resolved until runtime."
-  [protocol-sym]
-  `(fn [val#]
-     (satisfies? (resolve '~protocol-sym) val#)))
+(defmacro lazy-satisfies?
+  "Returns a partial application of clojure.core/satisfies? that doesn't resolve
+  its protocol until runtime. "
+  [sym]
+  `(fn [obj#]
+     (when-let [protocol# @(resolve '~sym)]
+       (satisfies? protocol# obj#))))
+
+(defmacro lazy-instance?
+  "Returns a partial application of clojure.core/instance? that doesn't resolve
+  its class name until runtime. "
+  [sym]
+  `(fn [obj#]
+     (when-let [class# (resolve '~sym)]
+       (instance? class# obj#))))

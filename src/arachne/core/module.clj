@@ -131,6 +131,6 @@
   "Given a module and a configuration value, invoke the module's configure
   function."
   [definition cfg]
-  (u/assert-args definition cfg)
+  (u/assert-args configure definition cfg)
   (let [v (u/require-and-resolve (:arachne.module/configure definition))]
     (@v cfg)))

@@ -18,14 +18,14 @@
 
 (defrecord DatomicConfig [db]
   cfg/Configuration
-  (init [this schema-txes]
+  (init- [this schema-txes]
     (assoc this :db (init schema-txes)))
-  (update [this txdata]
+  (update- [this txdata]
     (assoc this :db (:db-after (d/with db (common/add-and-replace-tempids
                                             :db.part/user txdata d/tempid)))))
-  (query [this query other-sources]
+  (query- [this query other-sources]
     (apply d/q query (:db this) other-sources))
-  (pull [this expr lookup-or-eid]
+  (pull- [this expr lookup-or-eid]
     (d/pull (:db this) expr lookup-or-eid)))
 
 (defn ctor

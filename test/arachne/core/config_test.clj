@@ -38,12 +38,24 @@
                                  :db/unique :db.unique/value
                                  :db.install/_attribute :db.part/db}]))
 
-(def m1 {:arachne.module/schema 'arachne.core.config-test/test-schema-1})
-(def m2 {:arachne.module/schema 'arachne.core.config-test/test-schema-2})
-(def m3 {:arachne.module/schema 'arachne.core.config-test/test-schema-3})
-(def m4 {:arachne.module/schema 'arachne.core.config-test/test-schema-4})
-(def m5 {:arachne.module/schema 'arachne.core.config-test/test-schema-5})
-(def m6 {:arachne.module/schema 'arachne.core.config-test/test-schema-6})
+(def m1 {:arachne.module/name 'test/m1
+         :arachne.module/configure 'not/implemented
+         :arachne.module/schema 'arachne.core.config-test/test-schema-1})
+(def m2 {:arachne.module/name 'test/m2
+         :arachne.module/configure 'not/implemented
+         :arachne.module/schema 'arachne.core.config-test/test-schema-2})
+(def m3 {:arachne.module/name 'test/m3
+         :arachne.module/configure 'not/implemented
+         :arachne.module/schema 'arachne.core.config-test/test-schema-3})
+(def m4 {:arachne.module/name 'test/m4
+         :arachne.module/configure 'not/implemented
+         :arachne.module/schema 'arachne.core.config-test/test-schema-4})
+(def m5 {:arachne.module/name 'test/m5
+         :arachne.module/configure 'not/implemented
+         :arachne.module/schema 'arachne.core.config-test/test-schema-5})
+(def m6 {:arachne.module/name 'test/m6
+         :arachne.module/configure 'not/implemented
+         :arachne.module/schema 'arachne.core.config-test/test-schema-6})
 
 (defn- setup
   []
