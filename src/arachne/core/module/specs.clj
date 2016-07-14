@@ -1,6 +1,5 @@
 (ns arachne.core.module.specs
-  (:require [clojure.spec :as s]
-            [arachne.core.config.specs :as config-specs]))
+  (:require [clojure.spec :as s]))
 
 (s/def ::name (s/and keyword? namespace))
 (s/def ::schema (s/and symbol? namespace))
@@ -22,4 +21,4 @@
 
 (s/fdef arachne.core.mdoules/configure
   :args (s/cat :module-definition ::definition
-               :config ::config-specs/config))
+               :config :arachne.core.config.specs/config))

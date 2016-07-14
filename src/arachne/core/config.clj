@@ -47,11 +47,11 @@
   (u/assert-args pull config expr id)
   (pull- config expr id))
 
-(def datomic-ctor 'arachne.core.config.impl.datomic/ctor)
-(def datascript-ctor 'arachne.core.config.impl.datascript/ctor)
-(def multiplex-ctor 'arachne.core.config.impl.multiplex/ctor)
+(def ^:private datomic-ctor 'arachne.core.config.impl.datomic/ctor)
+(def ^:private datascript-ctor 'arachne.core.config.impl.datascript/ctor)
+(def ^:private multiplex-ctor 'arachne.core.config.impl.multiplex/ctor)
 
-(defn find-impl
+(defn- find-impl
   "Return a config constructor, based on what is present in the classpath"
   []
   (let [maybe-resolve (fn [sym]
@@ -69,9 +69,10 @@
       :else (throw (ex-info "Could not find config implementation. You must include either Datomic or Datascript on your classpath." {})))))
 
 (defn new
-  "Returns an empty config, with schema installed, for the sequence of give
+  "Returns an empty config, with schema installed, for the given sequence of
   modules."
   [modules]
+  (u/assert-args new modules)
   (let [ctor (find-impl)]
     (init (@ctor) (map m/schema modules))))
 

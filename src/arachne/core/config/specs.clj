@@ -62,7 +62,7 @@
                :sources (s/or :not-present nil?
                               :varargs coll?)))
 
-;; We could spec this more strongly, but that woudl involve spec'ing the entire
+;; We could spec this more strongly, but that would involve spec'ing the entire
 ;; pull syntax. Defer.
 (s/def ::pull-expr vector?)
 
@@ -71,3 +71,7 @@
                :pull-expr ::pull-expr
                :entity-id (s/or :eid pos-int?
                                 :lookup-ref ::lookup-ref)))
+
+(s/fdef arachne.core.config/new
+  :args (s/cat :modules (s/coll-of :arachne.core.module.specs/definition))
+  :ret ::config)
