@@ -26,7 +26,8 @@
 
 (s/def ::value (s/or :scalar ::scalar
                      :entity-id ::entity-id
-                     :lookup ::lookup-ref))
+                     :lookup ::lookup-ref
+                     :collection (s/coll-of ::value :min-count 1)))
 
 (s/def ::list-txform (s/tuple
                        #{:db/add :db/retract}
@@ -43,4 +44,8 @@
 
 (s/fdef arachne.core.config/init
   :args (s/cat :config ::config, :schema-txes (s/coll-of ::txdata :min-count 1))
+  :ret ::config)
+
+(s/fdef arachne.core.config/update
+  :args (s/cat :config ::config, :txdata ::txdata)
   :ret ::config)

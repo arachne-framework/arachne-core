@@ -21,12 +21,15 @@
     constructor function.")
   (init/update
     (fn [cfg]
-      (cfg/update
-        cfg [{:arachne/id id
-              :arachne.component/constructor (str constructor)
-              :arachne.component/dependencies
-              (map (fn [[id key]]
-                     {:arachne.component.dependency/entity {:arachne/id id}
-                      :arachne.component.dependency/key key})
-                dependencies)}]))))
+      (let [deps (map (fn [[id key]]
+                        {:arachne.component.dependency/entity {:arachne/id id}
+                         :arachne.component.dependency/key    key})
+                      dependencies)
+            component {:arachne/id id
+                       :arachne.component/constructor (str constructor)}
+            component (if (empty? deps)
+                        component
+                        (assoc component :arachne.component/dependencies deps))]
+        (cfg/update
+          cfg [component])))))
 

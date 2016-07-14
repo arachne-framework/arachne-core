@@ -30,6 +30,7 @@
       be supplied when one is missing)
     - Transactor functions are not supported"
   [config txdata]
+  (u/assert-args update config txdata)
   (update- config txdata))
 
 (defn query
