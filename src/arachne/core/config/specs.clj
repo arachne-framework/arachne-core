@@ -60,8 +60,7 @@
   :args (s/cat :config ::config,
                :find-expr ::find-expr,
                :sources (s/or :not-present nil?
-                              :varargs coll?))
-  :ret ::config)
+                              :varargs coll?)))
 
 ;; We could spec this more strongly, but that woudl involve spec'ing the entire
 ;; pull syntax. Defer.
@@ -71,5 +70,4 @@
   :args (s/cat :config ::config,
                :pull-expr ::pull-expr
                :entity-id (s/or :eid pos-int?
-                                :lookup-ref ::lookup-ref))
-  :ret ::config)
+                                :lookup-ref ::lookup-ref)))
