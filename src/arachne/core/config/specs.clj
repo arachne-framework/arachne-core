@@ -63,3 +63,13 @@
                               :varargs coll?))
   :ret ::config)
 
+;; We could spec this more strongly, but that woudl involve spec'ing the entire
+;; pull syntax. Defer.
+(s/def ::pull-expr vector?)
+
+(s/fdef arachne.core.config/pull
+  :args (s/cat :config ::config,
+               :pull-expr ::pull-expr
+               :entity-id (s/or :eid pos-int?
+                                :lookup-ref ::lookup-ref))
+  :ret ::config)

@@ -44,6 +44,7 @@
   "Given a Datomic-style pull expression and an identity (either a lookup ref
     or an entity ID, return the resulting data structure."
   [config expr id]
+  (u/assert-args pull config expr id)
   (pull- config expr id))
 
 (def datomic-ctor 'arachne.core.config.impl.datomic/ctor)
