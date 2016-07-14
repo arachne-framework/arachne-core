@@ -33,10 +33,11 @@
   (u/assert-args update config txdata)
   (update- config txdata))
 
-(defn query
-  "Given a Datomic-style query expression and a seq of additional data
-    sources, query the configuration."
-  [config find-expr other-sources]
+(defn q
+  "Given a Datomic-style query expression and any number of additional data
+  sources, query the configuration."
+  [config find-expr & other-sources]
+  (u/assert-args q config find-expr other-sources)
   (query- config find-expr other-sources))
 
 (defn pull
@@ -44,15 +45,6 @@
     or an entity ID, return the resulting data structure."
   [config expr id]
   (pull- config expr id))
-
-(defn q
-  "Given a Datomic-style query expression and any number of additional data
-  sources, query the configuration.
-
-  This function is a wrapper for the direct `query` protocol method, to support
-  variadic arguments."
-  [config query-expr & other-sources]
-  (query config query-expr other-sources))
 
 (def datomic-ctor 'arachne.core.config.impl.datomic/ctor)
 (def datascript-ctor 'arachne.core.config.impl.datascript/ctor)

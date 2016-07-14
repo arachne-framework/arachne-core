@@ -46,16 +46,16 @@
       :datascript (cfg/init- datascript schema-txes)))
   (update- [this txdata]
     (assoc this
-      :datomic (cfg/update datomic txdata)
-      :datascript (cfg/update datomic txdata)))
+      :datomic (cfg/update- datomic txdata)
+      :datascript (cfg/update- datomic txdata)))
   (query- [_ query other-sources]
-    (let [datomic-result (cfg/query datomic query other-sources)
-          datascript-result (cfg/query datascript query other-sources)]
+    (let [datomic-result (cfg/query- datomic query other-sources)
+          datascript-result (cfg/query- datascript query other-sources)]
       (assert-equivalent! datomic-result datascript-result)
       datomic-result))
   (pull- [_ expr lookup-or-eid]
-    (let [datomic-result (cfg/pull datomic expr lookup-or-eid)
-          datascript-result (cfg/pull datomic expr lookup-or-eid)]
+    (let [datomic-result (cfg/pull- datomic expr lookup-or-eid)
+          datascript-result (cfg/pull- datomic expr lookup-or-eid)]
       (assert-equivalent! datomic-result datascript-result)
       datomic-result)))
 

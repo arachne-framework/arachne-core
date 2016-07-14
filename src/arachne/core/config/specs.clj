@@ -49,3 +49,17 @@
 (s/fdef arachne.core.config/update
   :args (s/cat :config ::config, :txdata ::txdata)
   :ret ::config)
+
+
+;; We could spec this much more strongly, but that would involve spec'ing the
+;; entire query syntax. Task for another day.
+(s/def ::find-expr (s/or :map map?
+                         :vector vector?))
+
+(s/fdef arachne.core.config/q
+  :args (s/cat :config ::config,
+               :find-expr ::find-expr,
+               :sources (s/or :not-present nil?
+                              :varargs coll?))
+  :ret ::config)
+
