@@ -22,21 +22,21 @@
                    (dsl/component :test/c {} 'arachne.core.dsl-test/test-ctor)))
         rt (component/start (rt/init cfg [[:arachne/id :test/a]]))]
 
-    (is (rt/lookup rt :test/a))
-    (is (rt/lookup rt :test/b))
-    (is (rt/lookup rt :test/c))
+    (is (rt/lookup rt [:arachne/id :test/a]))
+    (is (rt/lookup rt [:arachne/id :test/b]))
+    (is (rt/lookup rt [:arachne/id :test/c]))
 
-    (is (:running? (rt/lookup rt :test/a)))
-    (is (:running? (rt/lookup rt :test/b)))
-    (is (:running? (rt/lookup rt :test/c)))
+    (is (:running? (rt/lookup rt [:arachne/id :test/a])))
+    (is (:running? (rt/lookup rt [:arachne/id :test/b])))
+    (is (:running? (rt/lookup rt [:arachne/id :test/c])))
 
-    (is (= (rt/lookup rt :test/b)
-          (:b (rt/lookup rt :test/a))))
+    (is (= (rt/lookup rt [:arachne/id :test/b])
+          (:b (rt/lookup rt [:arachne/id :test/a]))))
 
-    (is (= (rt/lookup rt :test/c)
-          (:c (rt/lookup rt :test/a))))
+    (is (= (rt/lookup rt [:arachne/id :test/c])
+          (:c (rt/lookup rt [:arachne/id :test/a]))))
 
-    (is (= (rt/lookup rt :test/c)
-          (:c (rt/lookup rt :test/b))))
+    (is (= (rt/lookup rt [:arachne/id :test/c])
+          (:c (rt/lookup rt [:arachne/id :test/b]))))
 
     (component/stop rt)))

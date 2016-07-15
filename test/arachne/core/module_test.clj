@@ -1,7 +1,7 @@
-(ns arachne.core.modules-test
+(ns arachne.core.module-test
   (:require [clojure.test :refer :all]
             [clojure.set :as set]
-            [arachne.core.modules :as m]))
+            [arachne.core.module :as m]))
 
 (def sample-good
   '#{{:arachne.module/name         test.one

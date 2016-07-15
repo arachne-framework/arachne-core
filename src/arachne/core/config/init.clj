@@ -22,5 +22,6 @@
     (cond
       (string? initializer) (load-file initializer)
       (list? initializer) (eval initializer)
-      :else (update cfg/update initializer))
+      (not-empty initializer) (update cfg/update initializer)
+      :else nil)
     @*config*))

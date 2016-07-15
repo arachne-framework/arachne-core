@@ -40,22 +40,22 @@
 
 (defrecord MultiplexedConfig [datomic datascript]
   cfg/Configuration
-  (init [this schema-txes]
+  (init- [this schema-txes]
     (assoc this
-      :datomic (cfg/init datomic schema-txes)
-      :datascript (cfg/init datascript schema-txes)))
-  (update [this txdata]
+      :datomic (cfg/init- datomic schema-txes)
+      :datascript (cfg/init- datascript schema-txes)))
+  (update- [this txdata]
     (assoc this
-      :datomic (cfg/update datomic txdata)
-      :datascript (cfg/update datomic txdata)))
-  (query [_ query other-sources]
-    (let [datomic-result (cfg/query datomic query other-sources)
-          datascript-result (cfg/query datascript query other-sources)]
+      :datomic (cfg/update- datomic txdata)
+      :datascript (cfg/update- datomic txdata)))
+  (query- [_ query other-sources]
+    (let [datomic-result (cfg/query- datomic query other-sources)
+          datascript-result (cfg/query- datascript query other-sources)]
       (assert-equivalent! datomic-result datascript-result)
       datomic-result))
-  (pull [_ expr lookup-or-eid]
-    (let [datomic-result (cfg/pull datomic expr lookup-or-eid)
-          datascript-result (cfg/pull datomic expr lookup-or-eid)]
+  (pull- [_ expr lookup-or-eid]
+    (let [datomic-result (cfg/pull- datomic expr lookup-or-eid)
+          datascript-result (cfg/pull- datomic expr lookup-or-eid)]
       (assert-equivalent! datomic-result datascript-result)
       datomic-result)))
 
