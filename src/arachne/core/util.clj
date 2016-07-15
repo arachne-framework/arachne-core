@@ -44,7 +44,7 @@
                                                  (last args#)
                                                  {})))))
 
-(defmacro assert-args
+(defmacro validate-args
   "Given a symbol naming a function in the current ns, and some number of
   arguments, assert that the given arguments are valid according to the spec
   attached to the function. If not, throw an exception with an explanation.

@@ -116,14 +116,14 @@
   "Return a seq of validated module definitions for all modules on the classpath
   that are required by the specified modules, in dependency order."
   [root-modules]
-  (u/assert-args load root-modules)
+  (u/validate-args load root-modules)
   (->> (reachable (discover) root-modules)
        (topological-sort)))
 
 (defn schema
   "Given a module definition, invoke the module's schema function."
   [definition]
-  (u/assert-args schema definition)
+  (u/validate-args schema definition)
   (let [v (u/require-and-resolve (:arachne.module/schema definition))]
     (@v)))
 
@@ -131,6 +131,6 @@
   "Given a module and a configuration value, invoke the module's configure
   function."
   [definition cfg]
-  (u/assert-args configure definition cfg)
+  (u/validate-args configure definition cfg)
   (let [v (u/require-and-resolve (:arachne.module/configure definition))]
     (@v cfg)))

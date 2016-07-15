@@ -17,7 +17,7 @@
   "Given a seq of txdatas containing Datomic-style schema, return a new empty
   configuration"
   [config schema-txes]
-  (u/assert-args init config schema-txes)
+  (u/validate-args init config schema-txes)
   (init- config schema-txes))
 
 (defn update
@@ -30,21 +30,21 @@
       be supplied when one is missing)
     - Transactor functions are not supported"
   [config txdata]
-  (u/assert-args update config txdata)
+  (u/validate-args update config txdata)
   (update- config txdata))
 
 (defn q
   "Given a Datomic-style query expression and any number of additional data
   sources, query the configuration."
   [config find-expr & other-sources]
-  (u/assert-args q config find-expr other-sources)
+  (u/validate-args q config find-expr other-sources)
   (query- config find-expr other-sources))
 
 (defn pull
   "Given a Datomic-style pull expression and an identity (either a lookup ref
     or an entity ID, return the resulting data structure."
   [config expr id]
-  (u/assert-args pull config expr id)
+  (u/validate-args pull config expr id)
   (pull- config expr id))
 
 (def ^:private datomic-ctor 'arachne.core.config.impl.datomic/ctor)
@@ -72,7 +72,7 @@
   "Returns an empty config, with schema installed, for the given sequence of
   modules."
   [modules]
-  (u/assert-args new modules)
+  (u/validate-args new modules)
   (let [ctor (find-impl)]
     (init (@ctor) (map m/schema modules))))
 
