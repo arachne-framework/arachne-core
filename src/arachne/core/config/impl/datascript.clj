@@ -31,7 +31,9 @@
   [schema-txes]
   (let [db @(d/create-conn base-schema)
         db (reduce (fn [db tx]
-                     (:db-after (d/with db tx))) db schema-txes)
+                     (:db-after (common/with db tx d/with
+                                             d/tempid d/resolve-tempid)))
+                   db schema-txes)
         attr-eids (d/q '[:find [?e ...]
                          :where [?e _ _]] db)
         attrs (map #(d/entity db %) attr-eids)]
@@ -40,13 +42,12 @@
 
 (defn- init
   [schema-txes]
-  (let [schema-txes (common/add-and-replace-tempids
-                      :db.part/db schema-txes d/tempid)
-        schema-txes (replace-partitions schema-txes)
+  (let [schema-txes (replace-partitions schema-txes)
         schema-map (merge base-schema (ds-schema schema-txes))
         db @(d/create-conn schema-map)]
     (reduce (fn [db tx]
-              (:db-after (d/with db tx))) db schema-txes)))
+              (:db-after (common/with db tx d/with d/tempid d/resolve-tempid)))
+            db schema-txes)))
 
 (defn- resolve-lookup-ref
   "Resolve a lookup ref with a query."
@@ -57,13 +58,14 @@
          [?e ?a ?v]]
     db attr value))
 
-(defrecord DatascriptConfig [db]
+(defrecord DatascriptConfig [db tempids]
   cfg/Configuration
   (init- [this schema-txes]
     (assoc this :db (init schema-txes)))
   (update- [this txdata]
-    (assoc this :db (:db-after (d/with db (common/add-and-replace-tempids
-                                            :db.part/user txdata d/tempid)))))
+    (let [result (common/with db txdata d/with d/tempid d/resolve-tempid)]
+      (assoc this :db (:db-after result)
+                  :tempids (:arachne-tempids result))))
   (query- [this query other-sources]
     (apply d/q query (:db this) other-sources))
   (pull- [this expr lookup-or-eid]
@@ -75,4 +77,4 @@
 (defn ctor
   "Construct and return an uninitialized instance of DatascriptConfig"
   []
-  (->DatascriptConfig nil))
+  (->DatascriptConfig nil nil))

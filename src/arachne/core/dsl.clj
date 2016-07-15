@@ -17,7 +17,7 @@
                          :arachne.component.dependency/key    key})
                       dependencies)
             component {:arachne/id id
-                       :arachne.component/constructor (str constructor)}
+                       :arachne.component/constructor (keyword constructor)}
             component (if (empty? deps)
                         component
                         (assoc component :arachne.component/dependencies deps))]

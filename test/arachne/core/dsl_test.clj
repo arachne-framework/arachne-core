@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [arachne.core :as core]
             [arachne.core.runtime :as rt]
+            [arachne.core.config :as cfg]
             [com.stuartsierra.component :as component]))
 
 (defrecord TestComponent [running?]

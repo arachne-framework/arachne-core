@@ -7,7 +7,7 @@
 
 (def basic-config
   [{:db/id (cfg/tempid)
-    :arachne.component/constructor "arachne.core.runtime-test/basic-dep-0"
+    :arachne.component/constructor :arachne.core.runtime-test/basic-dep-0
     :arachne/id :test-1}])
 
 (defn setup
@@ -115,7 +115,7 @@
          :arachne.component.dependency/entity dep-3}}}
 
      {:db/id dep-3
-      :arachne.component/constructor "arachne.core.runtime-test/basic-dep-3"}]))
+      :arachne.component/constructor :arachne.core.runtime-test/basic-dep-3}]))
 
 (deftest complex-dependencies
   (let [rt (setup diamond-config :test-3)
