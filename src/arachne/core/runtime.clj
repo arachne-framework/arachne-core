@@ -3,6 +3,7 @@
   (:require [com.stuartsierra.component :as component]
             [arachne.core.config :as cfg]
             [arachne.core.util :as util]
+            [arachne.core.runtime.specs]
             [clojure.tools.logging :as log]
             [clojure.set :as set]))
 

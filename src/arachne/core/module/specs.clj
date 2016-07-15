@@ -19,6 +19,6 @@
 (s/fdef arachne.core.module/schema
   :args (s/cat :module-definition ::definition))
 
-(s/fdef arachne.core.mdoules/configure
+(s/fdef arachne.core.modules/configure
   :args (s/cat :module-definition ::definition
                :config :arachne.core.config.specs/config))
