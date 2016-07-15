@@ -1,24 +1,15 @@
 (ns arachne.core.dsl
   "User-facing DSL use in init scripts"
   (:require [arachne.core.config :as cfg]
-            [arachne.core.config.init :as init]))
+            [arachne.core.config.init :as init]
+            [arachne.core.dsl.specs]
+            [arachne.core.util :as util]))
 
 (defn component
   "Defines a named component by providing an ID, a dependency specification map,
   and a symbol for a component constructor."
   [id dependencies constructor]
-  (assert (and (keyword? id) (namespace id))
-    "The component ID must be a namespaced keyword")
-  (assert (and (map? dependencies)
-            (every? (fn [[k v]]
-                      (and (keyword k) (keyword v)
-                        (namespace k) (not (namespace v))))
-              dependencies))
-    "The dependency specification must be a map of Arachne IDs (namespaced
-    keywords) to non-namespaced keywords.")
-  (assert (and (symbol? constructor) (namespace constructor))
-    "The constructor should be a namespaced symbol referring to a component
-    constructor function.")
+  (util/validate-args component id dependencies constructor)
   (init/update
     (fn [cfg]
       (let [deps (map (fn [[id key]]
@@ -32,4 +23,3 @@
                         (assoc component :arachne.component/dependencies deps))]
         (cfg/update
           cfg [component])))))
-
