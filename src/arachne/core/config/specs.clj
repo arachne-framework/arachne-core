@@ -10,9 +10,6 @@
 
 (s/def ::attribute (s/and keyword? namespace))
 
-(s/def ::entity-id (s/or :eid pos-int?
-                         :tempid tempid?))
-
 (s/def ::scalar (s/or :number number?
                       :string string?
                       :date date?
@@ -22,16 +19,21 @@
                       :uri uri?
                       :bytes bytes?))
 
+(s/def ::entity-id pos-int?)
 (s/def ::lookup-ref (s/tuple ::attribute ::scalar))
+(s/def ::tempid tempid?)
+
 
 (s/def ::value (s/or :scalar ::scalar
-                     :entity-id ::entity-id
-                     :lookup ::lookup-ref
+                     :eid ::entity-id
+                     :lookup-ref ::lookup-ref
+                     :tempid ::tempid
                      :collection (s/coll-of ::value :min-count 1)))
 
 (s/def ::list-txform (s/tuple
                        #{:db/add :db/retract}
-                       ::entity-id
+                       (s/or :tempid ::tempid
+                             :eid ::entity-id)
                        ::attribute
                        ::value))
 
@@ -69,7 +71,7 @@
 (s/fdef arachne.core.config/pull
   :args (s/cat :config ::config,
                :pull-expr ::pull-expr
-               :entity-id (s/or :eid pos-int?
+               :entity-id (s/or :eid ::entity-id
                                 :lookup-ref ::lookup-ref)))
 
 (s/fdef arachne.core.config/new

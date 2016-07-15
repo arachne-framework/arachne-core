@@ -69,7 +69,7 @@
                        ~spec-anchor
                        explain-str#)
                {:sym         ~fn-sym
-                 :argspec     argspec#
+                :argspec     argspec#
                 :explain-str explain-str#})))))))
 
 (defmacro lazy-satisfies?
