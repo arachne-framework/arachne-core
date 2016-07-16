@@ -3,8 +3,9 @@
   (:refer-clojure :exclude [new update])
   (:require [arachne.core.module :as m]
             [arachne.core.config.specs]
+            [arachne.core.util :as u]
             [clojure.spec :as spec]
-            [arachne.core.util :as u]))
+            [clojure.walk :as w]))
 
 (defprotocol Configuration
   "An abstraction over a configuration, with schema, queryable via Datalog"
@@ -13,12 +14,46 @@
   (query- [config find-expr other-sources])
   (pull- [config expr id]))
 
+(deftype Tempid [id]
+  Object
+  (equals [this other]
+    (when (instance? Tempid other)
+      (if id
+        (= id (.id other))
+        (identical? this other))))
+  (hashCode [this]
+    (if id
+      (hash-combine (.hashCode Tempid) id)
+      (System/identityHashCode this))))
+
+(defn tempid
+  "Return a tempid representation which is agnostic to the actual underlying
+  Datalog implementation."
+  ([] (->Tempid nil))
+  ([id] (->Tempid id)))
+
+(defn- non-record-map?
+  "Return true for maps which are not also records"
+  [v]
+  (and (map? v)
+    (not (instance? clojure.lang.IRecord v))))
+
+(defn- add-missing-tempids
+  "Given arbitrary txdata, add an Arachne tempid to any map entity that is
+  missing one"
+  [txdata]
+  (w/prewalk (fn [val]
+               (if (and (non-record-map? val)(not (:db/id val)))
+                 (assoc val :db/id (tempid))
+                 val))
+    txdata))
+
 (defn init
   "Given a seq of txdatas containing Datomic-style schema, return a new empty
   configuration"
   [config schema-txes]
   (u/validate-args init config schema-txes)
-  (init- config schema-txes))
+  (init- config (add-missing-tempids schema-txes)))
 
 (defn update
   "Return an updated configuration, given Datomic-style txdata. Differences
@@ -31,7 +66,7 @@
     - Transactor functions are not supported"
   [config txdata]
   (u/validate-args update config txdata)
-  (update- config txdata))
+  (update- config (add-missing-tempids txdata)))
 
 (defn q
   "Given a Datomic-style query expression and any number of additional data
@@ -75,14 +110,6 @@
   (u/validate-args new modules)
   (let [ctor (find-impl)]
     (init (@ctor) (map m/schema modules))))
-
-(defrecord Tempid [id])
-
-(defn tempid
-  "Return a tempid representation which is agnostic to the actual underlying
-  Datalog implementation."
-  ([] (->Tempid nil))
-  ([id] (->Tempid id)))
 
 (defn tempid-literal
   "Build a tempid representation from a reader literal of the form
