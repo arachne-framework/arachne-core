@@ -9,7 +9,7 @@
   "Defines a named component by providing an ID, a dependency specification map,
   and a symbol for a component constructor."
   [id dependencies constructor]
-  (util/validate-args component id dependencies constructor)
+  (util/validate-args `component id dependencies constructor)
   (init/update
     (fn [cfg]
       (let [deps (map (fn [[id key]]

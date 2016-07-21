@@ -100,7 +100,7 @@
   "Given a configuration and collection of root entity IDs or lookup refs,
   return an instantiated (but unstarted) ArachneRuntime object."
   [config roots]
-  (util/validate-args init config roots)
+  (util/validate-args `init config roots)
   (let [root-eids (map #(:db/id (cfg/pull config [:db/id] %)) roots)
         sys (system config root-eids)]
     (->ArachneRuntime config sys (set root-eids))))
@@ -109,6 +109,6 @@
   "Given a runtime and an entity ID or lookup ref, return the associated
   component instance (if present.)"
   [rt entity-ref]
-  (util/validate-args lookup rt entity-ref)
+  (util/validate-args `lookup rt entity-ref)
   (let [eid (:db/id (cfg/pull (:config rt) [:db/id] entity-ref))]
     (get-in rt [:system eid])))

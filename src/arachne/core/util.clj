@@ -44,33 +44,22 @@
                                                  (last args#)
                                                  {})))))
 
-(defmacro validate-args
-  "Given a symbol naming a function in the current ns, and some number of
+(defn validate-args
+  "Given a fully qualified symbol naming a function and a some number of
   arguments, assert that the given arguments are valid according to the spec
-  attached to the function. If not, throw an exception with an explanation.
-
-  Is a macro instead of a function, so as not to make stack traces more
-  complicated."
+  attached to the function. If not, throw an exception with an explanation."
   [fn-sym & args]
-  (let [spec-anchor
-        (or (resolve fn-sym)
-            (if (namespace fn-sym)
-              '(quote fn-sym)
-              (throw (ex-info (format "Couldn't resolve unqualified symbol %s"
-                                      fn-sym)
-                              {:fn-sym fn-sym}))))]
-    `(let [argspec# (:args (spec/get-spec ~spec-anchor))
-           argseq# [~@args]]
-       (when-not (spec/valid? argspec# argseq#)
-         (let [explain-str# (spec/explain-str argspec# argseq#)]
-           (throw
-             (ex-info
-               (format "Arguments to %s did not conform to registered spec:\n %s"
-                       ~spec-anchor
-                       explain-str#)
-               {:sym         ~fn-sym
-                :argspec     argspec#
-                :explain-str explain-str#})))))))
+  (let [argspec (:args (spec/get-spec fn-sym))]
+    (when-not (spec/valid? argspec args)
+      (let [explain-str (spec/explain-str argspec args)]
+        (throw
+          (ex-info
+            (format "Arguments to %s did not conform to registered spec:\n %s"
+                    fn-sym
+                    explain-str)
+            {:fn-sym      fn-sym
+             :argspec     argspec
+             :explain-str explain-str}))))))
 
 (defmacro lazy-satisfies?
   "Returns a partial application of clojure.core/satisfies? that doesn't resolve

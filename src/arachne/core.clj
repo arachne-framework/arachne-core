@@ -3,12 +3,13 @@
   (:require [arachne.core.module :as m]
             [arachne.core.config :as cfg]
             [arachne.core.config.init :as init]
-            [arachne.core.util :as util]))
+            [arachne.core.util :as util]
+            [arachne.core.schema :as schema]))
 
 (defn schema
   "Return the schema for the core module"
   []
-  (util/read-edn "arachne/core/schema.edn"))
+  schema/schema)
 
 (defn configure
   "Configure the core module"

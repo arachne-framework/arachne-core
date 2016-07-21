@@ -4,8 +4,11 @@
   (:require [arachne.core.module :as m]
             [arachne.core.config.specs]
             [arachne.core.util :as u]
+            [clojure.string :as str]
             [clojure.spec :as spec]
             [clojure.walk :as w]))
+
+(def ^:dynamic *default-partition* :db.part/user)
 
 (defprotocol Configuration
   "An abstraction over a configuration, with schema, queryable via Datalog"
@@ -14,23 +17,35 @@
   (query- [config find-expr other-sources])
   (pull- [config expr id]))
 
-(deftype Tempid [id]
+(deftype Tempid [partition id]
   Object
   (equals [this other]
     (when (instance? Tempid other)
       (if id
-        (= id (.id other))
+        (and (= id (.id other)) (= partition (.partition other)))
         (identical? this other))))
   (hashCode [this]
     (if id
-      (hash-combine (.hashCode Tempid) id)
-      (System/identityHashCode this))))
+      (hash-combine id
+        (hash-combine (.hashCode Tempid) (.hashCode partition)))
+      (System/identityHashCode this)))
+  (toString [this]
+    (str "#arachne/tempid["
+      (str/join " " (filter identity [partition id]))
+      "]")))
+
+(defmethod print-method Tempid [tid writer]
+  (.write writer (.toString tid)))
 
 (defn tempid
   "Return a tempid representation which is agnostic to the actual underlying
   Datalog implementation."
-  ([] (->Tempid nil))
-  ([id] (->Tempid id)))
+  ([] (->Tempid *default-partition* nil))
+  ([partition-or-id]
+   (if (keyword? partition-or-id)
+     (->Tempid partition-or-id nil)
+     (->Tempid *default-partition* partition-or-id)))
+  ([partition id] (->Tempid partition id)))
 
 (defn- non-record-map?
   "Return true for maps which are not also records"
@@ -52,8 +67,8 @@
   "Given a seq of txdatas containing Datomic-style schema, return a new empty
   configuration"
   [config schema-txes]
-  (u/validate-args init config schema-txes)
-  (init- config (add-missing-tempids schema-txes)))
+  (u/validate-args `init config schema-txes)
+  (init- config schema-txes))
 
 (defn update
   "Return an updated configuration, given Datomic-style txdata. Differences
@@ -65,21 +80,21 @@
       be supplied when one is missing)
     - Transactor functions are not supported"
   [config txdata]
-  (u/validate-args update config txdata)
+  (u/validate-args `update config txdata)
   (update- config (add-missing-tempids txdata)))
 
 (defn q
   "Given a Datomic-style query expression and any number of additional data
   sources, query the configuration."
   [config find-expr & other-sources]
-  (u/validate-args q config find-expr other-sources)
+  (u/validate-args `q config find-expr other-sources)
   (query- config find-expr other-sources))
 
 (defn pull
   "Given a Datomic-style pull expression and an identity (either a lookup ref
     or an entity ID, return the resulting data structure."
   [config expr id]
-  (u/validate-args pull config expr id)
+  (u/validate-args `pull config expr id)
   (pull- config expr id))
 
 (def ^:private datomic-ctor 'arachne.core.config.impl.datomic/ctor)
@@ -107,7 +122,7 @@
   "Returns an empty config, with schema installed, for the given sequence of
   modules."
   [modules]
-  (u/validate-args new modules)
+  (u/validate-args `new modules)
   (let [ctor (find-impl)]
     (init (@ctor) (map m/schema modules))))
 

@@ -4,56 +4,68 @@
             [arachne.core.module :as m]
             [arachne.core.config :as cfg]))
 
-(def test-schema-1 (constantly [{:db/ident       :test/basic
+(def test-schema-1 (constantly [{:db/id (cfg/tempid :db.part/db)
+                                 :db/ident       :test/basic
                                  :db/cardinality :db.cardinality/one
                                  :db/valueType   :db.type/string
                                  :db.install/_attribute :db.part/db}]))
 
 
-(def test-schema-2 (constantly [{:db/ident :test/card-many
+(def test-schema-2 (constantly [{:db/id (cfg/tempid :db.part/db)
+                                 :db/ident :test/card-many
                                  :db/cardinality :db.cardinality/many
                                  :db/valueType :db.type/string
                                  :db.install/_attribute :db.part/db}]))
 
-(def test-schema-3 (constantly [{:db/ident       :test/ref
+(def test-schema-3 (constantly [{:db/id (cfg/tempid :db.part/db)
+                                 :db/ident       :test/ref
                                  :db/cardinality :db.cardinality/one
                                  :db/valueType   :db.type/ref
                                  :db.install/_attribute :db.part/db}]))
 
 
-(def test-schema-4 (constantly [{:db/ident :test/ref-card-many
+(def test-schema-4 (constantly [{:db/id (cfg/tempid :db.part/db)
+                                 :db/ident :test/ref-card-many
                                  :db/cardinality :db.cardinality/many
                                  :db/valueType :db.type/ref
                                  :db.install/_attribute :db.part/db}]))
 
-(def test-schema-5 (constantly [{:db/ident :test/identity
+(def test-schema-5 (constantly [{:db/id (cfg/tempid :db.part/db)
+                                 :db/ident :test/identity
                                  :db/cardinality :db.cardinality/one
                                  :db/valueType :db.type/string
                                  :db/unique :db.unique/identity
                                  :db.install/_attribute :db.part/db}]))
 
-(def test-schema-6 (constantly [{:db/ident :test/unique
+(def test-schema-6 (constantly [{:db/id (cfg/tempid :db.part/db)
+                                 :db/ident :test/unique
                                  :db/cardinality :db.cardinality/one
                                  :db/valueType :db.type/string
                                  :db/unique :db.unique/value
                                  :db.install/_attribute :db.part/db}]))
 
-(def m1 {:arachne.module/name 'test/m1
+(def m1 {:db/id (cfg/tempid)
+         :arachne.module/name 'test/m1
          :arachne.module/configure 'not/implemented
          :arachne.module/schema 'arachne.core.config-test/test-schema-1})
-(def m2 {:arachne.module/name 'test/m2
+(def m2 {:db/id (cfg/tempid)
+         :arachne.module/name 'test/m2
          :arachne.module/configure 'not/implemented
          :arachne.module/schema 'arachne.core.config-test/test-schema-2})
-(def m3 {:arachne.module/name 'test/m3
+(def m3 {:db/id (cfg/tempid)
+         :arachne.module/name 'test/m3
          :arachne.module/configure 'not/implemented
          :arachne.module/schema 'arachne.core.config-test/test-schema-3})
-(def m4 {:arachne.module/name 'test/m4
+(def m4 {:db/id (cfg/tempid)
+         :arachne.module/name 'test/m4
          :arachne.module/configure 'not/implemented
          :arachne.module/schema 'arachne.core.config-test/test-schema-4})
-(def m5 {:arachne.module/name 'test/m5
+(def m5 {:db/id (cfg/tempid)
+         :arachne.module/name 'test/m5
          :arachne.module/configure 'not/implemented
          :arachne.module/schema 'arachne.core.config-test/test-schema-5})
-(def m6 {:arachne.module/name 'test/m6
+(def m6 {:db/id (cfg/tempid)
+         :arachne.module/name 'test/m6
          :arachne.module/configure 'not/implemented
          :arachne.module/schema 'arachne.core.config-test/test-schema-6})
 

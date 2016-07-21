@@ -3,7 +3,8 @@
             [datascript.core :as d]
             [datascript.query :as dq]
             [arachne.core.config :as cfg]
-            [arachne.core.config.impl.common :as common]))
+            [arachne.core.config.impl.common :as common]
+            [arachne.core.util :as util]))
 
 (def ^:private supported-schema-entries
   #{[:db/unique :db.unique/identity]
@@ -42,7 +43,9 @@
 
 (defn- init
   [schema-txes]
-  (let [schema-txes (replace-partitions schema-txes)
+  (let [meta-schema (util/read-edn "arachne/core/config/ontology/schema.edn")
+        schema-txes (cons meta-schema schema-txes)
+        schema-txes (replace-partitions schema-txes)
         schema-map (merge base-schema (ds-schema schema-txes))
         db @(d/create-conn schema-map)]
     (reduce (fn [db tx]

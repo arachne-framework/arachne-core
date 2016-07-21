@@ -2,7 +2,8 @@
   (:require [clojure.walk :as w]
             [datomic.api :as d]
             [arachne.core.config.impl.common :as common]
-            [arachne.core.config :as cfg])
+            [arachne.core.config :as cfg]
+            [arachne.core.util :as util])
   (:import [java.util UUID]))
 
 (defn- init
@@ -10,11 +11,14 @@
   (let [uri (str "datomic:mem://arachne-cfg-" (str (UUID/randomUUID)))
         _ (d/create-database uri)
         conn (d/connect uri)
-        db (d/db conn)]
+        db (d/db conn)
+        db (:db-after
+             (common/with db
+               (util/read-edn "arachne/core/config/ontology/schema.edn")
+               d/with d/tempid d/resolve-tempid))]
     (reduce (fn [db tx]
               (:db-after (common/with db tx
-                                      d/with d/tempid d/resolve-tempid
-                                      :db.part/db)))
+                           d/with d/tempid d/resolve-tempid)))
             db schema-txes)))
 
 (defrecord DatomicConfig [db tempids]
