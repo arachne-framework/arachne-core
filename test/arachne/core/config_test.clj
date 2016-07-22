@@ -165,3 +165,15 @@
     (is (= #{"a" "b"}
           (set (:test/card-many (cfg/pull cfg [:test/card-many]
                                               [:test/identity "a"])))))))
+
+(deftest tempid-instances-are-consistent
+  (let [cfg (setup)
+        tempid (cfg/tempid)
+        cfg (cfg/update cfg [{:db/id tempid
+                              :test/identity "a"
+                              :test/card-many "a"}
+                             {:db/id tempid
+                              :test/card-many "b"}])]
+    (is (= #{"a" "b"}
+          (set (:test/card-many (cfg/pull cfg [:test/card-many]
+                                              [:test/identity "a"])))))))
