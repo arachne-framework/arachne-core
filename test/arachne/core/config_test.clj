@@ -177,3 +177,18 @@
     (is (= #{"a" "b"}
           (set (:test/card-many (cfg/pull cfg [:test/card-many]
                                               [:test/identity "a"])))))))
+
+(deftest tempid-resolution
+  (let [cfg (setup)
+        tempid-1 (cfg/tempid)
+        tempid-2 (cfg/tempid)
+        cfg (cfg/update cfg [{:db/id tempid-1
+                              :test/card-many "a"}
+                             {:db/id tempid-2
+                              :test/card-many "b"}])
+        eid-1 (cfg/resolve-tempid cfg tempid-1)
+        eid-2 (cfg/resolve-tempid cfg tempid-2)]
+    (is (= #{"a"} (set (:test/card-many
+                         (cfg/pull cfg [:test/card-many] eid-1)))))
+    (is (= #{"b"} (set (:test/card-many
+                         (cfg/pull cfg [:test/card-many] eid-2)))))))

@@ -75,7 +75,9 @@
     (let [eid (if (dq/lookup-ref? lookup-or-eid)
                (resolve-lookup-ref (:db this) lookup-or-eid)
                lookup-or-eid)]
-      (d/pull (:db this) expr eid))))
+      (d/pull (:db this) expr eid)))
+  (resolve-tempid- [this tempid]
+    (get tempids tempid)))
 
 (defn ctor
   "Construct and return an uninitialized instance of DatascriptConfig"

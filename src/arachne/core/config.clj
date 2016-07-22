@@ -15,7 +15,8 @@
   (init- [config schema-txes])
   (update- [config txdata])
   (query- [config find-expr other-sources])
-  (pull- [config expr id]))
+  (pull- [config expr id])
+  (resolve-tempid- [config arachne-tempid]))
 
 (deftype Tempid [partition id]
   Object
@@ -125,6 +126,14 @@
   (u/validate-args `new modules)
   (let [ctor (find-impl)]
     (init (@ctor) (map m/schema modules))))
+
+(defn resolve-tempid
+  "Given a configuration and an Arachne tempid, return concrete entity ID to
+  which the Arachne tempid was matched, in the most recent update to the
+  config."
+  [config arachne-tempid]
+  (u/validate-args `resolve-tempid config arachne-tempid)
+  (resolve-tempid- config arachne-tempid))
 
 (defn tempid-literal
   "Build a tempid representation from a reader literal of the form
