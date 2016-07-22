@@ -32,7 +32,9 @@
   (query- [this query other-sources]
     (apply d/q query (:db this) other-sources))
   (pull- [this expr lookup-or-eid]
-    (d/pull (:db this) expr lookup-or-eid)))
+    (d/pull (:db this) expr lookup-or-eid))
+  (resolve-tempid- [this tempid]
+    (get tempids tempid)))
 
 (defn ctor
   "Construct and return an uninitialized instance of DatascriptConfig"

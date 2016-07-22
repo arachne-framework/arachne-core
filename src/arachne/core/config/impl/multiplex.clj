@@ -84,6 +84,15 @@
           datascript-result (cfg/pull- datascript expr
                                        (swap-eids lookup-or-eid eids))]
       (assert-equivalent! datomic-result datascript-result)
+      datomic-result))
+  (resolve-tempid- [this tempid]
+    (let [datomic-result (cfg/resolve-tempid- datomic tempid)
+          datascript-result (cfg/resolve-tempid datascript tempid)]
+      (when-not (= datascript-result (get eids datomic-result))
+        (throw (ex-info "Error when multiplexing `resolve-tempid` operation across DataScript and Datomic configs: the results were inconsistent."
+                       {:datomic-result datomic-result
+                        :datascript-result datascript-result
+                        :eid-mappings eids})))
       datomic-result)))
 
 (defn ctor
