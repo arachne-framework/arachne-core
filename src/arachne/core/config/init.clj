@@ -15,6 +15,11 @@
     (throw (ex-info "Attemped to update Arachne config outside of a configuration script. You should only use the init-script configuration API during the configuration phase." {}))
     (apply swap! *config* f args)))
 
+(defn transact
+  "Update the current configuration with the given txdata."
+  [txdata]
+  (update (fn [cfg] (cfg/update cfg txdata))))
+
 (defn- add-config-entity
   "Given a freshly initialized configuration, add a reified Configuration
   entity, referencing all the Runtime entities present in the config."

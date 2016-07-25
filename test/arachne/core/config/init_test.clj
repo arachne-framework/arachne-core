@@ -14,7 +14,9 @@
                   (arachne.core.config.init/update
                     (fn [cfg]
                       (arachne.core.config/update cfg
-                        [{:arachne/id :dsl-test-2}]))))
+                        [{:arachne/id :dsl-test-2}])))
+                  (arachne.core.config.init/transact
+                    [{:arachne/id :dsl-test-3}]))
         cfg (core/build-config "test.config" '[:org.arachne-framework/arachne-core] script)]
     (is (not-empty
           (cfg/q cfg '[:find ?e
@@ -23,7 +25,11 @@
     (is (not-empty
           (cfg/q cfg '[:find ?e
                        :where
-                       [?e :arachne/id :dsl-test-2]])))))
+                       [?e :arachne/id :dsl-test-2]])))
+    (is (not-empty
+          (cfg/q cfg '[:find ?e
+                       :where
+                       [?e :arachne/id :dsl-test-3]])))))
 
 (deftest throws-when-called-from-normal-code
   (is (thrown-with-msg? Throwable #"outside of a configuration"
