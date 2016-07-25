@@ -47,11 +47,12 @@
 
 (defn class
   "Build a class definition map, returning a seq of txdata."
-  [ident supers & attrs]
+  [ident supers docstring & attrs]
   (let [update-domain (fn [attr-map] (update attr-map :arachne.attribute/domain
                                        (fnil conj #{}) (by-ident ident)))
         class-map {:db/id (cfg/tempid)
-                   :db/ident ident}
+                   :db/ident ident
+                   :db/doc docstring}
         class-map (if (not-empty supers)
                     (assoc class-map :arachne.class/superclasses supers)
                     class-map)]

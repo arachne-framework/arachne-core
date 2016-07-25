@@ -11,6 +11,7 @@
        {:arachne.attribute/domain [:db/ident :arachne/Entity]})]
 
     (o/class :arachne/Component []
+      "The definition of a component used to build and Arachne system at runtime (using the Component library)"
       (o/attr :arachne.component/dependencies
         :many :arachne.component/Dependency
         "The dependencies of a component.")
@@ -18,6 +19,7 @@
         "Namespaced keyword indicating the fully-qualified name of a function that returns an uninitialized instance of a component. The function must take two arguments; the configuration, and the entity ID of the component definition to instantiate."))
 
     (o/class :arachne.component/Dependency []
+      "Entity describing the link from a component a dependent component"
       (o/attr :arachne.component.dependency/entity :one :arachne/Component
         "Links a component dependency to another component entity.")
       (o/attr :arachne.component.dependency/key :one :keyword
