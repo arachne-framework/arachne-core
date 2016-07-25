@@ -16,7 +16,7 @@
   runtime"
   [init rt-id]
   (rt/init
-    (core/build-config '[:org.arachne-framework/arachne-core] init)
+    (core/build-config "test.config" '[:org.arachne-framework/arachne-core] init)
     [:arachne/id rt-id]))
 
 (deftest basic-dependencies

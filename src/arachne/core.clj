@@ -18,9 +18,8 @@
 
 (defn build-config
   "TODO: spec & document"
-  [root-modules & initializers]
+  [config-ns root-modules initializer]
   (let [modules (m/load root-modules)
-        cfg (cfg/new modules)
-        cfg (reduce (fn [c i] (init/initialize c i)) cfg initializers)
+        cfg (init/initialize config-ns modules initializer)
         cfg (reduce (fn [c m] (m/configure m c)) cfg modules)]
     cfg))

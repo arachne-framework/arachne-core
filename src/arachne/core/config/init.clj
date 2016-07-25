@@ -1,5 +1,5 @@
 (ns arachne.core.config.init
-  "Initialziation & init script support for user configuration values."
+  "Initialziation & script support for user configuration values."
   (:refer-clojure :exclude [update])
   (:require [arachne.core.config :as cfg]
             [clojure.edn :as edn]))
@@ -15,13 +15,24 @@
     (throw (ex-info "Attemped to update Arachne config outside of a configuration script. You should only use the init-script configuration API during the configuration phase." {}))
     (apply swap! *config* f args)))
 
+(defn- add-config-entity
+  "Given a freshly initialized configuration, add a reified Configuration
+  entity, referencing all the Runtime entities present in the config."
+  [config config-ns]
+  (let [runtimes (cfg/q config '[:find [?rt ...]
+                                 :where
+                                 [?rt :arachne.runtime/components _]])]
+    (cfg/update config [{:arachne.configuration/namespace config-ns
+                         :arachne.configuration/roots runtimes}])))
+
 (defn initialize
-  "Initialize a configuration with a script, form or literal txdata."
-  [cfg initializer]
-  (binding [*config* (atom cfg)]
+  "Create a brand new configuration with the given namespace, using the given
+  modules, initialized with a script, form or literal txdata."
+  [config-ns modules initializer]
+  (binding [*config* (atom (cfg/new modules))]
     (cond
       (string? initializer) (load-file initializer)
       (list? initializer) (eval initializer)
       (not-empty initializer) (update cfg/update initializer)
       :else nil)
-    @*config*))
+    (add-config-entity @*config* config-ns)))
