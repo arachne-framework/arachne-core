@@ -53,6 +53,15 @@
                                  :cardinality-range ::cardinality-range)))
   :ret ::config-spec/map-txform)
 
+(s/def ::class-ident (s/and keyword? namespace))
+
+(s/fdef arachne.core.config.ontology/class
+  :args (s/cat :ident ::class-ident
+               :supers (s/coll-of ::class-ident)
+               :docstring string?
+               :attrs (s/* ::config-spec/map-txform))
+  :ret ::config-spec/list-txform)
+
 (comment
 
   (s/conform ::cardinality-range [1 2])
