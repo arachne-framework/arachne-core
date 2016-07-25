@@ -26,11 +26,14 @@
 
 
 (defn- components
-  "Given a set of root entity ids return all components in the given
-  configuration that are dependencies of one or more roots. Components are
-  returned as entity maps."
-  [cfg roots]
-  (let [deps (cfg/q cfg '[:find [?e ...]
+  "Given a runtime entity ID, return all components that are part of the
+  runtime. Components are returned as entity maps."
+  [cfg runtime-eid]
+  (let [roots (cfg/q cfg '[:find [?root ...]
+                           :in $ ?rt
+                           :where [?rt :arachne.runtime/components ?root]]
+                runtime-eid)
+        deps (cfg/q cfg '[:find [?e ...]
                           :in $ [?root ...] %
                           :where
                           (dependency ?root ?e)]
@@ -79,15 +82,15 @@
         {} components))
 
 (defn- system
-  "Given a configuration and set of root Arachne IDs, return an (unstarted)
-  Component system"
-  [cfg roots]
-  (let [components (components cfg roots)]
+  "Given a configuration and the entity ID of a Runtime entity, return an
+  (unstarted) Component system"
+  [cfg runtime-eid]
+  (let [components (components cfg runtime-eid)]
     (component/system-using
       (merge (component/system-map) (system-map cfg components))
       (dependency-map components))))
 
-(defrecord ArachneRuntime [config system roots]
+(defrecord ArachneRuntime [config system runtime]
   component/Lifecycle
   (start [rt]
     (log/info "Starting Arachne runtime")
@@ -97,13 +100,13 @@
     (update rt :system component/stop)))
 
 (defn init
-  "Given a configuration and collection of root entity IDs or lookup refs,
-  return an instantiated (but unstarted) ArachneRuntime object."
-  [config roots]
-  (util/validate-args `init config roots)
-  (let [root-eids (map #(:db/id (cfg/pull config [:db/id] %)) roots)
-        sys (system config root-eids)]
-    (->ArachneRuntime config sys (set root-eids))))
+  "Given a configuration and an entity ID or lookup ref representing a Runtime
+  entity, return an instantiated (but unstarted) ArachneRuntime object."
+  [config runtime-ref]
+  (util/validate-args `init config runtime-ref)
+  (let [runtime-eid (:db/id (cfg/pull config [:db/id] runtime-ref))
+        sys (system config runtime-eid)]
+    (->ArachneRuntime config sys runtime-eid)))
 
 (defn lookup
   "Given a runtime and an entity ID or lookup ref, return the associated

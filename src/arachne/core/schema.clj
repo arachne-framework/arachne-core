@@ -25,4 +25,14 @@
       (o/attr :arachne.component.dependency/key :one :keyword
         "The key with which to inject a dependency."))
 
+    (o/class :arachne/Runtime []
+      "Entity describing a particular Arachne runtime"
+      (o/attr :arachne.runtime/components :one-or-more :arachne/Component
+        "Top-level components that constitute this runtime"))
+
+    (o/class :arachne/Configuration []
+      "Entity representing an entire configuration"
+      (o/attr :arachne.configuration/roots :one-or-more :arachne/Entity
+        "Reference to the top-level entities that are part of this configuration."))
+
     ))

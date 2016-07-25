@@ -5,6 +5,18 @@
             [arachne.core.dsl.specs]
             [arachne.core.util :as util]))
 
+(defn runtime
+  "Defines a named Arachne runtime containing the given root components."
+  [id roots]
+  (util/validate-args `runtime id roots)
+  (init/update
+    (fn [cfg]
+      (cfg/update cfg
+        [{:arachne/id id
+          :arachne.runtime/components (map (fn [root-id]
+                                             {:arachne/id root-id})
+                                        roots)}]))))
+
 (defn component
   "Defines a named component by providing an ID, a dependency specification map,
   and a symbol for a component constructor."
