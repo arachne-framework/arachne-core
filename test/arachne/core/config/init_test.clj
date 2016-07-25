@@ -1,8 +1,8 @@
-(ns arachne.core.config.dsl-test
+(ns arachne.core.config.init-test
   (:require [clojure.test :refer :all]
             [arachne.core :as core]
             [arachne.core.config :as cfg]
-            [arachne.core.config.init :as dsl]))
+            [arachne.core.config.init :as init]))
 
 (deftest basic-dsl
   (let [script '(do
@@ -27,5 +27,5 @@
 
 (deftest throws-when-called-from-normal-code
   (is (thrown-with-msg? Throwable #"outside of a configuration"
-        (dsl/update [{:db/id (arachne.core.config/tempid)
+        (init/update [{:db/id (arachne.core.config/tempid)
                       :arachne/id :dsl-test-1}]))))
