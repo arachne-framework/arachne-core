@@ -14,14 +14,15 @@
   (->TestComponent false))
 
 (deftest basic-system
-  (let [cfg (core/build-config '[:org.arachne-framework/arachne-core]
+  (let [cfg (core/build-config "test.config" '[:org.arachne-framework/arachne-core]
               '(do (require '[arachne.core.dsl :as dsl])
+                   (dsl/runtime :test/rt [:test/a])
                    (dsl/component :test/a {:test/b :b, :test/c :c}
                      'arachne.core.dsl-test/test-ctor)
                    (dsl/component :test/b {:test/c :c}
                      'arachne.core.dsl-test/test-ctor)
                    (dsl/component :test/c {} 'arachne.core.dsl-test/test-ctor)))
-        rt (component/start (rt/init cfg [[:arachne/id :test/a]]))]
+        rt (component/start (rt/init cfg [:arachne/id :test/rt]))]
 
     (is (rt/lookup rt [:arachne/id :test/a]))
     (is (rt/lookup rt [:arachne/id :test/b]))

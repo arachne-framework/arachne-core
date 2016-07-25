@@ -7,18 +7,20 @@
 
 (def basic-config
   [{:db/id (cfg/tempid)
-    :arachne.component/constructor :arachne.core.runtime-test/basic-dep-0
-    :arachne/id :test-1}])
+    :arachne/id :test-rt
+    :arachne.runtime/components {:arachne.component/constructor :arachne.core.runtime-test/basic-dep-0
+                                 :arachne/id :test-1}}])
 
 (defn setup
-  "Set up a test runtime using the given initial txdata and the ID of a root"
-  [init root-id]
+  "Set up a test runtime using the given initial txdata and the ID of the
+  runtime"
+  [init rt-id]
   (rt/init
-    (core/build-config '[:org.arachne-framework/arachne-core] init)
-    #{[:arachne/id root-id]}))
+    (core/build-config "test.config" '[:org.arachne-framework/arachne-core] init)
+    [:arachne/id rt-id]))
 
 (deftest basic-dependencies
-  (let [rt (setup basic-config :test-1)
+  (let [rt (setup basic-config :test-rt)
         cfg (:config rt)
         instances (:system rt)]
     (is (= 1 (count instances)))
@@ -42,10 +44,15 @@
   {:this-is-dep-3 true})
 
 (def linear-config
-  (let [dep-1 (cfg/tempid -1)
+  (let [root (cfg/tempid)
+        dep-1 (cfg/tempid -1)
         dep-2 (cfg/tempid -2)]
     [
      {:db/id (cfg/tempid)
+      :arachne/id :test-rt
+      :arachne.runtime/components #{root}}
+
+     {:db/id root
       :arachne/id :test-2
       :arachne.component/constructor :arachne.core.runtime-test/basic-dep-0
       :arachne.component/dependencies
@@ -67,7 +74,7 @@
      ]))
 
 (deftest linear-dependencies
-  (let [rt (setup linear-config :test-2)
+  (let [rt (setup linear-config :test-rt)
         cfg (:config rt)
         instances (into {} (:system rt))
         [root-id d1-eid d2-eid]
@@ -90,8 +97,13 @@
 (def diamond-config
   (let [dep-1 (cfg/tempid -1)
         dep-2 (cfg/tempid -2)
-        dep-3 (cfg/tempid -3)]
+        dep-3 (cfg/tempid -3)
+        root (cfg/tempid)]
     [{:db/id (cfg/tempid)
+      :arachne/id :test-rt
+      :arachne.runtime/components #{root}}
+
+     {:db/id root
       :arachne/id :test-3
       :arachne.component/constructor :arachne.core.runtime-test/basic-dep-0
       :arachne.component/dependencies
@@ -118,7 +130,7 @@
       :arachne.component/constructor :arachne.core.runtime-test/basic-dep-3}]))
 
 (deftest complex-dependencies
-  (let [rt (setup diamond-config :test-3)
+  (let [rt (setup diamond-config :test-rt)
         cfg (:config rt)
         instances (into {} (:system rt))
         [root-eid d1-eid d2-eid d3-eid]
@@ -172,7 +184,10 @@
   (let [a (cfg/tempid -1)
         b (cfg/tempid -2)
         c (cfg/tempid -3)]
-    [{:db/id a
+    [{:db/id (cfg/tempid)
+      :arachne/id :test-rt
+      :arachne.runtime/components #{a}}
+     {:db/id a
       :arachne/id :test/a
       :arachne.component/constructor
       :arachne.core.runtime-test/construct-lifecycle,
@@ -189,7 +204,7 @@
       :arachne.core.runtime-test/construct-lifecycle}]))
 
 (deftest basic-lifecycle
-  (let [rt (setup basic-lifecycle-cfg :test/a)
+  (let [rt (setup basic-lifecycle-cfg :test-rt)
         instances (into {} (:system rt))]
     (is (= 2 (count instances)))
     (is (every? #(satisfies? component/Lifecycle %) (vals instances)))

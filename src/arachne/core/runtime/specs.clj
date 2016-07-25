@@ -6,10 +6,8 @@
 
 (s/fdef arachne.core.runtime/init
   :args (s/cat :config :arachne.core.config.specs/config
-               :roots (s/coll-of
-                        (s/or :eid :arachne.core.config.specs/entity-id
-                              :lookup-ref :arachne.core.config.specs/lookup-ref)
-                        :min-count 1))
+          :runtime (s/or :eid :arachne.core.config.specs/entity-id
+                         :lookup-ref :arachne.core.config.specs/lookup-ref))
   :ret runtime?)
 
 
