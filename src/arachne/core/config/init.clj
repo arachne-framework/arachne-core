@@ -3,7 +3,8 @@
   (:refer-clojure :exclude [update])
   (:require [arachne.core.config :as cfg]
             [arachne.core.util :as u]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn])
+  (:import [java.util UUID]))
 
 (def
   ^{:dynamic true
@@ -37,14 +38,23 @@
     (cfg/update config [{:arachne.configuration/namespace config-ns
                          :arachne.configuration/roots runtimes}])))
 
+(defn- in-script-ns
+  "Invoke the given no-arg function in the context of a new, unique namespace"
+  [f]
+  (binding [*ns* *ns*]
+    (let [script-ns (symbol (str "init-script-" (UUID/randomUUID)))]
+      (in-ns script-ns)
+      (clojure.core/with-loading-context (clojure.core/refer 'clojure.core))
+      (f))))
+
 (defn initialize
   "Create a brand new configuration with the given namespace, using the given
   modules, initialized with a script, form or literal txdata."
   [config-ns modules initializer]
   (binding [*config* (atom (cfg/new modules))]
     (cond
-      (string? initializer) (load-file initializer)
-      (list? initializer) (eval initializer)
+      (string? initializer) (in-script-ns #(load-file initializer))
+      (list? initializer) (in-script-ns #(eval initializer))
       (not-empty initializer) (update cfg/update initializer)
       :else nil)
     (add-config-entity @*config* config-ns)))
