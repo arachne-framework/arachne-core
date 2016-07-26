@@ -42,6 +42,9 @@
     (map #(cfg/pull cfg component-pull %)
       (set (concat roots deps)))))
 
+(util/deferror ::error-instantiating
+  "An exception was thrown while attempting to instantiate component :eid using constructor :ctor")
+
 (defn- instantiate
   "Invoke a Component definition's constructor function to return a runtime
   instance of the component."
@@ -50,14 +53,10 @@
     (try
       (ctor-fn cfg eid)
       (catch Throwable t
-        (throw
-          (ex-info
-            (format "An exception was thrown while attempting to instantiate component %s using constructor %s"
-              eid ctor)
-                 {:cfg cfg
-                  :eid eid
-                  :ctor ctor
-                  :ctor-fn ctor-fn} t))))))
+        (util/error ::error-instantiating {:cfg cfg
+                                           :eid eid
+                                           :ctor ctor
+                                           :ctor-fn ctor-fn} t)))))
 (defn- system-map
   "Given a configuration and collection of component maps, instantiates the
   components and return a Component system map to pass to component/system-map."

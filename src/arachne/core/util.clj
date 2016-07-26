@@ -40,6 +40,12 @@
   [file]
   (read-string {:readers *data-readers*} (slurp (io/resource file))))
 
+(deferror ::could-not-load-ns
+  "Could not load namespace :ns while attempting to resolve :s")
+
+(deferror ::var-does-not-exist
+  "Could not resolve :s; the specified var does exist.")
+
 (defn require-and-resolve
   "Resolve a namespaced symbol (or string, or keyword representation of a
   symbol), first requiring its namespace. Throw a friendly error if the name
@@ -52,17 +58,16 @@
     (try
       (require (symbol (namespace sym)))
       (catch FileNotFoundException e
-        (throw
-          (ex-info
-            (format "Could not load namespace %s while attempting to resolve %s"
-              (namespace sym) s) {:s s, :sym sym} e))))
+        (error ::could-not-load-ns {:ns (namespace sym)
+                                    :s s
+                                    :sym sym} e)))
     (let [var (resolve sym)]
       (when-not var
-        (throw
-          (ex-info
-            (format "Could not resolve %s; the specified var does exist." s)
-            {:s s, :sym sym})))
+        (error ::var-does-not-exist {:s s, :sym sym}))
       var)))
+
+(deferror ::args-do-not-conform
+  "Arguments to :fn-sym did not conform to registered spec:\n :explain-str")
 
 (defn validate-args
   "Given a fully qualified symbol naming a function and a some number of
@@ -72,14 +77,9 @@
   (let [argspec (:args (s/get-spec fn-sym))]
     (when-not (s/valid? argspec args)
       (let [explain-str (s/explain-str argspec args)]
-        (throw
-          (ex-info
-            (format "Arguments to %s did not conform to registered spec:\n %s"
-                    fn-sym
-                    explain-str)
-            {:fn-sym      fn-sym
-             :argspec     argspec
-             :explain-str explain-str}))))))
+        (error ::args-do-not-conform {:fn-sym      fn-sym
+                                      :argspec     argspec
+                                      :explain-str explain-str})))))
 
 (defmacro lazy-satisfies?
   "Returns a partial application of clojure.core/satisfies? that doesn't resolve

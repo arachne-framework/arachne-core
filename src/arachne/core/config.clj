@@ -102,6 +102,9 @@
 (def ^:private datascript-ctor 'arachne.core.config.impl.datascript/ctor)
 (def ^:private multiplex-ctor 'arachne.core.config.impl.multiplex/ctor)
 
+(u/deferror ::could-not-find-config
+  "Could not find config implementation. You must include either Datomic or Datascript on your classpath.")
+
 (defn- find-impl
   "Return a config constructor, based on what is present in the classpath"
   []
@@ -117,7 +120,7 @@
       (and datomic datascript) (maybe-resolve multiplex-ctor)
       datomic datomic
       datascript datascript
-      :else (throw (ex-info "Could not find config implementation. You must include either Datomic or Datascript on your classpath." {})))))
+      :else (u/error ::could-not-find-config {}))))
 
 (defn new
   "Returns an empty config, with schema installed, for the given sequence of
