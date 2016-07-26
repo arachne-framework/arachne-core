@@ -5,7 +5,10 @@
             [arachne.core.util :as u]
             [clojure.edn :as edn]))
 
-(def ^:private ^:dynamic *config*)
+(def
+  ^{:dynamic true
+    :doc "An atom containing the configuration currently in context in this init script"}
+  *config*)
 
 (u/deferror ::update-outside-script
   "Attemped to update Arachne config outside of a configuration script. You should only use the init-script configuration API during the configuration phase.")
