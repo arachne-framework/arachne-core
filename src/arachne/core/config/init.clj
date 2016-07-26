@@ -2,9 +2,13 @@
   "Initialziation & script support for user configuration values."
   (:refer-clojure :exclude [update])
   (:require [arachne.core.config :as cfg]
+            [arachne.core.util :as u]
             [clojure.edn :as edn]))
 
 (def ^:private ^:dynamic *config*)
+
+(u/deferror ::update-outside-script
+  "Attemped to update Arachne config outside of a configuration script. You should only use the init-script configuration API during the configuration phase.")
 
 (defn update
   "Update the current configuration by applying a function which takes the
@@ -12,7 +16,7 @@
   supplied function."
   [f & args]
   (if-not (bound? #'*config*)
-    (throw (ex-info "Attemped to update Arachne config outside of a configuration script. You should only use the init-script configuration API during the configuration phase." {}))
+    (u/error ::update-outside-script {})
     (apply swap! *config* f args)))
 
 (defn transact
