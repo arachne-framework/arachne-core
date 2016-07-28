@@ -1,6 +1,9 @@
 machine:
   environment:
     BOOT_JVM_OPTIONS: "-Xmx3g"
+    ARACHNE_BUILDTOOLS_VERSION: 0.1.1
+  java:
+    version: oraclejdk8
 dependencies:
   cache_directories:
     - ~/.boot
