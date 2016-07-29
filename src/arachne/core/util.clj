@@ -16,7 +16,7 @@
   "Given an error message string and an ex-data map, replace keywords in the
   string with their corresponding values (if present)"
   [msg ex-data]
-  (str/replace msg #"(?::)([\S]+)"
+  (str/replace msg #"(?::)([\S]*\w)"
     (fn [[match kw]]
       (str (get ex-data (keyword kw) match)))))
 
