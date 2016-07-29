@@ -96,3 +96,8 @@
   `(fn [obj#]
      (when-let [class# (resolve '~sym)]
        (instance? class# obj#))))
+
+(defn mkeep
+  "Returns the given map, with all entries with nil values removed"
+  [m]
+  (into {} (filter (fn [[_ v]] (not (nil? v))) m)))
