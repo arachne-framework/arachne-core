@@ -16,7 +16,7 @@
   "Given an error message string and an ex-data map, replace keywords in the
   string with their corresponding values (if present)"
   [msg ex-data]
-  (str/replace msg #"(?::)([\S]+)"
+  (str/replace msg #"(?::)([\S]*\w)"
     (fn [[match kw]]
       (str (get ex-data (keyword kw) match)))))
 
@@ -96,3 +96,8 @@
   `(fn [obj#]
      (when-let [class# (resolve '~sym)]
        (instance? class# obj#))))
+
+(defn mkeep
+  "Returns the given map, with all entries with nil values removed"
+  [m]
+  (into {} (filter (fn [[_ v]] (not (nil? v))) m)))
