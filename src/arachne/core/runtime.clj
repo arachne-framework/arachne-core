@@ -47,16 +47,24 @@
 
 (defn- instantiate
   "Invoke a Component definition's constructor function to return a runtime
-  instance of the component."
+  instance of the component. If the object returned by the constructor is a map,
+  the values from a (cfg/pull '[*]) will be merged in."
   [cfg eid ctor]
-  (let [ctor-fn (util/require-and-resolve ctor)]
-    (try
-      (ctor-fn cfg eid)
-      (catch Throwable t
-        (util/error ::error-instantiating {:cfg cfg
-                                           :eid eid
-                                           :ctor ctor
-                                           :ctor-fn ctor-fn} t)))))
+  (let [ctor-fn (util/require-and-resolve ctor)
+        instance (try
+                   (condp = (util/arity ctor-fn)
+                     0 (ctor-fn)
+                     1 (ctor-fn (cfg/pull cfg '[*] eid))
+                     (ctor-fn cfg eid))
+                   (catch Throwable t
+                     (util/error ::error-instantiating {:cfg cfg
+                                                        :eid eid
+                                                        :ctor ctor
+                                                        :ctor-fn ctor-fn} t)))]
+    (if (map? instance)
+      (merge instance (cfg/pull cfg '[*] eid))
+      instance)))
+
 (defn- system-map
   "Given a configuration and collection of component maps, instantiates the
   components and return a Component system map to pass to component/system-map."

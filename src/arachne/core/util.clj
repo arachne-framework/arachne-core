@@ -101,3 +101,17 @@
   "Returns the given map, with all entries with nil values removed"
   [m]
   (into {} (filter (fn [[_ v]] (not (nil? v))) m)))
+
+(deferror ::arity-detection-error "Could not detect the arity of :f, perhaps it is not a function?")
+
+(defn arity
+  "Given a function, return its arity (or :many if the function is variadic)"
+  [f]
+  (let [methods (.getDeclaredMethods (class f))
+        invokes (filter #(= "invoke" (.getName %)) methods)
+        do-invokes (filter #(= "doInvoke" (.getName %)) methods)]
+    (cond
+      (not (empty? do-invokes)) :many
+      (< 1 (count invokes)) :many
+      (empty? invokes) (error ::arity-detection-error {:f f})
+      :else (count (.getParameterTypes (first invokes))))))
