@@ -34,7 +34,14 @@
   (pull- [this expr lookup-or-eid]
     (d/pull (:db this) expr lookup-or-eid))
   (resolve-tempid- [this tempid]
-    (get tempids tempid)))
+    (get tempids tempid))
+  Object
+  (toString [this]
+    (str "#DatomicConfig[" (hash-combine (hash db) (hash tempids)) "]")))
+
+(defmethod print-method DatomicConfig
+  [cfg writer]
+  (.write writer (str cfg)))
 
 (defn ctor
   "Construct and return an uninitialized instance of DatascriptConfig"

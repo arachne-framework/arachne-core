@@ -9,5 +9,3 @@
 (require '[arachne.buildtools :refer :all])
 
 (read-project-edn!)
-
-(require '[adzerk.boot-test :refer [test]])

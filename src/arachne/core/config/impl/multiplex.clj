@@ -98,7 +98,16 @@
         (u/error ::tempid-multiplex-error {:datomic-result datomic-result
                                            :datascript-result datascript-result
                                            :eid-mappings eids}))
-      datomic-result)))
+      datomic-result))
+  Object
+  (toString [this]
+    (str "#MultiplexedConfig[" (hash-combine (hash datomic)
+                                 (hash-combine (hash datascript) (hash eids)))
+      "]")))
+
+(defmethod print-method MultiplexedConfig
+  [cfg writer]
+  (.write writer (str cfg)))
 
 (defn ctor
   "Construct and return an uninitialized instance of a MultiplexedConfig"
