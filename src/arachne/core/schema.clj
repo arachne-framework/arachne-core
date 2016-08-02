@@ -16,14 +16,20 @@
         :many :arachne.component/Dependency
         "The dependencies of a component.")
       (o/attr :arachne.component/constructor :one :keyword
-        "Namespaced keyword indicating the fully-qualified name of a function that returns an uninitialized instance of a component. The function must take two arguments; the configuration, and the entity ID of the component definition to instantiate."))
+        "Namespaced keyword indicating the fully-qualified name of a function that returns an uninitialized instance of a component. The function may take 0-2 arguments, with the following behaviors:
+
+         - 0 arguments: invoked with no arguments
+         - 1 argument:  the entity map obtained by a wildcard pull on the component entity
+         - 2 argumetns: the config itself and entity ID of the component entity")
+      (o/attr :arachne.component/instance :one-or-none :keyword
+        "Namespaced keyword indicating the fully-qualified name of a var which is the initial instance of the component."))
 
     (o/class :arachne.component/Dependency []
       "Entity describing the link from a component a dependent component"
       (o/attr :arachne.component.dependency/entity :one :arachne/Component
         "Links a component dependency to another component entity.")
-      (o/attr :arachne.component.dependency/key :one :keyword
-        "The key with which to inject a dependency."))
+      (o/attr :arachne.component.dependency/key :one-or-none :keyword
+        "The key with which to inject a dependency. If omitted, the key will default to the keyword-ified entity ID of the dependency."))
 
     (o/class :arachne/Runtime []
       "Entity describing a particular Arachne runtime"
@@ -38,5 +44,6 @@
         part of this configuration.")
       (o/attr :arachne.configuration/roots :one-or-more :arachne/Entity
         "Reference to the top-level entities that are part of this configuration."))
+
 
     ))

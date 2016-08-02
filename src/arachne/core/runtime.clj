@@ -52,7 +52,7 @@
   [cfg eid ctor]
   (let [ctor-fn (util/require-and-resolve ctor)
         instance (try
-                   (condp = (util/arity ctor-fn)
+                   (condp = (util/arity @ctor-fn)
                      0 (ctor-fn)
                      1 (ctor-fn (cfg/pull cfg '[*] eid))
                      (ctor-fn cfg eid))
@@ -76,6 +76,13 @@
                      (:arachne.component/constructor component-map))])
              components)))
 
+(defn- dependency-key
+  "Determine the dependency key, given a dependency entity"
+  [dep]
+  (or
+    (:arachne.component.dependency/key dep)
+    (keyword (str (:db/id (:arachne.component.dependency/entity dep))))))
+
 (defn- dependency-map
   "Given a collection of component maps, return a Component dependency map to
   pass to component/system-using."
@@ -83,7 +90,7 @@
   (reduce (fn [acc component-map]
             (reduce (fn [acc dep]
                       (assoc-in acc [(:db/id component-map)
-                                     (:arachne.component.dependency/key dep)]
+                                     (dependency-key dep)]
                         (:db/id (:arachne.component.dependency/entity dep))))
               acc (:arachne.component/dependencies component-map)))
         {} components))
@@ -122,3 +129,35 @@
   (util/validate-args `lookup rt entity-ref)
   (let [eid (:db/id (cfg/pull (:config rt) [:db/id] entity-ref))]
     (get-in rt [:system eid])))
+
+(util/deferror ::missing-dependency
+  "Runtime dependency :dependency-eid (Arachne id: :dependency-id) of :instance-eid (Arachne id: :instance-id) could not be found using key :key")
+
+(util/deferror ::not-a-dependency
+  "Could not resolve dependency instance :dependency-eid (Arachne id: :dependency-id) of :instance-eid (Arachne id: :instance-id) because that dependency is not declared in the configuration.")
+
+(defn dependency-instance
+  "Given a concrete component instance, the config, and the eid of a dependency,
+  return the concrete runtime dependency instance (no matter what key it was
+  associated under)"
+  [instance cfg dependency-eid]
+  (if-let [mapping-eid (cfg/q cfg '[:find ?m .
+                                    :in $ ?entity ?dep
+                                    :where
+                                    [?entity :arachne.component/dependencies ?m]
+                                    [?m :arachne.component.dependency/entity ?dep]]
+                         (:db/id instance) dependency-eid)]
+    (let [key (or (cfg/attr cfg mapping-eid :arachne.component.dependency/key)
+                (keyword (str dependency-eid)))]
+      (or (get instance key)
+          (util/error ::missing-dependency
+            {:dependency-eid dependency-eid
+             :dependency-id (or (cfg/attr cfg dependency-eid :arachne/id) "none")
+             :instance-eid (:db/id instance)
+             :instance-id (or (:arachne/id instance) "none")
+             :key key})))
+    (util/error ::not-a-dependency
+      {:dependency-eid dependency-eid
+       :dependency-id (or (cfg/attr cfg dependency-eid :arachne/id) "none")
+       :instance-eid (:db/id instance)
+       :instance-id (or (:arachne/id instance) "none")})))

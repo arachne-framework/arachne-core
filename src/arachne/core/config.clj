@@ -143,3 +143,14 @@
   `arachne/tempid []` or `arachne/tempid [-1]`"
   [form]
   (apply tempid form))
+
+(defn attr
+  "Convenience function to pull and return one or more nested attributes in one
+  step"
+  [cfg id & attrs]
+  (let [[attr & more-attrs] (reverse attrs)
+        expr (reduce (fn [inner attr]
+                       {attr inner})
+               [attr] more-attrs)
+        result (pull cfg (if (map? expr) [expr] expr) id)]
+    (get-in result attrs)))

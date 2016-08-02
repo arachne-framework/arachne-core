@@ -3,7 +3,8 @@
             [arachne.core :as core]
             [arachne.core.config :as cfg]
             [arachne.core.runtime :as rt]
-            [com.stuartsierra.component :as component]))
+            [com.stuartsierra.component :as component]
+            [arachne.core.util :as util]))
 
 (def basic-config
   [{:db/id (cfg/tempid)
@@ -161,7 +162,12 @@
     (let [started-rt (component/start rt)
           instances (into {} (:system started-rt))]
       (is (-> root-eid (instances) :dep-1 :dep-2 :dep-3 :this-is-dep-3))
-      (is (-> root-eid (instances) :dep-2 :dep-3 :this-is-dep-3)))))
+      (is (-> root-eid (instances) :dep-2 :dep-3 :this-is-dep-3))
+      (testing "dep-instance utility function"
+        (is (= (instances d1-eid)
+              (rt/dependency-instance (instances root-eid) cfg d1-eid)))
+        (is (= (instances d3-eid)
+              (rt/dependency-instance (instances d2-eid) cfg d3-eid)))))))
 
 
 (def ^:dynamic *tracker* nil)
@@ -192,8 +198,7 @@
       :arachne.component/constructor
       :arachne.core.runtime-test/construct-lifecycle,
       :arachne.component/dependencies
-      #{{:arachne.component.dependency/key :b
-         :arachne.component.dependency/entity b}}},
+      #{{:arachne.component.dependency/entity b}}},
      {:db/id b
       :arachne/id :test/b
       :arachne.component/constructor
