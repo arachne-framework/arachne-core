@@ -98,9 +98,11 @@
        (instance? class# obj#))))
 
 (defn mkeep
-  "Returns the given map, with all entries with nil values removed"
+  "Returns the given map, with all entries with nil or empty values removed"
   [m]
-  (into {} (filter (fn [[_ v]] (not (nil? v))) m)))
+  (into {} (filter (fn [[_ v]]
+                     (not (or (nil? v)
+                            (and (coll? v) (empty? v))))) m)))
 
 (deferror ::arity-detection-error "Could not detect the arity of :f, perhaps it is not a function?")
 
