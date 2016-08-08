@@ -36,16 +36,22 @@
   (add-instance-constructors cfg))
 
 (defn build-config
-  "Construct a configuration, using the specified namespace. The specified modules will participate in the configuration after initializing it with the given user-supplied initializer value.
+  "Build a new Arachne application configuration. Requires two arguments:
 
-  The initializer can be one of several types:
+  - A collection of modules that will participate in building the configuration.
+  The modules can include their own dependencies, so you only need to
+  explicitly declare the top-level modules you want to use.
 
-  - A string, as the path to a config initialization script
-  - A list, as a form that will be evaluated as an initialization script
-  - A vector, as raw configuration txdata"
-  [config-ns root-modules initializer]
-  (util/validate-args `build-config config-ns root-modules initializer)
-  (let [modules (m/load root-modules)
-        cfg (init/initialize config-ns modules initializer)
-        cfg (reduce (fn [c m] (m/configure m c)) cfg (reverse modules))]
+  - A config initializer, containing the configuration data that you supply.
+  This can be:
+    - A string, which will be interpreted as the path to an initialization script
+    - A list, which will be evaluated as an initialization script
+    - A vector, which will be assumed to contain raw confgiuration data as a
+    Datomic-style transaction."
+  [modules initializer]
+  (util/validate-args `build-config modules initializer)
+  (let [module-definitions (m/load modules)
+        cfg (init/initialize module-definitions initializer)
+        cfg (reduce (fn [c m] (m/configure m c))
+              cfg (reverse module-definitions))]
     cfg))

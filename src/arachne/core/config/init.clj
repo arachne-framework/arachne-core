@@ -30,13 +30,16 @@
 
 (defn- add-config-entity
   "Given a freshly initialized configuration, add a reified Configuration
-  entity, referencing all the Runtime entities present in the config."
-  [config config-ns]
-  (let [runtimes (cfg/q config '[:find [?rt ...]
-                                 :where
-                                 [?rt :arachne.runtime/components _]])]
-    (cfg/update config [{:arachne.configuration/namespace config-ns
-                         :arachne.configuration/roots runtimes}])))
+  entity, referencing all the Runtime entities present in the config. Is a no-op
+  if a configuration entity already exists in the given config value."
+  [config]
+  (if (cfg/q config '[:find ?cfg .
+                            :where [?cfg :arachne.configuration/roots _]])
+    config
+    (let [runtimes (cfg/q config '[:find [?rt ...]
+                                   :where
+                                   [?rt :arachne.runtime/components _]])]
+      (cfg/update config [{:arachne.configuration/roots runtimes}]))))
 
 (defn- in-script-ns
   "Invoke the given no-arg function in the context of a new, unique namespace"
@@ -48,13 +51,13 @@
       (f))))
 
 (defn initialize
-  "Create a brand new configuration with the given namespace, using the given
-  modules, initialized with a script, form or literal txdata."
-  [config-ns modules initializer]
+  "Create a brand new configuration using the given modules, initialized with a
+  script, form or literal txdata."
+  [modules initializer]
   (binding [*config* (atom (cfg/new modules))]
     (cond
       (string? initializer) (in-script-ns #(load-file initializer))
       (list? initializer) (in-script-ns #(eval initializer))
       (not-empty initializer) (update cfg/update initializer)
       :else nil)
-    (add-config-entity @*config* config-ns)))
+    (add-config-entity @*config*)))

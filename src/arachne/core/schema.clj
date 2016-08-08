@@ -38,10 +38,8 @@
 
     (o/class :arachne/Configuration []
       "Entity representing an entire configuration"
-      (o/attr :arachne.configuration/namespace :one :string :identity
-        "The unique identifier of the configuration, as a string. Should be used as the
-        `namespace` portion of all Arachne IDs for entities that are logically
-        part of this configuration.")
+      (o/attr :arachne.configuration/namespace :one-or-none :keyword :identity
+        "The unique identifier of the configuration, as a non-namespaced keyword. Should be set and used as the `namespace` portion of all Arachne IDs for entities that are logically part of this configuration, in scenarios where multiple configurations are present in the same database.")
       (o/attr :arachne.configuration/roots :one-or-more :arachne/Entity
         "Reference to the top-level entities that are part of this configuration."))
 

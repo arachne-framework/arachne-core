@@ -14,7 +14,7 @@
   (->TestComponent false))
 
 (deftest basic-system
-  (let [cfg (core/build-config "test.config" '[:org.arachne-framework/arachne-core]
+  (let [cfg (core/build-config '[:org.arachne-framework/arachne-core]
               '(do (require '[arachne.core.dsl :as dsl])
                    (dsl/runtime :test/rt [:test/a])
                    (dsl/component :test/a {:test/b :b, :test/c :c}
