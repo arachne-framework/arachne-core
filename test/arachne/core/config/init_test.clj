@@ -17,7 +17,7 @@
                         [{:arachne/id :dsl-test-2}])))
                   (arachne.core.config.init/transact
                     [{:arachne/id :dsl-test-3}]))
-        cfg (core/build-config "test.config" '[:org.arachne-framework/arachne-core] script)]
+        cfg (core/build-config '[:org.arachne-framework/arachne-core] script)]
     (is (not-empty
           (cfg/q cfg '[:find ?e
                        :where
