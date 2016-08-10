@@ -1,7 +1,8 @@
 (ns arachne.core.util
   (:require [clojure.java.io :as io]
             [clojure.spec :as s]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [arachne.core.util.specs])
   (:import [java.io FileNotFoundException])
   (:refer-clojure :exclude [alias]))
 
@@ -18,7 +19,7 @@
   [msg ex-data]
   (str/replace msg #"(?::)([\S]*\w)"
     (fn [[match kw]]
-      (str (get ex-data (keyword kw) match)))))
+      (str (or (get ex-data (keyword kw) match) "nil")))))
 
 (defmacro error
   "Throw an ex-info with the given error message lookup key, optional cause, and
@@ -40,32 +41,6 @@
   [file]
   (read-string {:readers *data-readers*} (slurp (io/resource file))))
 
-(deferror ::could-not-load-ns
-  "Could not load namespace :ns while attempting to resolve :s")
-
-(deferror ::var-does-not-exist
-  "Could not resolve :s; the specified var does exist.")
-
-(defn require-and-resolve
-  "Resolve a namespaced symbol (or string, or keyword representation of a
-  symbol), first requiring its namespace. Throw a friendly error if the name
-  could not be resolved."
-  [s]
-  (let [sym (cond
-              (string? s) (symbol s)
-              (keyword? s) (symbol (namespace s) (name s))
-              (symbol? s) s)]
-    (try
-      (require (symbol (namespace sym)))
-      (catch FileNotFoundException e
-        (error ::could-not-load-ns {:ns (namespace sym)
-                                    :s s
-                                    :sym sym} e)))
-    (let [var (resolve sym)]
-      (when-not var
-        (error ::var-does-not-exist {:s s, :sym sym}))
-      var)))
-
 (deferror ::args-do-not-conform
   "Arguments to :fn-sym did not conform to registered spec:\n :explain-str")
 
@@ -80,6 +55,34 @@
         (error ::args-do-not-conform {:fn-sym      fn-sym
                                       :argspec     argspec
                                       :explain-str explain-str})))))
+
+(deferror ::could-not-load-ns
+  "Could not load namespace :ns while attempting to resolve :s")
+
+(deferror ::var-does-not-exist
+  "Could not resolve :s; the specified var does exist.")
+
+
+(defn require-and-resolve
+  "Resolve a namespaced symbol (or string, or keyword representation of a
+  symbol), first requiring its namespace. Throw a friendly error if the name
+  could not be resolved."
+  [s]
+  (validate-args `require-and-resolve s)
+  (let [sym (cond
+              (string? s) (symbol s)
+              (keyword? s) (symbol (namespace s) (name s))
+              (symbol? s) s)]
+    (try
+      (require (symbol (namespace sym)))
+      (catch FileNotFoundException e
+        (error ::could-not-load-ns {:ns (namespace sym)
+                                    :s s
+                                    :sym sym} e)))
+    (let [var (resolve sym)]
+      (when-not var
+        (error ::var-does-not-exist {:s s, :sym sym}))
+      var)))
 
 (defmacro lazy-satisfies?
   "Returns a partial application of clojure.core/satisfies? that doesn't resolve
