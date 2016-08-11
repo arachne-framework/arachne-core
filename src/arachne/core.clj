@@ -2,6 +2,7 @@
   "The core Arachne module that bootstraps everything else"
   (:require [arachne.core.module :as m]
             [arachne.core.config :as cfg]
+            [arachne.core.runtime :as rt]
             [arachne.core.config.init :as init]
             [arachne.core.util :as util]
             [arachne.core.schema :as schema]
@@ -55,3 +56,10 @@
         cfg (reduce (fn [c m] (m/configure m c))
               cfg (reverse module-definitions))]
     cfg))
+
+(defn runtime
+  "Create a new Arachne runtime from the given configuration and the :arachne/id
+  of the root runtime entity"
+  [cfg arachne-id]
+  (util/validate-args `runtime cfg arachne-id)
+  (rt/init cfg [:arachne/id arachne-id]))

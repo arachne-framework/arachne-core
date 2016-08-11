@@ -3,3 +3,4 @@ project.clj
 *.iml
 .nrepl-*
 target
+.git-deps

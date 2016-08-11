@@ -21,7 +21,7 @@
                      'arachne.core.dsl-test/test-ctor)
                    (dsl/component :test/b {:test/c :c}
                      'arachne.core.dsl-test/test-ctor)
-                   (dsl/component :test/c {} 'arachne.core.dsl-test/test-ctor)))
+                   (dsl/component :test/c 'arachne.core.dsl-test/test-ctor)))
         rt (component/start (rt/init cfg [:arachne/id :test/rt]))]
 
     (is (rt/lookup rt [:arachne/id :test/a]))
