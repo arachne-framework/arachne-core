@@ -40,5 +40,12 @@
   :db/ident       :arachne/Entity
   :db/doc         "The root class, the implicit superclass of all other classes."}
 
+ ;; Explicit type
+ {:db/id          #arachne/tempid[:db.part/db]
+  :db/ident       :arachne/instance-of
+  :db/valueType   :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc         "Can be added to any entity to explicitly indicate the class to which it is intended to belong. Usually used in situations where this cannot be inferred based on the entities other attributes."
+  :db.install/_attribute :db.part/db}
  ]
 

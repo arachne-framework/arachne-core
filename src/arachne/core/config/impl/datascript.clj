@@ -52,14 +52,19 @@
               (:db-after (common/with db tx d/with d/tempid d/resolve-tempid)))
             db schema-txes)))
 
+(util/deferror ::missing-lookup-ref
+  "Could not resolve look up ref :ref in the given configuration")
+
 (defn- resolve-lookup-ref
   "Resolve a lookup ref with a query."
-  [db [attr value]]
-  (d/q '[:find ?e .
-         :in $ ?a ?v
-         :where
-         [?e ?a ?v]]
-    db attr value))
+  [db [attr value :as ref]]
+  (if-let [result (d/q '[:find ?e .
+                         :in $ ?a ?v
+                         :where
+                         [?e ?a ?v]]
+                    db attr value)]
+    result
+    (util/error ::missing-lookup-ref {:ref ref})))
 
 (defrecord DatascriptConfig [db tempids]
   cfg/Configuration

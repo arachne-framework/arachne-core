@@ -21,6 +21,27 @@
     (fn [[match kw]]
       (str (or (get ex-data (keyword kw) match) "nil")))))
 
+(defn error*
+  "Construct an ex-info for use by `log-error` or `error`"
+  [msg ex-data cause]
+
+  (let [template (get @error-registry msg
+                   (str "Unknown error message " msg))
+        msg (format-error-message template ex-data)]
+    (if cause
+      (ex-info msg ex-data cause)
+      (ex-info msg ex-data))))
+
+(defmacro log-error
+  "Log (but do not throw) an error message lookup using the specified error
+  message key, optional cause, and ex-data map. The message string may contain
+  :keywords which will be replaced by their corresponding values from the
+  ex-data, if present.
+
+  This is implemented as a macro so as to not show up in stack traces."
+  [& [msg ex-data cause]]
+  `(log/error (error* ~msg ~ex-data ~cause)))
+
 (defmacro error
   "Throw an ex-info with the given error message lookup key, optional cause, and
   ex-data map. The message string may contain :keywords which will be replaced
@@ -28,13 +49,7 @@
 
   This is implemented as a macro so as to not show up in stack traces."
   [& [msg ex-data cause]]
-  `(let [ex-data# ~ex-data
-         template# (get @error-registry ~msg
-                     (str "Unknown error message " ~msg))
-         msg# (format-error-message template# ex-data#)]
-     (throw (if ~cause
-              (ex-info msg# ex-data# ~cause)
-              (ex-info msg# ex-data#)))))
+  `(throw (error* ~msg ~ex-data ~cause)))
 
 (defn read-edn
   "Read the given file from the classpath as EDN data"
