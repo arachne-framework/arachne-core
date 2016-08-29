@@ -63,7 +63,9 @@
                         :aid (or (cfg/attr cfg eid :arachne/id) "none")
                         :ctor ctor} t)))]
     (if (map? instance)
-      (merge instance (cfg/pull cfg '[*] eid))
+      (merge instance
+        (cfg/pull cfg '[*] eid)
+        {:arachne/config cfg})
       instance)))
 
 (defn- system-map

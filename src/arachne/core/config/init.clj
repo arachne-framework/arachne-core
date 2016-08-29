@@ -57,7 +57,7 @@
   (binding [*config* (atom (cfg/new modules))]
     (cond
       (string? initializer) (in-script-ns #(load-file initializer))
-      (list? initializer) (in-script-ns #(eval initializer))
-      (not-empty initializer) (update cfg/update initializer)
+      (vector? initializer) (update cfg/update initializer)
+      (not-empty initializer) (in-script-ns #(eval initializer))
       :else nil)
     (add-config-entity @*config*)))
