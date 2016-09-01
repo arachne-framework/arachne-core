@@ -3,7 +3,7 @@
 
 (set-env!
   :dependencies
-  `[[org.arachne-framework/arachne-buildtools "0.2.4-master-0032-c3393dc" :scope "test"]])
+  `[[org.arachne-framework/arachne-buildtools "0.2.4-master-0028-7a76bc6" :scope "test"]])
 
 (require '[arachne.buildtools :refer :all])
 
