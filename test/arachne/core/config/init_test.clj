@@ -6,17 +6,25 @@
 
 (deftest basic-dsl
   (let [script '(do
-                  (arachne.core.config.init/update
-                    (fn [cfg]
-                      (arachne.core.config/update cfg
-                        [{:arachne/id :dsl-test-1
-                          :arachne.runtime/components {:arachne/id :dsl-test-2}}])))
-                  (arachne.core.config.init/update
-                    (fn [cfg]
-                      (arachne.core.config/update cfg
-                        [{:arachne/id :dsl-test-2}])))
-                  (arachne.core.config.init/transact
-                    [{:arachne/id :dsl-test-3}]))
+
+                  (require '[arachne.core.config :as cfg])
+                  (require '[arachne.core.config.init :as script])
+
+                  (cfg/with-provenance
+                    {:db/id (cfg/tempid :db.part/tx)
+                     :arachne.transaction/source :test}
+
+                    (script/update
+                      (fn [cfg]
+                        (cfg/update cfg
+                          [{:arachne/id :dsl-test-1
+                            :arachne.runtime/components {:arachne/id :dsl-test-2}}])))
+                    (script/update
+                      (fn [cfg]
+                        (cfg/update cfg
+                          [{:arachne/id :dsl-test-2}])))
+                    (script/transact
+                      [{:arachne/id :dsl-test-3}])))
         cfg (core/build-config '[:org.arachne-framework/arachne-core] script)]
     (is (not-empty
           (cfg/q cfg '[:find ?e
