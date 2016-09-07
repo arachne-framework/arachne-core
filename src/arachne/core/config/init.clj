@@ -39,16 +39,54 @@
     (let [runtimes (cfg/q config '[:find [?rt ...]
                                    :where
                                    [?rt :arachne.runtime/components _]])]
-      (cfg/update config [{:arachne.configuration/roots runtimes}]))))
+      (cfg/with-provenance
+        {:db/id (cfg/tempid :db.part/tx)
+         :arachne.transaction/source :system}
+        (cfg/update config [{:arachne.configuration/roots runtimes}])))))
 
 (defn- in-script-ns
   "Invoke the given no-arg function in the context of a new, unique namespace"
   [f]
   (binding [*ns* *ns*]
-    (let [script-ns (symbol (str "init-script-" (UUID/randomUUID)))]
+    (let [script-ns (symbol (str "arachne-init-script-" (UUID/randomUUID)))]
       (in-ns script-ns)
       (clojure.core/with-loading-context (clojure.core/refer 'clojure.core))
       (f))))
+
+(defn- init-script-ns?
+  "Test if a StackTraceElement is from a config init script"
+  [^StackTraceElement ste]
+  (re-matches #"^arachne_init_script_.*" (.getClassName ste)))
+
+(defn stack-provenance
+  "Build provenance txdata based on the current stack frame"
+  [dsl-fn]
+  (let [stack (seq (.getStackTrace (Thread/currentThread)))
+        ste (first (filter init-script-ns? stack))
+        txdata [{:db/id (cfg/tempid :db.part/tx)
+                 :arachne.transaction/dsl-function (keyword
+                                                     (namespace dsl-fn)
+                                                     (name dsl-fn))}]]
+    (if ste
+      (concat txdata [{:db/id (cfg/tempid :db.part/tx)
+                      :arachne.transaction/source :user
+                      :arachne.transaction/source-file (.getFileName ste)
+                      :arachne.transaction/source-line (.getLineNumber ste)}])
+      txdata)))
+
+(defmacro defdsl
+  "Convenience marco to define a DSL function that tracks provenance
+   metadata, and validates its arguments according to the registered spec"
+  [name docstr argvec & body]
+  (let [fqn (symbol (str (ns-name *ns*)) (str name))]
+    `(do
+       (defn ~name ~docstr [& args#]
+         (let [~argvec args#]
+           (apply util/validate-args ~fqn args#)
+           (cfg/with-provenance
+             (stack-provenance (quote ~fqn))
+             ~@body)))
+       (alter-meta! (var ~name) assoc :arglists (list (quote ~argvec))))))
 
 (defn initialize
   "Create a brand new configuration using the given modules, initialized with a

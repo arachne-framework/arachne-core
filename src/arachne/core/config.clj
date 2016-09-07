@@ -6,7 +6,11 @@
             [arachne.core.util :as u]
             [clojure.string :as str]
             [clojure.spec :as spec]
-            [clojure.walk :as w]))
+            [clojure.walk :as w]
+            [clojure.java.io :as io]
+            [clojure.tools.logging :as log]
+            [arachne.core.util :as util])
+  (:import [java.util Date]))
 
 (def ^:dynamic *default-partition* :db.part/user)
 
@@ -71,6 +75,25 @@
   (u/validate-args `init config schema-txes)
   (init- config schema-txes))
 
+(def
+  ^{:dynamic true
+    :doc "Txdata regarding the provenance of config updates ocurring in this stack context"}
+  *provenance-txdata*
+  nil)
+
+(defmacro with-provenance
+  "Add some provenance txdata to the binding of the *provenance-txdata* var
+  inside the body"
+  [txdata & body]
+  `(let [txdata# ~txdata]
+     (binding [*provenance-txdata* (if (map? txdata#)
+                                     (conj *provenance-txdata* txdata#)
+                                     (concat *provenance-txdata* txdata#))]
+     ~@body)))
+
+(util/deferror ::transaction-exception
+  "An error ocurred while updating the configuration")
+
 (defn update
   "Return an updated configuration, given Datomic-style txdata. Differences
      from Datomic include:
@@ -82,7 +105,22 @@
     - Transactor functions are not supported"
   [config txdata]
   (u/validate-args `update config txdata)
-  (update- config (add-missing-tempids txdata)))
+  (let [txdata' (concat txdata *provenance-txdata*)
+        txdata' (add-missing-tempids txdata')
+        tx-tempid (tempid :db.part/tx)
+        txdata' (conj txdata' {:db/id tx-tempid
+                               :db/txInstant (Date.)})]
+    (try
+      (let [new-config (update- config txdata')
+            tx (resolve-tempid- new-config tx-tempid)]
+        (when-not (pull- new-config '[:arachne.transaction/source] tx)
+          (log/warn "No provenance metadata found on transaction"
+            (ex-info "" {:txdata txdata'})))
+        new-config)
+      (catch Throwable t
+        (util/error ::transaction-exception {:explicit-txdata txdata
+                                             :actual-txdata txdata'}
+          t)))))
 
 (defn q
   "Given a Datomic-style query expression and any number of additional data

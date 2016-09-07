@@ -10,7 +10,10 @@
   [{:db/id (cfg/tempid)
     :arachne/id :test-rt
     :arachne.runtime/components {:arachne.component/constructor :arachne.core.runtime-test/basic-dep-0
-                                 :arachne/id :test-1}}])
+                                 :arachne/id :test-1}}
+
+   {:db/id (cfg/tempid :db.part/tx)
+    :arachne.transaction/source :test}])
 
 (defn setup
   "Set up a test runtime using the given initial txdata and the ID of the
@@ -72,6 +75,9 @@
      {:db/id (cfg/tempid -3)
       :arachne.component/constructor :arachne.core.runtime-test/basic-dep-3}
 
+     {:db/id (cfg/tempid :db.part/tx)
+      :arachne.transaction/source :test}
+
      ]))
 
 (deftest linear-dependencies
@@ -128,7 +134,10 @@
          :arachne.component.dependency/entity dep-3}}}
 
      {:db/id dep-3
-      :arachne.component/constructor :arachne.core.runtime-test/basic-dep-3}]))
+      :arachne.component/constructor :arachne.core.runtime-test/basic-dep-3}
+
+     {:db/id (cfg/tempid :db.part/tx)
+      :arachne.transaction/source :test}]))
 
 (deftest complex-dependencies
   (let [rt (setup diamond-config :test-rt)
@@ -206,7 +215,9 @@
      {:db/id c
       :arachne/id :test/c
       :arachne.component/constructor
-      :arachne.core.runtime-test/construct-lifecycle}]))
+      :arachne.core.runtime-test/construct-lifecycle}
+     {:db/id (cfg/tempid :db.part/tx)
+      :arachne.transaction/source :test}]))
 
 (deftest basic-lifecycle
   (let [rt (setup basic-lifecycle-cfg :test-rt)

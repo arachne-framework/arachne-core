@@ -1,17 +1,16 @@
 (ns arachne.core.dsl
   "User-facing DSL use in init scripts"
   (:require [arachne.core.config :as cfg]
-            [arachne.core.config.init :as init]
+            [arachne.core.config.init :as init :refer [defdsl]]
             [arachne.core.dsl.specs]
             [arachne.core.util :as util]
             [clojure.spec :as s]))
 
-(defn runtime
+(defdsl runtime
   "Defines a named Arachne runtime containing the given root components, which
   may be specified either as entity IDs or Arachne IDs. Returns the entity ID of
   the runtime."
   [id roots]
-  (util/validate-args `runtime id roots)
   (let [txdata [{:arachne/id id
                  :arachne.runtime/components (map (fn [root]
                                                     {(if (keyword? root)
@@ -20,8 +19,7 @@
                                                roots)}]]
     (cfg/attr (init/transact txdata) [:arachne/id id] :db/id)))
 
-
-(defn component
+(defdsl component
   "Defines a component by providing an optional Arachne ID, an optional
   dependency specification map, and a symbol for a component constructor.
   Returns the entity ID of the newly-constructed component.
@@ -30,7 +28,6 @@
   component to the keyword that will be used to assoc the component instance at
   runtime."
   [& args]
-  (apply util/validate-args `component args)
   (let [parsed (s/conform (:args (s/get-spec `component)) args)
         dependencies (:dependencies parsed)
         arachne-id (:arachne-id parsed)

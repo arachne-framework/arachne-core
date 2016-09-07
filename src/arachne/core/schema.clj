@@ -43,5 +43,16 @@
       (o/attr :arachne.configuration/roots :one-or-more :arachne/Entity
         "Reference to the top-level entities that are part of this configuration."))
 
+    (o/class :arachne/Transaction []
+      "Entity reifying a single transaction to the config"
+      (o/attr :arachne.transaction/source :one-or-none :keyword
+        "Keyword that indicates the source of this config txdata. Valid values are :user (for the initial user-supplied configuration), :module (for txdata built from modules or :system (for bookkeeping data used by Arachne itself). :test is also permitted in tests, to supress the warning about a lack of provenance data.")
+      (o/attr :arachne.transaction/source-file :one-or-none :string
+        "The filename of the source file (possibly a DSL script) containing the code that initiated this transaction.")
+      (o/attr :arachne.transaction/source-line :one-or-none :long
+        "The line number in source file that initated this transaction.")
+      (o/attr :arachne.transaction/dsl-function :one-or-none :keyword
+        "Keyword representation of the fully-qualified name of the DSL function used to construct this transaction.")
+      )
 
     ))

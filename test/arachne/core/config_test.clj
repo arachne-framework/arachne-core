@@ -44,6 +44,11 @@
                                  :db/unique :db.unique/value
                                  :db.install/_attribute :db.part/db}]))
 
+(def core {:db/id (cfg/tempid)
+           :arachne.module/name 'org.arachne-framework/arachne-core
+           :arachne.module/configure 'arachne.core/configure
+           :arachne.module/schema 'arachne.core/schema})
+
 (def m1 {:db/id (cfg/tempid)
          :arachne.module/name 'test/m1
          :arachne.module/configure 'not/implemented
@@ -71,7 +76,7 @@
 
 (defn- setup
   []
-  (cfg/new [m1 m2 m3 m4 m5 m6]))
+  (cfg/new [core m1 m2 m3 m4 m5 m6]))
 
 (deftest schema-loads-correctly
   (let [cfg (setup)
@@ -86,14 +91,21 @@
 
 ;; Run some spot checks on datalog semantics...
 
+(defn test-update
+  "Update with provenance metadata in place"
+  [cfg txdata]
+  (cfg/with-provenance {:db/id (cfg/tempid :db.part/tx)
+                        :arachne.transaction/source :test}
+    (cfg/update cfg txdata)))
+
 (deftest refs-work-correctly
   (let [cfg (setup)
-        cfg (cfg/update cfg [{:test/basic "Hello"
-                              :test/ref   {:test/basic "world"}}
-                             {:test/basic "booleans"
-                              :test/ref-card-many
-                                          #{{:test/basic "true"}
-                                            {:test/basic "false"}}}])]
+        cfg (test-update cfg [{:test/basic "Hello"
+                               :test/ref   {:test/basic "world"}}
+                              {:test/basic "booleans"
+                               :test/ref-card-many
+                               #{{:test/basic "true"}
+                                 {:test/basic "false"}}}])]
     (testing "cardinality-one refs"
           (is (= #{["Hello" "world"]}
                 (cfg/q cfg '[:find ?parent-val ?child-val
@@ -113,7 +125,7 @@
 
 (deftest identity-works-correctly
   (let [cfg (setup)
-        cfg (cfg/update cfg [{:test/identity  "ident"
+        cfg (test-update cfg [{:test/identity  "ident"
                               :test/card-many "foo"}
                              {:test/identity  "ident"
                               :test/card-many "bar"}])]
@@ -124,13 +136,13 @@
                              [?e :test/card-many ?val]]))))))
 (deftest uniqueness
   (let [cfg (setup)
-        cfg (cfg/update cfg [{:test/unique "unique"}])]
-    (is (thrown-with-msg? Throwable #"unique"
-          (cfg/update cfg [{:test/unique "unique"}])))))
+        cfg (test-update cfg [{:test/unique "unique"}])]
+    (is (thrown-with-msg? Throwable #"while updating"
+          (test-update cfg [{:test/unique "unique"}])))))
 
 (deftest pull
   (let [cfg (setup)
-        cfg (cfg/update cfg [{:test/identity "my identity"
+        cfg (test-update cfg [{:test/identity "my identity"
                               :test/basic "Hello"
                               :test/ref   {:test/basic "world"}}])]
       (is (= {:test/basic "Hello"}
@@ -141,9 +153,9 @@
 
 (deftest lookup-refs-in-txdata
   (let [cfg (setup)
-        cfg (cfg/update cfg [{:test/basic "a-value"
+        cfg (test-update cfg [{:test/basic "a-value"
                               :test/identity "a"}])
-        cfg (cfg/update cfg [{:test/identity "b"
+        cfg (test-update cfg [{:test/identity "b"
                               :test/basic "b-value"
                               :test/ref [:test/identity "a"]}])]
     (is (= #{["a-value" "b-value"]}
@@ -157,7 +169,7 @@
 
 (deftest explicit-tempids-unify
   (let [cfg (setup)
-        cfg (cfg/update cfg [{:db/id (cfg/tempid -42)
+        cfg (test-update cfg [{:db/id (cfg/tempid -42)
                               :test/identity "a"
                               :test/card-many "a"}
                              {:db/id (cfg/tempid -42)
@@ -169,7 +181,7 @@
 (deftest tempid-instances-are-consistent
   (let [cfg (setup)
         tempid (cfg/tempid)
-        cfg (cfg/update cfg [{:db/id tempid
+        cfg (test-update cfg [{:db/id tempid
                               :test/identity "a"
                               :test/card-many "a"}
                              {:db/id tempid
@@ -182,7 +194,7 @@
   (let [cfg (setup)
         tempid-1 (cfg/tempid)
         tempid-2 (cfg/tempid)
-        cfg (cfg/update cfg [{:db/id tempid-1
+        cfg (test-update cfg [{:db/id tempid-1
                               :test/card-many "a"}
                              {:db/id tempid-2
                               :test/card-many "b"}])
