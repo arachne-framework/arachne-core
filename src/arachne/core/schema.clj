@@ -51,8 +51,9 @@
         "The filename of the source file (possibly a DSL script) containing the code that initiated this transaction.")
       (o/attr :arachne.transaction/source-line :one-or-none :long
         "The line number in source file that initated this transaction.")
-      (o/attr :arachne.transaction/dsl-function :one-or-none :keyword
-        "Keyword representation of the fully-qualified name of the DSL function used to construct this transaction.")
+      (o/attr :arachne.transaction/function :one-or-none :keyword
+        "Keyword representation of the fully-qualified name of the function used to construct this transaction.")
+
       )
 
     ))

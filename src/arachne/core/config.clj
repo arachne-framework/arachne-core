@@ -5,7 +5,7 @@
             [arachne.core.config.specs]
             [arachne.core.util :as u]
             [clojure.string :as str]
-            [clojure.spec :as spec]
+            [clojure.spec :as s]
             [clojure.walk :as w]
             [clojure.java.io :as io]
             [clojure.tools.logging :as log]
@@ -81,15 +81,49 @@
   *provenance-txdata*
   nil)
 
+(defn stack-provenance-txdata
+  "Build provenance txdata based on the current stack frame, using the provided
+  source and function symbol.
+
+  If a stack-filter-pred is provided, the system will use the top stack frame
+  that passes the predicate, otherwise current stack frame is used.
+
+   The returned txdata includes:
+
+  - arachne.transaction/source
+  - arachne.transaction/function
+  - arachne.transaction/source-file
+  - arachne.transaction/source-line"
+  ([source function]
+   (stack-provenance-txdata source function (constantly true)))
+  ([source function stack-filter-pred]
+   (let [stack (seq (.getStackTrace (Thread/currentThread)))
+         ste (first (filter stack-filter-pred stack))
+         txdata [{:db/id (tempid :db.part/tx)
+                  :arachne.transaction/function (keyword
+                                                  (namespace function)
+                                                  (name function))}]]
+     (if ste
+       (concat txdata [{:db/id (tempid :db.part/tx)
+                        :arachne.transaction/source source
+                        :arachne.transaction/source-file (.getFileName ste)
+                        :arachne.transaction/source-line (.getLineNumber ste)}])
+       txdata))))
+
 (defmacro with-provenance
-  "Add some provenance txdata to the binding of the *provenance-txdata* var
-  inside the body"
-  [txdata & body]
-  `(let [txdata# ~txdata]
-     (binding [*provenance-txdata* (if (map? txdata#)
-                                     (conj *provenance-txdata* txdata#)
-                                     (concat *provenance-txdata* txdata#))]
-     ~@body)))
+  "Add provenance txdata based upon the current stack location to the binding of
+  the *provenance-txdata* var inside the body."
+  [& opts-and-body]
+  (let [args (s/conform (:args (s/get-spec `with-provenance)) opts-and-body)
+        source (:source args)
+        function (:function args)
+        stack-filter (-> args :options :stack-filter-pred)
+        body (:body args)]
+    `(let [txdata# ~(if stack-filter
+                      `(stack-provenance-txdata ~source ~function ~stack-filter)
+                      `(stack-provenance-txdata ~source ~function))]
+       (binding [*provenance-txdata* txdata#]
+         ~@body))))
 
 (util/deferror ::transaction-exception
   "An error ocurred while updating the configuration")
