@@ -198,7 +198,7 @@
   "Returns an empty config, with schema installed, for the given sequence of
   modules."
   [modules]
-  (u/validate-args `new modules)
+  (u/validate-args `arachne.core.config/new modules)
   (let [ctor (find-impl)]
     (init (@ctor) (map m/schema modules))))
 
