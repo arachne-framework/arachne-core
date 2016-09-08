@@ -24,5 +24,5 @@
                             [?tx :arachne.transaction/source :user]
                             [?tx :arachne.transaction/source-file "script.clj"]
                             [?tx :arachne.transaction/source-line 3]
-                            [?tx :arachne.transaction/dsl-function :arachne.core.dsl/runtime]]))))))
+                            [?tx :arachne.transaction/function :arachne.core.dsl/runtime]]))))))
 

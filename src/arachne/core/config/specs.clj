@@ -81,3 +81,12 @@
 (s/fdef arachne.core.config/resolve-tempid
   :args (s/cat :config ::config, :arachne-tempid tempid?)
   :ret pos-int?)
+
+(s/def ::stack-filter-pred any?)
+
+(s/fdef arachne.core.config/with-provenance
+  :args (s/cat :source any?
+               :function any?
+               :options (s/keys* :opt-un [::stack-filter-pred])
+               :body (s/* any?))
+  :ret any?)

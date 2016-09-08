@@ -94,8 +94,7 @@
 (defn test-update
   "Update with provenance metadata in place"
   [cfg txdata]
-  (cfg/with-provenance {:db/id (cfg/tempid :db.part/tx)
-                        :arachne.transaction/source :test}
+  (cfg/with-provenance :test `test-update
     (cfg/update cfg txdata)))
 
 (deftest refs-work-correctly

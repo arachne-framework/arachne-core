@@ -39,9 +39,7 @@
     (let [runtimes (cfg/q config '[:find [?rt ...]
                                    :where
                                    [?rt :arachne.runtime/components _]])]
-      (cfg/with-provenance
-        {:db/id (cfg/tempid :db.part/tx)
-         :arachne.transaction/source :system}
+      (cfg/with-provenance :system `add-config-entity
         (cfg/update config [{:arachne.configuration/roots runtimes}])))))
 
 (defn- in-script-ns
@@ -53,26 +51,10 @@
       (clojure.core/with-loading-context (clojure.core/refer 'clojure.core))
       (f))))
 
-(defn- init-script-ns?
+(defn init-script-ns?
   "Test if a StackTraceElement is from a config init script"
   [^StackTraceElement ste]
   (re-matches #"^arachne_init_script_.*" (.getClassName ste)))
-
-(defn stack-provenance
-  "Build provenance txdata based on the current stack frame"
-  [dsl-fn]
-  (let [stack (seq (.getStackTrace (Thread/currentThread)))
-        ste (first (filter init-script-ns? stack))
-        txdata [{:db/id (cfg/tempid :db.part/tx)
-                 :arachne.transaction/dsl-function (keyword
-                                                     (namespace dsl-fn)
-                                                     (name dsl-fn))}]]
-    (if ste
-      (concat txdata [{:db/id (cfg/tempid :db.part/tx)
-                      :arachne.transaction/source :user
-                      :arachne.transaction/source-file (.getFileName ste)
-                      :arachne.transaction/source-line (.getLineNumber ste)}])
-      txdata)))
 
 (defmacro defdsl
   "Convenience marco to define a DSL function that tracks provenance
@@ -83,8 +65,8 @@
        (defn ~name ~docstr [& args#]
          (let [~argvec args#]
            (apply util/validate-args ~fqn args#)
-           (cfg/with-provenance
-             (stack-provenance (quote ~fqn))
+           (cfg/with-provenance :user (quote ~fqn)
+             :stack-filter-pred init-script-ns?
              ~@body)))
        (alter-meta! (var ~name) assoc :arglists (list (quote ~argvec))))))
 
