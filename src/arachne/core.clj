@@ -21,10 +21,11 @@
                                 [?c :arachne.component/instance ?var]])]
     (if (empty? components)
       cfg
-      (cfg/update cfg
-        (for [c components]
-          {:db/id c
-           :arachne.component/constructor :arachne.core/instance-ctor})))))
+      (cfg/with-provenance :module `add-instance-constructors
+        (cfg/update cfg
+          (for [c components]
+            {:db/id c
+             :arachne.component/constructor :arachne.core/instance-ctor}))))))
 
 (defn schema
   "Return the schema for the core module"
