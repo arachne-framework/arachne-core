@@ -135,3 +135,4 @@
       (< 1 (count invokes)) :many
       (empty? invokes) (error ::arity-detection-error {:f f})
       :else (count (.getParameterTypes (first invokes))))))
+
