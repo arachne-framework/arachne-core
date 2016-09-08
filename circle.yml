@@ -19,4 +19,5 @@ deployment:
   dev:
     branch: master
     commands:
+    - git fetch --unshallow
     - boot deploy-dev
