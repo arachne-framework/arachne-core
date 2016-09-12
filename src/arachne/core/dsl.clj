@@ -6,6 +6,13 @@
             [arachne.core.util :as util]
             [clojure.spec :as s]))
 
+(defdsl transact
+  "Update the current configuration with the given txdata directly. Always
+  returns nil."
+  [txdata]
+  (init/transact txdata)
+  nil)
+
 (defdsl runtime
   "Defines a named Arachne runtime containing the given root components, which
   may be specified either as entity IDs or Arachne IDs. Returns the entity ID of

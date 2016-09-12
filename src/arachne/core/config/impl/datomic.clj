@@ -12,10 +12,8 @@
         _ (d/create-database uri)
         conn (d/connect uri)
         db (d/db conn)
-        db (:db-after
-             (common/with db
-               (util/read-edn "arachne/core/config/ontology/schema.edn")
-               d/with d/tempid d/resolve-tempid))]
+        ont-schema  (util/read-edn "arachne/core/config/ontology/schema.edn")
+        schema-txes (concat ont-schema schema-txes)]
     (reduce (fn [db tx]
               (:db-after (common/with db tx
                            d/with d/tempid d/resolve-tempid)))

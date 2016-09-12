@@ -2,14 +2,14 @@
  :version {:major 0, :minor 1, :patch 0, :qualifier :dev}
  :description "The core module for the Arachne web framework"
  :license {"Apache Software License 2.0" "http://www.apache.org/licenses/LICENSE-2.0"}
- :deps [[org.clojure/clojure "1.9.0-alpha11" :scope "provided"]
+ :deps [[org.clojure/clojure "1.9.0-alpha12" :scope "provided"]
         [aysylu/loom "0.5.4"]
         [com.stuartsierra/component "0.3.1"]
         [org.clojure/tools.logging "0.3.1"]
         [adzerk/boot-test "1.1.2" :scope "test"]
         [org.clojure/test.check "0.9.0" :scope "test"]
         [org.clojure/tools.namespace "0.2.11" :scope "test"]
-        [datascript "0.15.0" :scope "test"]
+        [datascript "0.15.3" :scope "test"]
         [com.datomic/datomic-free "0.9.5350"
          :exclusions [org.slf4j/slf4j-api
                       org.slf4j/slf4j-nop

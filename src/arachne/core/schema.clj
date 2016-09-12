@@ -8,7 +8,11 @@
 
     [(o/attr :arachne/id :one-or-none :keyword :identity
        "Unique identifier for an entity in an Arachne configuration"
-       {:arachne.attribute/domain [:db/ident :arachne/Entity]})]
+       {:arachne.attribute/domain {:db/ident :arachne/Entity}})
+
+     (o/attr :arachne.class/component-spec :many :keyword
+       "Spec to validate runtime instances of components that are instances of this class."
+       {:arachne.attribute/domain {:db/ident :arachne/Class}})]
 
     (o/class :arachne/Component []
       "The definition of a component used to build and Arachne system at runtime (using the Component library)"
@@ -38,6 +42,8 @@
 
     (o/class :arachne/Configuration []
       "Entity representing an entire configuration"
+      (o/attr :arachne.configuration/validators :many :keyword
+        "Validator functions for this configuration, as a namespace-qualified keyword. Validator functions take a config and either return successfully or throw an exception.")
       (o/attr :arachne.configuration/namespace :one-or-none :keyword :identity
         "The unique identifier of the configuration, as a non-namespaced keyword. Should be set and used as the `namespace` portion of all Arachne IDs for entities that are logically part of this configuration, in scenarios where multiple configurations are present in the same database.")
       (o/attr :arachne.configuration/roots :one-or-more :arachne/Entity

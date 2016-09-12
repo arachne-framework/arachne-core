@@ -1,51 +1,90 @@
 ;; Ontology for Configurations
 [
+  [
 
- ;; Classes
- {:db/id          #arachne/tempid[:db.part/db]
-  :db/ident       :arachne.class/superclasses
-  :db/valueType   :db.type/ref
-  :db/cardinality :db.cardinality/many
-  :db/doc         "The superclasses of a configuration class."
-  :db.install/_attribute :db.part/db}
+   ;; Classes
+   {:db/id          #arachne/tempid[:db.part/db]
+    :db/ident       :arachne.class/superclasses
+    :db/valueType   :db.type/ref
+    :db/cardinality :db.cardinality/many
+    :db/doc         "The superclasses of a configuration class."
+    :db.install/_attribute :db.part/db}
 
- ;; Meta-attributes
- {:db/id          #arachne/tempid[:db.part/db]
-  :db/ident       :arachne.attribute/domain
-  :db/valueType   :db.type/ref
-  :db/cardinality :db.cardinality/many
-  :db/doc         "Defines that this attribute is only valid on instances of the referenced classes"
-  :db.install/_attribute :db.part/db}
- {:db/id          #arachne/tempid[:db.part/db]
-  :db/ident       :arachne.attribute/range
-  :db/valueType   :db.type/ref
-  :db/cardinality :db.cardinality/many
-  :db/doc         "Defines that instances of the specified classes are valid values for this attribute"
-  :db.install/_attribute :db.part/db}
- {:db/id          #arachne/tempid[:db.part/db]
-  :db/ident       :arachne.attribute/min-cardinality
-  :db/valueType   :db.type/long
-  :db/cardinality :db.cardinality/one
-  :db/doc         "The minimum cardinality of an attribute"
-  :db.install/_attribute :db.part/db}
- {:db/id          #arachne/tempid[:db.part/db]
-  :db/ident       :arachne.attribute/max-cardinality
-  :db/valueType   :db.type/long
-  :db/cardinality :db.cardinality/one
-  :db/doc         "The maximum cardinality of an attribute"
-  :db.install/_attribute :db.part/db}
+   ;; Meta-attributes
+   {:db/id          #arachne/tempid[:db.part/db]
+    :db/ident       :arachne.attribute/domain
+    :db/valueType   :db.type/ref
+    :db/cardinality :db.cardinality/many
+    :db/doc         "Defines that entities having this attribute are instances of the referenced classes."
+    :db.install/_attribute :db.part/db}
+   {:db/id          #arachne/tempid[:db.part/db]
+    :db/ident       :arachne.attribute/range
+    :db/valueType   :db.type/ref
+    :db/cardinality :db.cardinality/many
+    :db/doc         "Defines that entities that are the object of this attribute are instances of the referenced classes."
+    :db.install/_attribute :db.part/db}
+   {:db/id          #arachne/tempid[:db.part/db]
+    :db/ident       :arachne.attribute/min-cardinality
+    :db/valueType   :db.type/long
+    :db/cardinality :db.cardinality/one
+    :db/doc         "The minimum cardinality of an attribute"
+    :db.install/_attribute :db.part/db}
+   {:db/id          #arachne/tempid[:db.part/db]
+    :db/ident       :arachne.attribute/max-cardinality
+    :db/valueType   :db.type/long
+    :db/cardinality :db.cardinality/one
+    :db/doc         "The maximum cardinality of an attribute"
+    :db.install/_attribute :db.part/db}
 
- ;; Root entity class
- {:db/id          #arachne/tempid[]
-  :db/ident       :arachne/Entity
-  :db/doc         "The root class, the implicit superclass of all other classes."}
+   ;; Explicit type
+   {:db/id          #arachne/tempid[:db.part/db]
+    :db/ident       :arachne/instance-of
+    :db/valueType   :db.type/ref
+    :db/cardinality :db.cardinality/many
+    :db/doc         "Can be added to any entity to explicitly indicate the classes to which it is intended to belong. Usually used in situations where this cannot be inferred based on the entities other attributes."
+    :db.install/_attribute :db.part/db}
+   ]
 
- ;; Explicit type
- {:db/id          #arachne/tempid[:db.part/db]
-  :db/ident       :arachne/instance-of
-  :db/valueType   :db.type/ref
-  :db/cardinality :db.cardinality/one
-  :db/doc         "Can be added to any entity to explicitly indicate the class to which it is intended to belong. Usually used in situations where this cannot be inferred based on the entities other attributes."
-  :db.install/_attribute :db.part/db}
- ]
+ ;; Meta
+ [
+  {:db/id          #arachne/tempid[:db.part/user]
+   :db/ident       :arachne/Class
+   :db/doc         "The class of Classes"}
+  {:db/id          #arachne/tempid[:db.part/user]
+   :db/ident       :arachne/Attribute
+   :db/doc         "The class of Attributes"}
+  {:db/id          #arachne/tempid[:db.part/user]
+   :db/ident       :arachne/Entity
+   :db/doc         "The root class, the implicit superclass of all other classes."}
 
+  {:db/id  #arachne/tempid[:db.part/db]
+   :db/ident :arachne/instance-of
+   :arachne.attribute/domain {:db/ident :arachne/Entity}
+   :arachne.attribute/range {:db/ident :arachne/Class}}
+
+  {:db/id  #arachne/tempid[:db.part/db]
+   :db/ident :arachne.class/superclasses
+   :arachne.attribute/domain {:db/ident :arachne/Class}
+   :arachne.attribute/range {:db/ident :arachne/Class}}
+
+  {:db/id  #arachne/tempid[:db.part/db]
+   :db/ident :arachne.attribute/domain
+   :arachne.attribute/domain {:db/ident :arachne/Attribute}
+   :arachne.attribute/range {:db/ident :arachne/Class}}
+
+  {:db/id  #arachne/tempid[:db.part/db]
+   :db/ident :arachne.attribute/range
+   :arachne.attribute/domain {:db/ident :arachne/Attribute}
+   :arachne.attribute/range {:db/ident :arachne/Class}}
+
+  {:db/id  #arachne/tempid[:db.part/db]
+   :db/ident :arachne.attribute/min-cardinality
+   :arachne.attribute/domain {:db/ident :arachne/Attribute}}
+
+  {:db/id  #arachne/tempid[:db.part/db]
+   :db/ident :arachne.attribute/max-cardinality
+   :arachne.attribute/domain {:db/ident :arachne/Attribute}}
+
+  ]
+
+]

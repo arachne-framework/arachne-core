@@ -23,8 +23,13 @@
     (u/error ::update-outside-script {})
     (apply swap! *config* f args)))
 
+(defn init-script-ns?
+  "Test if a StackTraceElement is from a config init script"
+  [^StackTraceElement ste]
+  (re-matches #"^arachne_init_script_.*" (.getClassName ste)))
+
 (defn transact
-  "Update the current configuration with the given txdata."
+  "Update the current configuration with the given txdata. Does not add provenance info."
   [txdata]
   (update (fn [cfg] (cfg/update cfg txdata))))
 
@@ -51,11 +56,6 @@
       (clojure.core/with-loading-context (clojure.core/refer 'clojure.core))
       (f))))
 
-(defn init-script-ns?
-  "Test if a StackTraceElement is from a config init script"
-  [^StackTraceElement ste]
-  (re-matches #"^arachne_init_script_.*" (.getClassName ste)))
-
 (defmacro defdsl
   "Convenience marco to define a DSL function that tracks provenance
    metadata, and validates its arguments according to the registered spec"
@@ -64,20 +64,25 @@
     `(do
        (defn ~name ~docstr [& args#]
          (let [~argvec args#]
-           (apply util/validate-args ~fqn args#)
+           (apply util/validate-args (quote ~fqn) args#)
            (cfg/with-provenance :user (quote ~fqn)
              :stack-filter-pred init-script-ns?
              ~@body)))
        (alter-meta! (var ~name) assoc :arglists (list (quote ~argvec))))))
 
-(defn initialize
-  "Create a brand new configuration using the given modules, initialized with a
-  script, form or literal txdata."
-  [modules initializer]
-  (binding [*config* (atom (cfg/new modules))]
+(defn apply-initializer
+  "Applies the given initializer to the specified config"
+  [cfg initializer]
+  (binding [*config* (atom cfg)]
     (cond
       (string? initializer) (in-script-ns #(load-file initializer))
       (vector? initializer) (update cfg/update initializer)
       (not-empty initializer) (in-script-ns #(eval initializer))
       :else nil)
     (add-config-entity @*config*)))
+
+(defn initialize
+  "Create a brand new configuration using the given modules, initialized with a
+  script, form or literal txdata."
+  [modules initializer]
+  (apply-initializer (cfg/new modules) initializer))

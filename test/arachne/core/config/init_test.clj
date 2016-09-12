@@ -20,7 +20,8 @@
                   (script/update
                     (fn [cfg]
                       (cfg/update cfg
-                        [{:arachne/id :dsl-test-2}
+                        [{:arachne/id :dsl-test-2
+                          :arachne.component/constructor :test/ctor}
                          {:db/id (cfg/tempid :db.part/tx)
                           :arachne.transaction/source :test}])))
                   (script/transact

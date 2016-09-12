@@ -45,18 +45,58 @@
                      :db/ident (:ident definition)
                      :db.install/_attribute :db.part/db}))))
 
+
+
 (defn class
   "Build a class definition map, returning a seq of txdata."
-  [ident supers docstring & attrs]
-  (apply util/validate-args `class ident supers docstring attrs)
-  (let [update-domain (fn [attr-map] (update attr-map :arachne.attribute/domain
+  [& args]
+  (apply util/validate-args `class args)
+  (let [{:keys [ident supers docstring specs attrs]}
+        (s/conform (:args (s/get-spec `class)) args)
+
+        update-domain (fn [attr-map] (update attr-map :arachne.attribute/domain
                                        (fnil conj #{}) (by-ident ident)))
-        class-map {:db/id (cfg/tempid)
-                   :db/ident ident
-                   :db/doc docstring}
-        class-map (if (not-empty supers)
-                    (assoc class-map :arachne.class/superclasses
-                                     (map (fn [super]
-                                            {:db/ident super}) supers))
-                    class-map)]
+        class-map (util/mkeep
+                    {:db/id (cfg/tempid)
+                     :db/ident ident
+                     :db/doc docstring
+                     :arachne.class/superclasses (map (fn [super]
+                                                        {:db/ident super})
+                                                   supers)
+                     :arachne.class/component-spec specs})]
     (cons class-map (map update-domain attrs))))
+
+(defn attr-eid
+  "Given an attribute, return a lookup ref based on its ident. If given an
+   entity ID, just returns that.
+
+  This function is essentially a compatibility shim between Datomic and
+  Datascript"
+  [attr-or-eid]
+  (when (number? attr-or-eid) attr-or-eid [:db/ident attr-or-eid]))
+
+(def rules
+  "Datalog rules to determine type relationships in an Arachne config"
+  '[
+    [(superclass ?superclass ?subclass)
+     [?subclass :arachne.class/superclasses ?superclass]]
+    [(superclass ?superclass ?subclass)
+     [?subclass :arachne.class/superclasses ?mid]
+     (superclass ?superclass ?mid)]
+
+    [(class ?class ?entity)
+     [?entity :arachne/instance-of ?class]]
+    [(class ?class ?entity)
+     [?attr-e :arachne.attribute/domain ?class]
+     [?attr-e :db/ident ?attr-ident]
+     [?entity ?attr-ident _]]
+    [(class ?class ?entity)
+     [?attr-e :arachne.attribute/range ?class]
+     [?attr-e :db/ident ?attr-ident]
+     [_ ?attr-ident ?entity]]
+    [(class ?class ?entity)
+     (superclass ?class ?subclass)
+     (class ?subclass ?entity)]
+
+    ])
+

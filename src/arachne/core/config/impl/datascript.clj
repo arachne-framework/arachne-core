@@ -43,8 +43,8 @@
 
 (defn- init
   [schema-txes]
-  (let [meta-schema (util/read-edn "arachne/core/config/ontology/schema.edn")
-        schema-txes (cons meta-schema schema-txes)
+  (let [ont-schema (util/read-edn "arachne/core/config/ontology/schema.edn")
+        schema-txes (concat ont-schema schema-txes)
         schema-txes (replace-partitions schema-txes)
         schema-map (merge base-schema (ds-schema schema-txes))
         db @(d/create-conn schema-map)]
