@@ -8,6 +8,7 @@ dependencies:
     - ~/.boot
     - ~/bin
   pre:
+    - sudo sysctl fs.inotify.max_user_watches=16384
     - .ci/install-boot.sh
     - boot
 
