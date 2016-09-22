@@ -1,10 +1,13 @@
 (ns arachne.core.runtime
   "Dependency Injection and lifecycle management"
-  (:require [com.stuartsierra.component :as component]
+  (:require [com.stuartsierra.component :as c]
+            [com.stuartsierra.dependency :as dep]
             [arachne.core.config :as cfg]
+            [arachne.core.config.ontology :as ont]
             [arachne.core.util :as util]
             [arachne.core.runtime.specs]
             [clojure.tools.logging :as log]
+            [clojure.spec :as s]
             [clojure.set :as set]))
 
 (def ^:private component-dependency-rules
@@ -103,18 +106,73 @@
   (unstarted) Component system"
   [cfg runtime-eid]
   (let [components (components cfg runtime-eid)]
-    (component/system-using
-      (merge (component/system-map) (system-map cfg components))
+    (c/system-using
+      (merge (c/system-map) (system-map cfg components))
       (dependency-map components))))
 
+(defn- update-system
+  "Like Component's update-system, but invokes the update function passing [key
+  component & args] instead of just [component & args]
+
+  Utilizes some private functions in component, so possibly fragile across
+  versions, however, Component seems fairly stable in componentpractice so it should be
+  ok."
+  [system component-keys f & args]
+  (let [graph (c/dependency-graph system component-keys)]
+    (reduce (fn [system key]
+              (assoc system key
+                     (-> (#'c/get-component system key)
+                         (#'c/assoc-dependencies system)
+                         (#'c/try-action system key f (cons key args)))))
+            system
+            (sort (dep/topo-comparator graph) component-keys))))
+
+(defn- specs-for-component
+  "Find all specs that should be run for the given component."
+  [cfg eid]
+  (cfg/q cfg '[:find [?spec ...]
+               :in $ ?entity %
+               :where
+               (class ?class ?entity)
+               [?class :arachne.class/component-spec ?spec]]
+    eid
+    ont/rules))
+
+(util/deferror ::component-failed-validation
+  "Component :eid (Arachne ID: :aid) failed spec :spec. The explanation was: :explain-str")
+
+(defn- validate-component
+  "Validate that a component satisfies the specficiations defined for it in the
+  config. Throws or returns nil."
+  [cfg eid obj]
+  (doseq [spec (specs-for-component cfg eid)]
+    (when-not (s/valid? spec obj)
+      (util/error ::component-failed-validation
+        {:spec spec
+         :eid eid
+         :aid (or (:arachne/id obj) "none")
+         :explain-str (s/explain-str spec obj)
+         :explain-data (s/explain-data spec obj)}))))
+
+(defn- validate-and-start-component
+  "Start a component, after validating it"
+  [component key cfg]
+  (validate-component cfg key component)
+  (#'c/start component))
+
+(defn validate-and-start
+  "Start a Component system, validating each component before it starts"
+  [system cfg]
+  (update-system system (keys system) validate-and-start-component cfg))
+
 (defrecord ArachneRuntime [config system runtime]
-  component/Lifecycle
+  c/Lifecycle
   (start [rt]
     (log/info "Starting Arachne runtime")
-    (update rt :system component/start))
+    (update rt :system validate-and-start config))
   (stop [rt]
     (log/info "Stopping Arachne runtime")
-    (update rt :system component/stop)))
+    (update rt :system c/stop)))
 
 (defn init
   "Given a configuration and an entity ID or lookup ref representing a Runtime

@@ -59,7 +59,8 @@
   :args (s/cat :ident ::class-ident
                :supers (s/coll-of ::class-ident)
                :docstring string?
-               :attrs (s/* ::config-spec/map-txform))
+               :specs (s/* keyword?)
+               :attrs (s/* map?))
   :ret ::config-spec/list-txform)
 
 (comment

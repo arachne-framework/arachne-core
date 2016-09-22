@@ -1,5 +1,6 @@
 (ns arachne.core.dsl.specs
-  (:require [clojure.spec :as s]))
+  (:require [clojure.spec :as s]
+            [arachne.core.config.specs :as core-specs]))
 
 (s/def ::id (s/and keyword? namespace))
 (s/def ::eid pos-int?)
@@ -18,3 +19,6 @@
   :args (s/cat :arachne-id (s/? ::id)
                :dependencies (s/? ::dependency-map)
                :constructor ::constructor-symbol))
+
+(s/fdef arachne.core.dsl/transact
+  :args (s/cat :txdata ::core-specs/txdata))

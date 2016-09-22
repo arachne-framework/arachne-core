@@ -2,6 +2,7 @@
   "The core Arachne module that bootstraps everything else"
   (:require [arachne.core.module :as m]
             [arachne.core.config :as cfg]
+            [arachne.core.config.validation :as v]
             [arachne.core.runtime :as rt]
             [arachne.core.config.init :as init]
             [arachne.core.util :as util]
@@ -35,7 +36,9 @@
 (defn configure
   "Configure the core module"
   [cfg]
-  (add-instance-constructors cfg))
+  (-> cfg
+    (add-instance-constructors)
+    (v/add-core-validators)))
 
 (defn build-config
   "Build a new Arachne application configuration. Requires two arguments:
@@ -49,14 +52,16 @@
     - A string, which will be interpreted as the path to an initialization script
     - A list, which will be evaluated as an initialization script
     - A vector, which will be assumed to contain raw confgiuration data as a
-    Datomic-style transaction."
+    Datomic-style transaction.
+
+    Validates the config before returning."
   [modules initializer]
   (util/validate-args `build-config modules initializer)
   (let [module-definitions (m/load modules)
         cfg (init/initialize module-definitions initializer)
         cfg (reduce (fn [c m] (m/configure m c))
               cfg (reverse module-definitions))]
-    cfg))
+    (v/validate cfg)))
 
 (defn runtime
   "Create a new Arachne runtime from the given configuration and the :arachne/id
