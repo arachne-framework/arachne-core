@@ -75,7 +75,7 @@
   "Could not load namespace :ns while attempting to resolve :s")
 
 (deferror ::var-does-not-exist
-  "Could not resolve :s; the specified var does exist.")
+  "Could not resolve :s; the specified var does not exist.")
 
 
 (defn require-and-resolve
@@ -83,21 +83,22 @@
   symbol), first requiring its namespace. Throw a friendly error if the name
   could not be resolved."
   [s]
-  (validate-args `require-and-resolve s)
-  (let [sym (cond
-              (string? s) (symbol s)
-              (keyword? s) (symbol (namespace s) (name s))
-              (symbol? s) s)]
-    (try
-      (require (symbol (namespace sym)))
-      (catch FileNotFoundException e
-        (error ::could-not-load-ns {:ns (namespace sym)
-                                    :s s
-                                    :sym sym} e)))
-    (let [var (resolve sym)]
-      (when-not var
-        (error ::var-does-not-exist {:s s, :sym sym}))
-      var)))
+  (locking require-and-resolve
+    (validate-args `require-and-resolve s)
+    (let [sym (cond
+                (string? s) (symbol s)
+                (keyword? s) (symbol (namespace s) (name s))
+                (symbol? s) s)]
+      (try
+        (require (symbol (namespace sym)))
+        (catch FileNotFoundException e
+          (error ::could-not-load-ns {:ns (namespace sym)
+                                      :s s
+                                      :sym sym} e)))
+      (let [var (resolve sym)]
+        (when-not var
+          (error ::var-does-not-exist {:s s, :sym sym}))
+        var))))
 
 (defmacro lazy-satisfies?
   "Returns a partial application of clojure.core/satisfies? that doesn't resolve
