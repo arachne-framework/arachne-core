@@ -95,17 +95,17 @@
   - arachne.transaction/source-file
   - arachne.transaction/source-line"
   ([source function]
-   (stack-provenance-txdata source function (constantly true)))
+   (stack-provenance-txdata source function (constantly false)))
   ([source function stack-filter-pred]
    (let [stack (seq (.getStackTrace (Thread/currentThread)))
          ste (first (filter stack-filter-pred stack))
          txdata [{:db/id (tempid :db.part/tx)
+                  :arachne.transaction/source source
                   :arachne.transaction/function (keyword
                                                   (namespace function)
                                                   (name function))}]]
      (if ste
        (concat txdata [{:db/id (tempid :db.part/tx)
-                        :arachne.transaction/source source
                         :arachne.transaction/source-file (.getFileName ste)
                         :arachne.transaction/source-line (.getLineNumber ste)}])
        txdata))))
