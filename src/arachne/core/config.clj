@@ -4,12 +4,12 @@
   (:require [arachne.core.module :as m]
             [arachne.core.config.specs]
             [arachne.core.util :as u]
+            [arachne.error :as e :refer [deferror error]]
             [clojure.string :as str]
             [clojure.spec :as s]
             [clojure.walk :as w]
             [clojure.java.io :as io]
-            [clojure.tools.logging :as log]
-            [arachne.core.util :as util])
+            [clojure.tools.logging :as log])
   (:import [java.util Date]))
 
 (def ^:dynamic *default-partition* :db.part/user)
@@ -72,7 +72,7 @@
   "Given a seq of txdatas containing Datomic-style schema, return a new empty
   configuration"
   [config schema-txes]
-  (u/validate-args `init config schema-txes)
+  (e/assert-args `init config schema-txes)
   (init- config schema-txes))
 
 (def
@@ -125,8 +125,14 @@
        (binding [*provenance-txdata* txdata#]
          ~@body))))
 
-(util/deferror ::transaction-exception
-  "An error ocurred while updating the configuration")
+(deferror ::transaction-exception
+  :message "An error ocurred while updating the configuration"
+  :explanation "While attempting to transact some new data to the configuration, something went wrong. Most likely, there was somethign wrong with the txdata handed off to Datomic/DataScript."
+  :suggestions ["Look at this exception's \"cause\" to get some information on specifically what kind of error it was."
+                "Inspect the offending txdata (found in the data attached to this exception) for anything that looks wrong."]
+  :ex-data-docs {:explicit-txdata "The txdata provided by the user"
+                 :actual-txdata "The actual txdata, post processing"
+                 :config "The previous configuration value"})
 
 (defn update
   "Return an updated configuration, given Datomic-style txdata. Differences
@@ -138,7 +144,7 @@
       be supplied when one is missing)
     - Transactor functions are not supported"
   [config txdata]
-  (u/validate-args `update config txdata)
+  (e/assert-args `update config txdata)
   (let [txdata' (concat txdata *provenance-txdata*)
         txdata' (add-missing-tempids txdata')
         tx-tempid (tempid :db.part/tx)
@@ -152,30 +158,33 @@
             (ex-info "" {:txdata txdata'})))
         new-config)
       (catch Throwable t
-        (util/error ::transaction-exception {:explicit-txdata txdata
-                                             :actual-txdata txdata'}
+        (error ::transaction-exception {:explicit-txdata txdata
+                                        :actual-txdata txdata'
+                                        :config config}
           t)))))
 
 (defn q
   "Given a Datomic-style query expression and any number of additional data
   sources, query the configuration."
   [config find-expr & other-sources]
-  (u/validate-args `q config find-expr other-sources)
+  (e/assert-args `q config find-expr other-sources)
   (query- config find-expr other-sources))
 
 (defn pull
   "Given a Datomic-style pull expression and an identity (either a lookup ref
     or an entity ID, return the resulting data structure."
   [config expr id]
-  (u/validate-args `pull config expr id)
+  (e/assert-args `pull config expr id)
   (pull- config expr id))
 
 (def ^:private datomic-ctor 'arachne.core.config.impl.datomic/ctor)
 (def ^:private datascript-ctor 'arachne.core.config.impl.datascript/ctor)
 (def ^:private multiplex-ctor 'arachne.core.config.impl.multiplex/ctor)
 
-(u/deferror ::could-not-find-config
-  "Could not find config implementation. You must include either Datomic or Datascript on your classpath.")
+(deferror ::could-not-find-config
+  :message "Could not find config implementation. You must include either Datomic or Datascript on your classpath."
+  :explanation "The system inspects the current classpath to see what config implementations are available. Either Datomic or DataScript is required, but neither could be found."
+  :suggestions ["Include either Datomic or DataScript on your classpath, as configured in your `project.clj` or `build.boot` file"])
 
 (defn- find-impl
   "Return a config constructor, based on what is present in the classpath"
@@ -192,13 +201,13 @@
       (and datomic datascript) (maybe-resolve multiplex-ctor)
       datomic datomic
       datascript datascript
-      :else (u/error ::could-not-find-config {}))))
+      :else (error ::could-not-find-config {}))))
 
 (defn new
   "Returns an empty config, with schema installed, for the given sequence of
   modules."
   [modules]
-  (u/validate-args `arachne.core.config/new modules)
+  (e/assert-args `arachne.core.config/new modules)
   (let [ctor (find-impl)]
     (init (@ctor) (map m/schema modules))))
 
@@ -207,7 +216,7 @@
   which the Arachne tempid was matched, in the most recent update to the
   config."
   [config arachne-tempid]
-  (u/validate-args `resolve-tempid config arachne-tempid)
+  (e/assert-args `resolve-tempid config arachne-tempid)
   (resolve-tempid- config arachne-tempid))
 
 (defn tempid-literal

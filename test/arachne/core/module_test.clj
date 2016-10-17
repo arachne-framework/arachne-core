@@ -45,19 +45,19 @@
 
 
 (deftest validate-missing-modules
-  (is (thrown-with-msg? clojure.lang.ExceptionInfo #"not found"
+  (is (thrown-with-msg? arachne.ArachneException #"not found"
         (@#'m/validate-dependencies sample-missing)))
-  (is (thrown-with-msg? clojure.lang.ExceptionInfo #"definitions"
+  (is (thrown-with-msg? arachne.ArachneException #"Duplicate"
         (@#'m/validate-dependencies sample-dup)))
   (is (nil? (@#'m/validate-dependencies sample-good))))
 
 (deftest validate-no-cycles
-  (is (thrown-with-msg? clojure.lang.ExceptionInfo #"circular"
+  (is (thrown-with-msg? arachne.ArachneException #"circular"
         (@#'m/topological-sort sample-cycles)))
   (is (sequential? (@#'m/topological-sort sample-good))))
 
 (deftest validate-missing-root
-  (is (thrown-with-msg? clojure.lang.ExceptionInfo #"could not be found"
+  (is (thrown-with-msg? arachne.ArachneException #"Could not find"
         (@#'m/reachable sample-good ['test-four]))))
 
 (def sample-reachable

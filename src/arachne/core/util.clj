@@ -2,80 +2,35 @@
   (:require [clojure.java.io :as io]
             [clojure.spec :as s]
             [clojure.string :as str]
-            [arachne.core.util.specs])
+            [arachne.core.util.specs]
+            [arachne.error :as e :refer [deferror error]])
   (:import [java.io FileNotFoundException])
   (:refer-clojure :exclude [alias]))
-
-(def error-registry (atom {}))
-
-(defn deferror
-  "Add an error message to the error mesage registry"
-  [key msg]
-  (swap! error-registry assoc key msg))
-
-(defn format-error-message
-  "Given an error message string and an ex-data map, replace keywords in the
-  string with their corresponding values (if present)"
-  [msg ex-data]
-  (str/replace msg #"(?::)([\S]*\w)"
-    (fn [[match kw]]
-      (str (or (get ex-data (keyword kw) match) "nil")))))
-
-(defn error*
-  "Construct an ex-info for use by `log-error` or `error`"
-  [msg ex-data cause]
-
-  (let [template (get @error-registry msg
-                   (str "Unknown error message " msg))
-        msg (format-error-message template ex-data)]
-    (if cause
-      (ex-info msg ex-data cause)
-      (ex-info msg ex-data))))
-
-(defmacro log-error
-  "Log (but do not throw) an error message lookup using the specified error
-  message key, optional cause, and ex-data map. The message string may contain
-  :keywords which will be replaced by their corresponding values from the
-  ex-data, if present.
-
-  This is implemented as a macro so as to not show up in stack traces."
-  [& [msg ex-data cause]]
-  `(log/error (error* ~msg ~ex-data ~cause)))
-
-(defmacro error
-  "Throw an ex-info with the given error message lookup key, optional cause, and
-  ex-data map. The message string may contain :keywords which will be replaced
-  by their corresponding values from the ex-data, if present.
-
-  This is implemented as a macro so as to not show up in stack traces."
-  [& [msg ex-data cause]]
-  `(throw (error* ~msg ~ex-data ~cause)))
 
 (defn read-edn
   "Read the given file from the classpath as EDN data"
   [file]
   (read-string {:readers *data-readers*} (slurp (io/resource file))))
 
-(deferror ::args-do-not-conform
-  "Arguments to :fn-sym did not conform to registered spec:\n :explain-str")
-
-(defn validate-args
-  "Given a fully qualified symbol naming a function and a some number of
-  arguments, assert that the given arguments are valid according to the spec
-  attached to the function. If not, throw an exception with an explanation."
-  [fn-sym & args]
-  (let [argspec (:args (s/get-spec fn-sym))]
-    (when-not (s/valid? argspec args)
-      (let [explain-str (s/explain-str argspec args)]
-        (error ::args-do-not-conform {:fn-sym      fn-sym
-                                      :argspec     argspec
-                                      :explain-str explain-str})))))
-
 (deferror ::could-not-load-ns
-  "Could not load namespace :ns while attempting to resolve :s")
+  :message "Could not load namespace `:ns` while attempting to resolve `:s`"
+  :explanation "Some code attempted to \"require and resolve\" a symbol named `:s`. However, Clojure couldn't successfully `require` the namespace of that symbol, `:ns`."
+  :suggestions ["Make sure the namespace `:ns` exists and is on the classpath"
+                "Make sure the source file for `:ns` is named appropriately (remember to substitute '_' for '-')"
+                "Make sure there are no typos in `:ns` or its namespace declaration."
+                "Make sure that there are no compile errors in `:ns` (try loading it directly from the REPL)"
+                "See the \"cause\" of this error for more information"]
+  :ex-data-docs {:ns "The namespace of the attempted symbol"
+                 :s "The argument to `require-and-resolve`"
+                 :sym "The attempted symbol"})
 
 (deferror ::var-does-not-exist
-  "Could not resolve :s; the specified var does not exist.")
+  :message "Could not resolve `:s`; the specified var does not exist."
+  :explanation "Some code attempted to \"require and resolve\" a symbol named `:s`. Although it succesfully found the namespace, Clojure couldn't successfully locate a var named `:s` using `clojure.core/resolve`"
+  :suggestions ["Make sure that `:s` is defined"
+                "Make sure that `:s` is publicly visible (i.e, does not have ^:private metadata)"]
+  :ex-data-docs {:s "The argument to `require-and-resolve`"
+                 :sym "The attempted symbol"})
 
 
 (defn require-and-resolve
@@ -84,7 +39,7 @@
   could not be resolved."
   [s]
   (locking require-and-resolve
-    (validate-args `require-and-resolve s)
+    (e/assert-args `require-and-resolve s)
     (let [sym (cond
                 (string? s) (symbol s)
                 (keyword? s) (symbol (namespace s) (name s))
@@ -123,7 +78,11 @@
                      (not (or (nil? v)
                             (and (coll? v) (empty? v))))) m)))
 
-(deferror ::arity-detection-error "Could not detect the arity of :f, perhaps it is not a function?")
+(deferror ::arity-detection-error
+  :message "Could not detect the arity of `:f`"
+  :explanation "Some code attempted to determine the arity of a function (`:f`) using JVM reflection. However, `:f` does not seem to support Clojure's internal `invoke` or `doInvoke` methods, meaning it doesn't meet Clojure's definition of a function. Therefore, it's arity could not be determined."
+  :suggestions ["Make sure that `:f` is actually a Clojure function"]
+  :ex-data-docs {:f "The function in question"})
 
 (defn arity
   "Given a function, return its arity (or :many if the function is variadic)"

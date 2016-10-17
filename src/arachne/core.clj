@@ -7,7 +7,8 @@
             [arachne.core.config.init :as init]
             [arachne.core.util :as util]
             [arachne.core.schema :as schema]
-            [arachne.core.specs]))
+            [arachne.core.specs]
+            [arachne.error :as e]))
 
 (defn instance-ctor
   "Component constructor that defines components by resolving a var"
@@ -56,7 +57,7 @@
 
     Validates the config before returning."
   [modules initializer]
-  (util/validate-args `build-config modules initializer)
+  (e/assert-args `build-config modules initializer)
   (let [module-definitions (m/load modules)
         cfg (init/initialize module-definitions initializer)
         cfg (reduce (fn [c m] (m/configure m c))
@@ -67,5 +68,5 @@
   "Create a new Arachne runtime from the given configuration and the :arachne/id
   of the root runtime entity"
   [cfg arachne-id]
-  (util/validate-args `runtime cfg arachne-id)
+  (e/assert-args `runtime cfg arachne-id)
   (rt/init cfg [:arachne/id arachne-id]))

@@ -174,9 +174,9 @@
       (is (-> root-eid (instances) :dep-2 :dep-3 :this-is-dep-3))
       (testing "dep-instance utility function"
         (is (= (instances d1-eid)
-              (rt/dependency-instance (instances root-eid) cfg d1-eid)))
+              (get (instances root-eid) d1-eid)))
         (is (= (instances d3-eid)
-              (rt/dependency-instance (instances d2-eid) cfg d3-eid)))))))
+              (get (instances d2-eid) d3-eid)))))))
 
 
 (def ^:dynamic *tracker* nil)

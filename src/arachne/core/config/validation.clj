@@ -2,6 +2,8 @@
   (:require [arachne.core.config :as cfg]
             [arachne.core.util :as u]
             [arachne.core.util :as util]
+            [arachne.error :as e :refer [deferror error]]
+            [clojure.string :as str]
             [clojure.tools.logging :as log]))
 
 (defn- run-validator
@@ -9,17 +11,26 @@
   the validator throws an error, *returns* the throwable, otherwise returns nil."
   [cfg validator]
   (let [f (util/require-and-resolve validator)]
-    (@f cfg)))
+    (try (@f cfg)
+      (catch Throwable t [t]))))
 
 (defn- throwable? [x] (instance? java.lang.Throwable x))
 
-(util/deferror ::validation-errors
-  "Found :count errors while validating the configuration")
+(deferror ::validation-errors
+  :message "Found :count errors while validating the configuration"
+  :explanation "After it was constructed, the configuration was found to be invalid. There were :count different errors: :messages"
+  :suggestions ["Check the errors key in the ex-data to retrieve the individual validation exceptions. You can then inspect them individually using `arachne.error/explain`."]
+  :ex-data-docs {:errors "The collection of validation exceptions"
+                 :count "The number of validation exceptions"
+                 :messages "A string representation of all the error messages."
+                 :cfg "The invalid configuration"})
 
 (defn validate
   "Given a config, validate according to all the validators present in the
   config. Logs each validation error, then throws if any errors
-  were present."
+  were present.
+
+  Validators may either throw their error, or return a sequence of Throwable objects. They should return nil if there are no"
   [cfg]
   (let [validators (cfg/q cfg '[:find [?v ...]
                                 :where
@@ -32,11 +43,12 @@
       cfg
       (do
         (doseq [error errors]
-          (log/error "Config Validation Error" (::message error)
-            (dissoc error ::message)))
-        (util/error ::validation-errors {:count (count errors)
-                                         :cfg cfg
-                                         :errors errors})))))
+          (log/error "Config Validation Error" error))
+        (error ::validation-errors
+          {:count (count errors)
+           :messages (apply str "\n" (str/join "\n - " (map #(.getMessage %) errors)))
+           :cfg cfg
+           :errors errors})))))
 
 (def ^:private core-validators
   [:arachne.core.validators/min-cardinality

@@ -3,29 +3,27 @@
             [arachne.core :as core]
             [arachne.core.runtime :as rt]
             [arachne.core.config :as cfg]
+            [arachne.error :as e]
             [com.stuartsierra.component :as component]))
 
 (defn validator-1
   "Test validator, always throws"
   [cfg]
-  [{:arachne.core.config.validation/message "validator-1"
-    :data 42
-    :more-data "hi!"}])
+  [(ex-info "validator-1" {:data 42
+                           :more-data "hi!"})])
 
 (defn validator-2
   "Test validator, always throws"
   [cfg]
-  [{:arachne.core.config.validation/message "validator-2"
-    :data true}
-   {:arachne.core.config.validation/message "validator-2"
-    :data false}])
+  [(ex-info "validator-2" {:data true})
+   (ex-info "validator-2" {:data false})])
 
 (deftest basic-validations
   (let [cfg-txdata [{:arachne.configuration/namespace :test
                      :arachne.configuration/validators [:arachne.core.config.validation-test/validator-1
                                                         :arachne.core.config.validation-test/validator-2]
                      :arachne.configuration/roots {:arachne/id :test/rt}}]]
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"3 errors"
+    (is (thrown-with-msg? arachne.ArachneException #"3 errors"
           (cfg/with-provenance :test `basic-validations
             (core/build-config '[:org.arachne-framework/arachne-core] cfg-txdata))))))
 
@@ -40,7 +38,7 @@
                   (dsl/component :test/a {} 'test/ctor)
 
                   )]
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"1 errors"
+    (is (thrown-with-msg? arachne.ArachneException #"1 errors"
           (core/build-config '[:org.arachne-framework/arachne-core] script)))))
 
 (deftest max-cardinality-test
@@ -56,7 +54,7 @@
                   (dsl/component :test/c {} 'test/ctor)
 
                   )]
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"1 errors"
+    (is (thrown-with-msg? arachne.ArachneException #"1 errors"
           (core/build-config '[:org.arachne-framework/arachne-core] script)))))
 
 
@@ -67,5 +65,5 @@
                   (dsl/runtime :test/rt [:test/a])
 
                   (dsl/transact [{:arachne/id :test/a}]))]
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"1 errors"
+    (is (thrown-with-msg? arachne.ArachneException #"1 errors"
           (core/build-config '[:org.arachne-framework/arachne-core] script)))))

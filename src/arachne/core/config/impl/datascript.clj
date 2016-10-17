@@ -4,7 +4,8 @@
             [datascript.query :as dq]
             [arachne.core.config :as cfg]
             [arachne.core.config.impl.common :as common]
-            [arachne.core.util :as util]))
+            [arachne.core.util :as util]
+            [arachne.error :as e :refer [error deferror]]))
 
 (def ^:private supported-schema-entries
   #{[:db/unique :db.unique/identity]
@@ -52,8 +53,12 @@
               (:db-after (common/with db tx d/with d/tempid d/resolve-tempid)))
             db schema-txes)))
 
-(util/deferror ::missing-lookup-ref
-  "Could not resolve look up ref :ref in the given configuration")
+(deferror ::missing-lookup-ref
+  :message "Could not resolve look up ref `:ref` in the given configuration"
+  :explanation "Some code tried to use a lookup ref (`:ref`) in a Datascript configuration, but a value matching that lookup ref doesn't exist."
+  :suggestions ["Make sure the entity represented by the lookup ref actually exists"
+                "Make sure the lookup ref is correct, with no typos in the attribute name or value."]
+  :ex-data-docs {:ref "The ref that could not be found."})
 
 (defn- resolve-lookup-ref
   "Resolve a lookup ref with a query."
@@ -64,7 +69,7 @@
                          [?e ?a ?v]]
                     db attr value)]
     result
-    (util/error ::missing-lookup-ref {:ref ref})))
+    (error ::missing-lookup-ref {:ref ref})))
 
 (defrecord DatascriptConfig [db tempids]
   cfg/Configuration
