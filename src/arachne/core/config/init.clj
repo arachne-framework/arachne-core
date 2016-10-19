@@ -3,6 +3,7 @@
   (:refer-clojure :exclude [update])
   (:require [arachne.core.config :as cfg]
             [arachne.core.util :as u]
+            [arachne.error :as e :refer [error deferror]]
             [clojure.edn :as edn])
   (:import [java.util UUID]))
 
@@ -11,8 +12,10 @@
     :doc "An atom containing the configuration currently in context in this init script"}
   *config*)
 
-(u/deferror ::update-outside-script
-  "Attemped to update Arachne config outside of a configuration script. You should only use the init-script configuration API during the configuration phase.")
+(deferror ::update-outside-script
+  :message "Cannot update config in non-script context"
+  :explanation "You attempted to invoke one of Arachne's script-building DSL forms, but you're not currently in the context of a config initialization script. The script DSL works by updating a configuration that's currently \"in context\"; it is not meaningful to call DSL forms by themselves, or at the REPL."
+  :suggestions ["Use this DSL form only inside a config initalization script (such as you would pass to `arachne.core/build-config.)`"])
 
 (defn update
   "Update the current configuration by applying a function which takes the
@@ -20,7 +23,7 @@
   supplied function."
   [f & args]
   (if-not (bound? #'*config*)
-    (u/error ::update-outside-script {})
+    (error ::update-outside-script {})
     (apply swap! *config* f args)))
 
 (defn init-script-ns?
@@ -64,7 +67,7 @@
     `(do
        (defn ~name ~docstr [& args#]
          (let [~argvec args#]
-           (apply util/validate-args (quote ~fqn) args#)
+           (apply e/assert-args  (quote ~fqn) args#)
            (cfg/with-provenance :user (quote ~fqn)
              :stack-filter-pred init-script-ns?
              ~@body)))

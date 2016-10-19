@@ -5,6 +5,7 @@
   (:require [clojure.spec :as s]
             [arachne.core.config.ontology.specs :as os]
             [arachne.core.config :as cfg]
+            [arachne.error :as e]
             [arachne.core.util :as util]))
 
 (defn- by-ident
@@ -37,7 +38,7 @@
 (defn attr
   "Build an attribute definition map."
   [& args]
-  (apply util/validate-args `attr args)
+  (apply e/assert-args `attr args)
   (let [definition (s/conform (:args (s/get-spec `attr)) args)]
     (->> (:attrs definition)
       (map attr-map-fragment)
@@ -50,7 +51,7 @@
 (defn class
   "Build a class definition map, returning a seq of txdata."
   [& args]
-  (apply util/validate-args `class args)
+  (apply e/assert-args `class args)
   (let [{:keys [ident supers docstring specs attrs]}
         (s/conform (:args (s/get-spec `class)) args)
 

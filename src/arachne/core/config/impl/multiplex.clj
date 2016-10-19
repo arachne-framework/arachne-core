@@ -4,7 +4,8 @@
             [arachne.core.config.impl.datomic :as datomic]
             [arachne.core.config.impl.datascript :as datascript]
             [arachne.core.config :as cfg]
-            [arachne.core.util :as u]))
+            [arachne.core.util :as u]
+            [arachne.error :as e :refer [deferror error]]))
 
 (defn- value-coll?
   "Is it a collection, but not a map?"
@@ -30,8 +31,15 @@
                 :else form))
       value)))
 
-(u/deferror ::multiplex-error
-  "Error when multiplexing an operation across DataScript and Datomic configs: the results were not equivalent")
+(deferror ::multiplex-error
+  :message "Multiplex error"
+  :explanation "To ensure compatibility with both the Datomic and Datascript implementations of Datomic, Arachne runs operations against both, and compares the results (adjusting for the innate differences between the platforms.)
+
+  In this case, the two implementations returned results that were not equivalent."
+  :suggestions ["In Arachne modules, only use the subest of functionality that is common to both Datomic and DataScript"]
+  :ex-data-docs {:datomic-result "The Datomic result"
+                 :datascript-result "The Datascript result"
+                 :diff "A clojure.data/diff"})
 
 (defn- assert-equivalent!
   "Throw an exception if the datomic result is not equivalent to the datascript
@@ -43,9 +51,9 @@
   (let [d (normalize datomic-result)
         ds (normalize datascript-result)]
     (when-not (= d ds)
-      (u/error ::multiplex-error {:datomic-result datomic-result
-                                  :datascript-result datascript-result
-                                  :diff (data/diff d ds)}))))
+      (error ::multiplex-error {:datomic-result datomic-result
+                                :datascript-result datascript-result
+                                :diff (data/diff d ds)}))))
 
 (defn- swap-eids
   "Given a data structure, replace any concrete Datomic eids with the
@@ -56,9 +64,6 @@
                  (mapping val)
                  val))
              data))
-
-(u/deferror ::tempid-multiplex-error
-  "Error when multiplexing `resolve-tempid` operation across DataScript and Datomic configs: the results were inconsistent.")
 
 (defrecord MultiplexedConfig [datomic datascript eids]
   cfg/Configuration
@@ -95,9 +100,9 @@
     (let [datomic-result (cfg/resolve-tempid- datomic tempid)
           datascript-result (cfg/resolve-tempid datascript tempid)]
       (when-not (= datascript-result (get eids datomic-result))
-        (u/error ::tempid-multiplex-error {:datomic-result datomic-result
-                                           :datascript-result datascript-result
-                                           :eid-mappings eids}))
+        (error ::multiplex-error {:datomic-result datomic-result
+                                  :datascript-result datascript-result
+                                  :eid-mappings eids}))
       datomic-result))
   Object
   (toString [this]

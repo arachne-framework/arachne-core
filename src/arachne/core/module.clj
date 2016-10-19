@@ -6,14 +6,26 @@
             [clojure.spec :as spec]
             [loom.graph :as loom]
             [loom.alg :as loom-alg]
+            [arachne.error :as e :refer [error deferror]]
             [arachne.core.util :as u]
             [arachne.core.module.specs]))
 
-(u/deferror ::missing-module
-  "Module :module-name declared a dependency on modules :missing, which were not found on the classpath. Make sure you have configured your project dependencies correctly.")
+(deferror ::missing-module
+  :message "Modules `:missing` not found"
+  :explanation "Module `:module-name` declared a dependency on modules `:missing`. However, these modules could not be found on the classpath. Modules are defined in `arachne-modules.edn` files that must be on the classpath in order for the module to be discovered."
+  :suggestions ["Makes sure you have configured your project's dependencies correctly in your build.boot or project.clj."
+                "Make sure the module names are correct and typo-free"]
+  :ex-data-docs {:module-name "Name of the module with a missing dep"
+                 :module "Module definition with the missing dep "
+                 :missing "Name of missing module"})
 
-(u/deferror ::dup-definition
-  "Found two definitions for module named :dup, and the definitions were not the same. Verify you have not accidentally included two different versions of the same module.")
+(deferror ::dup-definition
+  :message "Duplicate module definition for `:dup`"
+  :explanation "Found two definitions for module named :dup, and the definitions were not the same. This can happen when two different versions of the module are somehow both on the project classpath."
+  :suggestions ["Verify you have not accidentally included two different versions of the same module."
+                "Inspect the classpath to determine why the same module name is present in two different `arachne-modules.edn` files."]
+  :ex-data-docs {:dup "The duplicated module name"
+                 :definitions "The conflicing module definitions"})
 
 (defn- validate-dependencies
   "Given a set of module definitions, throw an exception if all dependencies are
@@ -24,13 +36,13 @@
         dup (first (keys (filter #(< 1 (second %)) (frequencies names))))]
     (when dup
       (let [dup-defs (filter #(= dup (:arachne.module/name %)) definitions)]
-        (u/error ::dup-definition {:dup dup
+        (error ::dup-definition {:dup dup
                                    :definitions dup-defs})))
     (doseq [{:keys [:arachne.module/name :arachne.module/dependencies]
              :as definition} definitions]
       (let [missing (set/difference (set dependencies) (set names))]
         (when-not (empty? missing)
-          (u/error ::missing-module {:module-name name
+          (error ::missing-module {:module-name name
                                      :module definition
                                      :missing missing}))))))
 
@@ -42,8 +54,9 @@
                                        (vals by-name)))]
     (loom/digraph graph)))
 
-(u/deferror ::circular-module-deps
-  "Could not sort modules because module dependencies contains circular references")
+(deferror ::circular-module-deps
+  :message "Circular module dependencies"
+  :explanation "Could not sort modules because module dependencies contains circular references. Module dependencies should form a directed acyclic graph, so that they have a strict sort order.")
 
 (defn- topological-sort
   "Given a set of module defintions, return a seq of module definitions in
@@ -55,24 +68,22 @@
         loom-graph (as-loom-graph definitions)
         sorted (loom-alg/topsort loom-graph)]
     (when (nil? sorted)
-      (u/error ::circular-module-deps {:definitions definitions
-                                       :graph loom-graph}))
+      (error ::circular-module-deps {:definitions definitions
+                                     :graph loom-graph}))
     (map by-name (reverse sorted))))
 
-(u/deferror ::module-def-did-not-conform
-  "Module definition with name :name did not conform to spec: :spec")
+(deferror ::module-def-did-not-conform
+  :message "Invalid module module definition `:name`"
+  :explanation "The module definition (found in the `arachne-module.edn` file) for the module `:name` did not conform to the required spec, `:arachne.core.module.specs/definition`"
+  :suggestions ["Ensure that the module definition is correct and has all the required parts."]
+  :ex-data-docs {:name "Name of the invalid module"})
 
 (defn- validate-definition
   "Throw a friendly exception if the given module definition does not conform to
   a the module spec"
   [def]
-  (when-not (spec/valid? :arachne.core.module.specs/definition def)
-    (let [explain-str (spec/explain-str :arachne.core.module.specs/definition def)]
-      (u/error ::module-def-did-not-conform
-        {:name (:arachne.module/name def)
-         :explain-str explain-str
-         :spec :arachne.core.module.specs/definition
-         :definition def})))
+  (e/assert :arachne.core.module.specs/definition def
+    ::module-def-did-not-conform {:name (:arachne.module/name def)})
   def)
 
 (defn- discover
@@ -89,8 +100,13 @@
     (map validate-definition)
     set))
 
-(u/deferror ::missing-roots
-  "Modules were specified which could not be found on the classpath: :missing-roots")
+(deferror ::missing-roots
+  :message "Could not find root modules `:missing` on classpath"
+  :explanation "Arachne requires a set of \"root\" modules when it is initialized: it is these modules and their dependencies that define which modules are actually active. Arachne was started with `:modules`, but of those, the modules `:missing` could not be found on the classpath."
+  :suggestions ["Makes sure you have configured your project's dependencies correctly in your build.boot or project.clj."
+                "Make sure the module names are correct and typo-free"]
+  :ex-data-docs {:modules "The requested set of modules"
+                 :missing "Modules that could not be found on the CP"})
 
 (defn- validate-missing-roots
   "Throw an error if a root is required that is not present in the given set of
@@ -99,7 +115,8 @@
   (let [definition-names (set (map :arachne.module/name definitions))
         missing-roots (set/difference (set roots) definition-names)]
     (when-not (empty? missing-roots)
-      (u/error ::missing-roots {:missing-roots missing-roots}))))
+      (error ::missing-roots {:modules definition-names
+                                :missing missing-roots}))))
 
 (defn- reachable
   "Given a seq of module definitions and a set of root modules, return only
@@ -114,14 +131,14 @@
   "Return a seq of validated module definitions for all modules on the classpath
   that are required by the specified modules, in dependency order."
   [root-modules]
-  (u/validate-args `load root-modules)
+  (e/assert-args `load root-modules)
   (->> (reachable (discover) root-modules)
        (topological-sort)))
 
 (defn schema
   "Given a module definition, invoke the module's schema function."
   [definition]
-  (u/validate-args `schema definition)
+  (e/assert-args `schema definition)
   (let [v (u/require-and-resolve (:arachne.module/schema definition))]
     (@v)))
 
@@ -129,6 +146,6 @@
   "Given a module and a configuration value, invoke the module's configure
   function."
   [definition cfg]
-  (u/validate-args `configure definition cfg)
+  (e/assert-args `configure definition cfg)
   (let [v (u/require-and-resolve (:arachne.module/configure definition))]
     (@v cfg)))
