@@ -3,7 +3,8 @@
             [datomic.api :as d]
             [arachne.core.config.impl.common :as common]
             [arachne.core.config :as cfg]
-            [arachne.core.util :as util])
+            [arachne.core.util :as util]
+            [arachne.error :as e :refer [error]])
   (:import [java.util UUID]))
 
 (defn- init
@@ -30,6 +31,9 @@
   (query- [this query other-sources]
     (apply d/q query (:db this) other-sources))
   (pull- [this expr lookup-or-eid]
+    (when-not (d/entity (:db this) lookup-or-eid)
+      (error ::cfg/nonexistent-pull-entity {:lookup lookup-or-eid
+                                               :config this}))
     (d/pull (:db this) expr lookup-or-eid))
   (resolve-tempid- [this tempid]
     (get tempids tempid))

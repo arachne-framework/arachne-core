@@ -42,3 +42,13 @@
           (:c (rt/lookup rt [:arachne/id :test/b]))))
 
     (component/stop rt)))
+
+(deftest missing-runtime
+  (let [cfg (core/build-config '[:org.arachne-framework/arachne-core]
+              '(do (require '[arachne.core.dsl :as dsl])
+                   (dsl/runtime :test/rt [:test/a])
+                   (dsl/component :test/a {}
+                     'arachne.core.dsl-test/test-ctor)))]
+
+    (is (thrown-with-msg? arachne.ArachneException #"no-such-runtime"
+          (component/start (rt/init cfg [:arachne/id :test/no-such-runtime]))))))

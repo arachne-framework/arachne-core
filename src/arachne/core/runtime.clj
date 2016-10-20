@@ -198,12 +198,38 @@
     (log/info "Stopping Arachne runtime")
     (update rt :system c/stop)))
 
+(defn- find-runtimes
+  "Get the Arachne IDs of all the runtimes currently found in the config"
+  [config]
+  (cfg/q config '[:find [?id ...]
+                  :where
+                  [?rt :arachne.runtime/components _]
+                  [?rt :arachne/id ?id]]))
+
+(deferror ::runtime-not-found
+  :message "Runtime `:missing` was not found."
+  :explanation "The Arachne runtime was instructed to start using a runtime entity identified by `:missing`. However, no such entity could be found in the config that was provided.
+
+   The configuration did, however, contain the following runtime entities:
+
+   :found-formatted"
+  :suggestions ["Select a runtime that is actually present in the config"
+                "Make sure there are no typos in the runtime ID"]
+  :ex-data-docs {:missing "The runtime that could not be found"
+                 :found "IDs of runtimes that were actually in the config"
+                 :found-formatted "Bullet list of runtimes in the config"})
+
 (defn init
   "Given a configuration and an entity ID or lookup ref representing a Runtime
   entity, return an instantiated (but unstarted) ArachneRuntime object."
   [config runtime-ref]
   (e/assert-args `init config runtime-ref)
-  (let [runtime-eid (:db/id (cfg/pull config [:db/id] runtime-ref))
+  (let [runtime-eid (e/wrap-error (:db/id (cfg/pull config [:db/id] runtime-ref))
+                      [::cfg/entity-not-found]
+                      ::runtime-not-found (let [found (find-runtimes config)]
+                                            {:missing runtime-ref
+                                             :found found
+                                             :found-formatted (e/bullet-list found)}))
         sys (system config runtime-eid)]
     (->ArachneRuntime config sys runtime-eid)))
 

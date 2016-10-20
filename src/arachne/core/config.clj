@@ -235,3 +235,13 @@
                [attr] more-attrs)
         result (pull cfg (if (map? expr) [expr] expr) id)]
     (get-in result attrs)))
+
+(deferror ::entity-not-found
+  :message "Entity `:lookup` could not be found"
+  :explanation "Some code attempted to use the Pull API to retrieve an entity from the configuration. However, no entity could be found using the specified identifier or lookup ref, `:lookup`.
+
+  This is almost certainly a mistake, and so this exception was thrown rather than propagating a nil value. If you want to test for the existence of an entity, you can use the query API instead."
+  :suggestions ["Ensure that the entity referenced by `:lookup` actually exists in the configuration"
+                "Check that the entity ID or lookup ref is correct and typo-free"]
+  :ex-data-docs {:lookup "The eid or lookup ref"
+                 :config "The config"})

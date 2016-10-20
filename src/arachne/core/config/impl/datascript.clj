@@ -53,24 +53,6 @@
               (:db-after (common/with db tx d/with d/tempid d/resolve-tempid)))
             db schema-txes)))
 
-(deferror ::missing-lookup-ref
-  :message "Could not resolve look up ref `:ref` in the given configuration"
-  :explanation "Some code tried to use a lookup ref (`:ref`) in a Datascript configuration, but a value matching that lookup ref doesn't exist."
-  :suggestions ["Make sure the entity represented by the lookup ref actually exists"
-                "Make sure the lookup ref is correct, with no typos in the attribute name or value."]
-  :ex-data-docs {:ref "The ref that could not be found."})
-
-(defn- resolve-lookup-ref
-  "Resolve a lookup ref with a query."
-  [db [attr value :as ref]]
-  (if-let [result (d/q '[:find ?e .
-                         :in $ ?a ?v
-                         :where
-                         [?e ?a ?v]]
-                    db attr value)]
-    result
-    (error ::missing-lookup-ref {:ref ref})))
-
 (defrecord DatascriptConfig [db tempids]
   cfg/Configuration
   (init- [this schema-txes]
@@ -82,10 +64,10 @@
   (query- [this query other-sources]
     (apply d/q query (:db this) other-sources))
   (pull- [this expr lookup-or-eid]
-    (let [eid (if (dq/lookup-ref? lookup-or-eid)
-               (resolve-lookup-ref (:db this) lookup-or-eid)
-               lookup-or-eid)]
-      (d/pull (:db this) expr eid)))
+    (when-not (d/entity (:db this) lookup-or-eid)
+      (error ::cfg/nonexistent-pull-entity {:lookup lookup-or-eid
+                                               :config this}))
+    (d/pull (:db this) expr lookup-or-eid))
   (resolve-tempid- [this tempid]
     (get tempids tempid))
   Object

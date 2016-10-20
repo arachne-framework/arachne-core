@@ -173,3 +173,33 @@
   (let [opts (merge *default-explain-opts* opts)]
     (println (fmt/format e opts)))))
 
+(defn bullet-list
+  "Format a sequence of items into a string containing a series of bullet points"
+  [items]
+  (str/join "\n" (map #(str " - " %) items)))
+
+(defn error-type?
+  "Helper function to determine if an error is of the given type. Type may be a
+  class or a value of :arachne.error/type"
+  [exception type]
+  (if (class? type)
+    (instance? type exception)
+    (when (instance? arachne.ArachneException exception)
+      (= type ))))
+
+(defmacro wrap-error
+  "Utility to catch and re-throw errors with a more specific message.
+
+  Evaluates the body expression. If an exception is thrown, and it is one of the
+  type specified by `types`, then throw an ArachneException of the specified
+  type and ex-data.
+
+  Types may be either an exception class, or a value of :arachne.error/type in
+  an ArachneException."
+  [body types throw-type ex-data]
+  `(try
+     ~body
+     (catch Throwable t#
+       (if (some #(error-type? t# %) ~types)
+         (error ~throw-type ~ex-data t#)
+         (throw t#)))))
