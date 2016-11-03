@@ -56,13 +56,15 @@
     Datomic-style transaction.
 
     Validates the config before returning."
-  [modules initializer]
-  (e/assert-args `build-config modules initializer)
-  (let [module-definitions (m/load modules)
-        cfg (init/initialize module-definitions initializer)
-        cfg (reduce (fn [c m] (m/configure m c))
-              cfg (reverse module-definitions))]
-    (v/validate cfg)))
+  ([modules initializer]
+   (build-config modules initializer true))
+  ([modules initializer throw-validation-errors?]
+   (e/assert-args `build-config modules initializer)
+   (let [module-definitions (m/load modules)
+         cfg (init/initialize module-definitions initializer)
+         cfg (reduce (fn [c m] (m/configure m c))
+               cfg (reverse module-definitions))]
+     (v/validate cfg throw-validation-errors?))))
 
 (defn runtime
   "Create a new Arachne runtime from the given configuration and the :arachne/id

@@ -21,7 +21,15 @@
                                  :db/ident       :test/ref
                                  :db/cardinality :db.cardinality/one
                                  :db/valueType   :db.type/ref
-                                 :db.install/_attribute :db.part/db}]))
+                                 :db.install/_attribute :db.part/db}
+
+                                {:db/id (cfg/tempid :db.part/db)
+                                 :db/ident :test/component-ref
+                                 :db/cardinality :db.cardinality/one
+                                 :db/valueType :db.type/ref
+                                 :db/isComponent true
+                                 :db.install/_attribute :db.part/db}
+                                ]))
 
 
 (def test-schema-4 (constantly [{:db/id (cfg/tempid :db.part/db)
@@ -97,6 +105,12 @@
   (cfg/with-provenance :test `test-update
     (cfg/update cfg txdata)))
 
+(deftest multiplex-schema-elements
+  (let [cfg (setup)]
+    (is (= {:db/ident :arachne/Component}
+          (cfg/pull cfg '[:db/ident] [:db/ident :arachne/Component])))
+    (is (cfg/pull cfg '[*] [:db/ident :arachne.component/constructor]))))
+
 (deftest refs-work-correctly
   (let [cfg (setup)
         cfg (test-update cfg [{:test/basic "Hello"
@@ -120,6 +134,16 @@
                              [?parent :test/basic ?parent-val]
                              [?parent :test/ref-card-many ?child]
                              [?child :test/basic ?child-val]]))))))
+
+(deftest component-refs-work-correctly
+  (let [cfg (setup)
+        cfg (test-update cfg [{:test/identity "ident"
+                               :test/basic "Hello"
+                               :test/component-ref {:test/basic "World"}}])]
+    (is (= "World"
+          (-> (cfg/pull cfg '[*] [:test/identity "ident"])
+            :test/component-ref
+            :test/basic)))))
 
 
 (deftest identity-works-correctly

@@ -25,10 +25,11 @@
 (deftype Tempid [partition id]
   Object
   (equals [this other]
-    (when (instance? Tempid other)
+    (if (instance? Tempid other)
       (if id
         (and (= id (.id other)) (= partition (.partition other)))
-        (identical? this other))))
+        (identical? this other))
+      false))
   (hashCode [this]
     (if id
       (hash-combine id
@@ -67,13 +68,6 @@
                  (assoc val :db/id (tempid))
                  val))
     txdata))
-
-(defn init
-  "Given a seq of txdatas containing Datomic-style schema, return a new empty
-  configuration"
-  [config schema-txes]
-  (e/assert-args `init config schema-txes)
-  (init- config schema-txes))
 
 (def
   ^{:dynamic true
@@ -125,6 +119,22 @@
        (binding [*provenance-txdata* txdata#]
          ~@body))))
 
+(declare update)
+
+(defn init
+  "Given a seq of txdatas containing Datomic-style schema, return a new empty
+  configuration"
+  [config schema-txes]
+  (e/assert-args `init config schema-txes)
+  (let [schema-txes (concat
+                      (u/read-edn "arachne/core/config/model/schema.edn")
+                      schema-txes)
+        cfg (init- config schema-txes)]
+    (reduce (fn [cfg txdata]
+              (update cfg txdata false))
+      cfg
+      schema-txes)))
+
 (deferror ::transaction-exception
   :message "An error ocurred while updating the configuration"
   :explanation "While attempting to transact some new data to the configuration, something went wrong. Most likely, there was somethign wrong with the txdata handed off to Datomic/DataScript."
@@ -143,25 +153,30 @@
     - Temporary IDs are not necessary on most entity maps (a novel temp id will
       be supplied when one is missing)
     - Transactor functions are not supported"
-  [config txdata]
-  (e/assert-args `update config txdata)
-  (let [txdata' (concat txdata *provenance-txdata*)
-        txdata' (add-missing-tempids txdata')
-        tx-tempid (tempid :db.part/tx)
-        txdata' (conj txdata' {:db/id tx-tempid
-                               :db/txInstant (Date.)})]
-    (try
-      (let [new-config (update- config txdata')
-            tx (resolve-tempid- new-config tx-tempid)]
-        (when-not (pull- new-config '[:arachne.transaction/source] tx)
-          (log/warn "No provenance metadata found on transaction"
-            (ex-info "" {:txdata txdata'})))
-        new-config)
-      (catch Throwable t
-        (error ::transaction-exception {:explicit-txdata txdata
-                                        :actual-txdata txdata'
-                                        :config config}
-          t)))))
+  ([config txdata] (update config txdata true))
+  ([config txdata add-provenance-txdata?]
+   (e/assert-args `update config txdata)
+   (let [tx-tempid (tempid :db.part/tx)
+         txdata' (if add-provenance-txdata?
+                   (-> txdata
+                     (concat *provenance-txdata*)
+                     (conj {:db/id tx-tempid
+                            :db/txInstant (Date.)}))
+                   txdata)
+         txdata' (add-missing-tempids txdata')]
+     (try
+       (let [new-config (update- config txdata')
+             tx (resolve-tempid- new-config tx-tempid)]
+         (when add-provenance-txdata?
+           (when-not (pull- new-config '[:arachne.transaction/source] tx)
+             (log/warn "No provenance metadata found on transaction"
+               (ex-info "" {:txdata txdata'}))))
+         new-config)
+       (catch Throwable t
+         (error ::transaction-exception {:explicit-txdata txdata
+                                         :actual-txdata txdata'
+                                         :config config}
+           t))))))
 
 (defn q
   "Given a Datomic-style query expression and any number of additional data
@@ -245,3 +260,17 @@
                 "Check that the entity ID or lookup ref is correct and typo-free"]
   :ex-data-docs {:lookup "The eid or lookup ref"
                  :config "The config"})
+
+(deferror ::nonexistent-pull-entity
+  :message "No such entity `:lookup` in configuration"
+  :explanation "Some code tried to use a pull expression to retrieve data from the Arachne config.
+
+  However, the entity identified (`:lookup`) did not actually exist in the config.
+
+  Rather than returning nil, DataScript throws an error, and so for consistency
+  replicates the same behavior."
+  :suggestions ["Ensure that the entity ID or lookup ref is correct"
+                "Ensure that the desired entity actually exists in the configuration"]
+  :ex-data-docs {:lookup "The lookup ref or entity ID"
+                 :config "The configuration in question"}
+  )

@@ -13,23 +13,34 @@
   (and (instance? java.util.Collection v)
     (not (instance? java.util.Map v))))
 
+(def ^:private incomparable-attrs
+  #{:db/valueType
+    :db/cardinality
+    :db/unique})
+
 (defn- normalize
   "Normalize the returned value to make it possible to compare equivalencies"
   [value]
-  (w/postwalk
-      (fn [form]
-            (cond
-              (number? form) 0
-              (value-coll? form) (frequencies form)
-              :else form))
+  (->> value
     (w/prewalk
       (fn [form]
-              (cond
-                (instance? java.util.Map form) (into {} form)
-                (instance? java.util.Set form) (into #{} form)
-                (instance? java.util.List form) (into [] form)
-                :else form))
-      value)))
+        (cond
+          (instance? java.util.Map form) (into {} form)
+          (instance? java.util.Set form) (into [] form)
+          (instance? java.util.List form) (into [] form)
+          :else form)))
+    #_(w/prewalk
+      (fn [form]
+        (if (and (map-entry? form) (incomparable-attrs (key form)))
+          nil
+          form)))
+    (w/postwalk
+      (fn [form]
+        (cond
+          (number? form) 0
+          (value-coll? form) (frequencies form)
+          :else form)))))
+
 
 (deferror ::multiplex-error
   :message "Multiplex error"

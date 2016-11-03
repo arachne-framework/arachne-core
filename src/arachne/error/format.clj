@@ -41,7 +41,7 @@
                                   (str (ansi/blue inner) base-color))))
     s))
 
-(defn- clean
+(defn justify
   "Clean up newlines so everything is left-justified"
   [msg]
   (if (<= (count (str/split-lines msg)) 1)
@@ -60,6 +60,34 @@
   (let [lines (str/split-lines s)
         sep (apply str "\n" (repeat n " "))]
     (str/join sep lines)))
+
+(def ^:dynamic *format-err* nil)
+
+(defn- pprint-str
+  "pprint to a string, but catch exceptions so it won't blow up the whole process"
+  [data]
+  (try
+    (with-out-str
+      (binding [pprint/*print-right-margin* 70]
+        (pprint/pprint data)))
+    (catch Throwable t
+      (alter-var-root #'arachne.error.format/*format-err* (constantly t))
+      (str "<<< Exception while pretty printing:" (.getName (.getClass t))
+        ", bound to arachne.error.format/*format-err* for further inspection>>>"))))
+
+(defn pprint-str-truncated
+  "Return a string of the given data, truncated to the given number of lines.
+  Includes indentation. Only suitable in the context of an exception message."
+  [data n]
+  (let [raw (pprint-str data)
+        lines (str/split-lines raw)
+        lines-to-print (if (< (count lines) n)
+                         lines
+                         (concat (take n lines)
+                           [(str "... truncated " (- (count lines) n) " more lines, inspect ex-data for full value")]))]
+    (->> lines-to-print
+      (map (fn [l] (str "    " l)))
+      (str/join "\n"))))
 
 (defn format
   "Formats a String message for the exception, and returns a string. Options are:
@@ -101,7 +129,7 @@
 
         (when-let [ex (:arachne.error/explanation d)]
           (cfprint ansi/bold-red "\n\nEXPLANATION:\n\n")
-          (cfprint ansi/black (colorize ansi/black-font (clean ex))))
+          (cfprint ansi/black (colorize ansi/black-font ex)))
 
         (when-let [spec (:arachne.error/spec d)]
           (cfprint ansi/bold-red "\n\nSPEC FAILURE:\n\n")
@@ -124,16 +152,8 @@
             (c ansi/black-font)
             (println "\nThe data that failed the spec was:")
             (c ansi/italic-font)
-            (let [raw (with-out-str
-                        (binding [pprint/*print-right-margin* 70]
-                          (pprint/pprint fd)))
-                  lines (str/split-lines raw)
-                  lines-to-print (if (< (count lines) 10)
-                                   lines
-                                   (concat (take 10 lines)
-                                     [(str "... truncated " (- (count lines) 20) " more lines, inspect ex-data for full value")]))]
-              (doseq [line lines-to-print]
-                (print "\n" (str "    " line))))
+            (print "\n")
+            (print (pprint-str-truncated fd 10))
             (c ansi/reset-font)))
 
         (when (:arachne.error/suggestions d)
@@ -142,7 +162,7 @@
             (doseq [[i s] (map-indexed (fn [i s] [i s]) suggs)]
               (cfprint ansi/black
                 " - "
-                (indent 3 (colorize ansi/black-font (clean s))))
+                (indent 3 (colorize ansi/black-font s)))
               (when-not (= (inc i) (count suggs))
                 (print "\n")))))
 

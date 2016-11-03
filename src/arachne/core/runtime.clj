@@ -3,7 +3,7 @@
   (:require [com.stuartsierra.component :as c]
             [com.stuartsierra.dependency :as dep]
             [arachne.core.config :as cfg]
-            [arachne.core.config.ontology :as ont]
+            [arachne.core.config.model :as cfg-model]
             [arachne.core.util :as util]
             [arachne.error :as e :refer [deferror error]]
             [arachne.core.runtime.specs]
@@ -147,11 +147,11 @@
   (cfg/q cfg '[:find ?spec ?class-ident
                :in $ ?entity %
                :where
-               (class ?class ?entity)
+               (type ?class ?entity)
                [?class :db/ident ?class-ident]
-               [?class :arachne.class/component-spec ?spec]]
+               [?class :arachne.component/spec ?spec]]
     eid
-    ont/rules))
+    cfg-model/rules))
 
 (deferror ::component-failed-validation
   :message "Component `:eid` (Arachne ID: `:aid`) failed spec `:arachne.error/spec`"

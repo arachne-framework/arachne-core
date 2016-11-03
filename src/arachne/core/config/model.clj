@@ -1,9 +1,8 @@
-(ns arachne.core.config.ontology
-  "Utilities for creating Configuration schema using Arachne's configuration
-  ontology, in a terse way."
-  (:refer-clojure :exclude [class])
+(ns arachne.core.config.model
+  "Utilities for creating a configuration schema using a richer data model."
+  (:refer-clojure :exclude [type])
   (:require [clojure.spec :as s]
-            [arachne.core.config.ontology.specs :as os]
+            [arachne.core.config.model.specs :as ms]
             [arachne.core.config :as cfg]
             [arachne.error :as e]
             [arachne.core.util :as util]))
@@ -20,7 +19,7 @@
 (defn- attr-map-fragment
   [[attr-def value]]
   (case attr-def
-    :shorthand (os/shorthand-schema value)
+    :shorthand (ms/shorthand-schema value)
     :docstring {:db/doc value}
     :range {:arachne.attribute/range (by-ident value)
             :db/valueType :db.type/ref}
@@ -48,56 +47,45 @@
 
 
 
-(defn class
-  "Build a class definition map, returning a seq of txdata."
-  [& args]
-  (apply e/assert-args `class args)
-  (let [{:keys [ident supers docstring specs attrs]}
-        (s/conform (:args (s/get-spec `class)) args)
+(defn type
+  "Build a type definition map, returning a seq of txdata.
 
-        update-domain (fn [attr-map] (update attr-map :arachne.attribute/domain
-                                       (fnil conj #{}) (by-ident ident)))
-        class-map (util/mkeep
+  The `specs` arg should only be provided if the type being defined extends component."
+  [& args]
+  (apply e/assert-args `type args)
+  (let [{:keys [ident supers docstring specs attrs]}
+        (s/conform (:args (s/get-spec `type)) args)
+
+        update-domain (fn [attr-map]
+                        (assoc attr-map :arachne.attribute/domain (by-ident ident)))
+        type-map (util/mkeep
                     {:db/id (cfg/tempid)
                      :db/ident ident
                      :db/doc docstring
-                     :arachne.class/superclasses (map (fn [super]
+                     :arachne.type/supertypes (map (fn [super]
                                                         {:db/ident super})
                                                    supers)
-                     :arachne.class/component-spec specs})]
-    (cons class-map (map update-domain attrs))))
-
-(defn attr-eid
-  "Given an attribute, return a lookup ref based on its ident. If given an
-   entity ID, just returns that.
-
-  This function is essentially a compatibility shim between Datomic and
-  Datascript"
-  [attr-or-eid]
-  (when (number? attr-or-eid) attr-or-eid [:db/ident attr-or-eid]))
+                     :arachne.component/spec specs})]
+    (cons type-map (map update-domain attrs))))
 
 (def rules
   "Datalog rules to determine type relationships in an Arachne config"
   '[
-    [(superclass ?superclass ?subclass)
-     [?subclass :arachne.class/superclasses ?superclass]]
-    [(superclass ?superclass ?subclass)
-     [?subclass :arachne.class/superclasses ?mid]
-     (superclass ?superclass ?mid)]
+    [(supertype ?supertype ?subtype)
+     [?subtype :arachne.type/supertypes ?supertype]]
+    [(supertype ?supertype ?subtype)
+     [?subtype :arachne.type/supertypes ?mid]
+     (supertype ?supertype ?mid)]
 
-    [(class ?class ?entity)
-     [?entity :arachne/instance-of ?class]]
-    [(class ?class ?entity)
-     [?attr-e :arachne.attribute/domain ?class]
+    [(type ?type ?entity)
+     [?attr-e :arachne.attribute/domain ?type]
      [?attr-e :db/ident ?attr-ident]
      [?entity ?attr-ident _]]
-    [(class ?class ?entity)
-     [?attr-e :arachne.attribute/range ?class]
+    [(type ?type ?entity)
+     [?attr-e :arachne.attribute/range ?type]
      [?attr-e :db/ident ?attr-ident]
      [_ ?attr-ident ?entity]]
-    [(class ?class ?entity)
-     (superclass ?class ?subclass)
-     (class ?subclass ?entity)]
-
-    ])
+    [(type ?type ?entity)
+     (supertype ?type ?subtype)
+     (type ?subtype ?entity)]])
 

@@ -8,22 +8,16 @@
   (:import [java.util UUID]))
 
 (defn- init
-  [schema-txes]
+  []
   (let [uri (str "datomic:mem://arachne-cfg-" (str (UUID/randomUUID)))
         _ (d/create-database uri)
-        conn (d/connect uri)
-        db (d/db conn)
-        ont-schema  (util/read-edn "arachne/core/config/ontology/schema.edn")
-        schema-txes (concat ont-schema schema-txes)]
-    (reduce (fn [db tx]
-              (:db-after (common/with db tx
-                           d/with d/tempid d/resolve-tempid)))
-            db schema-txes)))
+        conn (d/connect uri)]
+    (d/db conn)))
 
 (defrecord DatomicConfig [db tempids]
   cfg/Configuration
-  (init- [this schema-txes]
-    (assoc this :db (init schema-txes)))
+  (init- [this _]
+    (assoc this :db (init)))
   (update- [this txdata]
     (let [result (common/with db txdata d/with d/tempid d/resolve-tempid)]
       (assoc this :db (:db-after result)
@@ -33,7 +27,7 @@
   (pull- [this expr lookup-or-eid]
     (when-not (d/entity (:db this) lookup-or-eid)
       (error ::cfg/nonexistent-pull-entity {:lookup lookup-or-eid
-                                               :config this}))
+                                            :config this}))
     (d/pull (:db this) expr lookup-or-eid))
   (resolve-tempid- [this tempid]
     (get tempids tempid))
@@ -46,6 +40,6 @@
   (.write writer (str cfg)))
 
 (defn ctor
-  "Construct and return an uninitialized instance of DatascriptConfig"
+  "Construct and return an uninitialized instance of DatomicConfig"
   []
   (->DatomicConfig nil nil))

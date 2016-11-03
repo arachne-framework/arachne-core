@@ -27,11 +27,12 @@
 
 (defn validate
   "Given a config, validate according to all the validators present in the
-  config. Logs each validation error, then throws if any errors
+  config. Logs each validation error, then optionally throws if any errors
   were present.
 
-  Validators may either throw their error, or return a sequence of Throwable objects. They should return nil if there are no"
-  [cfg]
+  Validators may either throw their error, or return a sequence of Throwable
+  objects. They should return nil if there are no validation problems."
+  [cfg throw?]
   (let [validators (cfg/q cfg '[:find [?v ...]
                                 :where
                                 [_ :arachne.configuration/validators ?v]])
@@ -44,11 +45,13 @@
       (do
         (doseq [error errors]
           (log/error "Config Validation Error" error))
-        (error ::validation-errors
-          {:count (count errors)
-           :messages (apply str "\n" (str/join "\n - " (map #(.getMessage %) errors)))
-           :cfg cfg
-           :errors errors})))))
+        (if-not throw?
+          cfg
+          (error ::validation-errors
+            {:count (count errors)
+             :messages (apply str "\n" (str/join "\n - " (map #(.getMessage %) errors)))
+             :cfg cfg
+             :errors errors}))))))
 
 (def ^:private core-validators
   [:arachne.core.validators/min-cardinality
