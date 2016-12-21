@@ -27,7 +27,7 @@
           (cfg/with-provenance :test `basic-validations
             (core/build-config '[:org.arachne-framework/arachne-core] cfg-txdata))))))
 
-(defn min-cardinality-test []
+(deftest min-cardinality-test
   (let [script '(do
                   (require '[arachne.core.dsl :as dsl])
                   (dsl/runtime :test/rt [:test/a])
@@ -65,5 +65,20 @@
                   (dsl/runtime :test/rt [:test/a])
 
                   (dsl/transact [{:arachne/id :test/a}]))]
+    (is (thrown-with-msg? arachne.ArachneException #"1 errors"
+          (core/build-config '[:org.arachne-framework/arachne-core] script)))))
+
+(deftest instance-of-test
+  (let [script '(do
+                  (require '[arachne.core.dsl :as dsl])
+                  (dsl/runtime :test/rt [:test/a])
+                  (dsl/component :test/a {} 'clojure.core/hash-map)
+
+                  (dsl/component :test/b {} 'clojure.core/hash-map)
+
+                  ;; By stating that B is a runtime, we provoke a min-cardinality error...
+                  (dsl/transact [{:arachne/id :test/b
+                                  :arachne/instance-of [:db/ident :arachne/Runtime]}]))]
+
     (is (thrown-with-msg? arachne.ArachneException #"1 errors"
           (core/build-config '[:org.arachne-framework/arachne-core] script)))))

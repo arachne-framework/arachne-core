@@ -86,6 +86,8 @@
      [?attr-e :db/ident ?attr-ident]
      [_ ?attr-ident ?entity]]
     [(type ?type ?entity)
+     [?entity :arachne/instance-of ?type]]
+    [(type ?type ?entity)
      (supertype ?type ?subtype)
      (type ?subtype ?entity)]])
 

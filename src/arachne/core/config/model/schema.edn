@@ -1,14 +1,5 @@
 ;; Model for Configurations
 
-;; Note that this model is similar to what is *generated* by the Chimera module.
-
-;; Chimera can also *read* models of this format, meaning that data modesl can
-;; be round-tripped between Arachne Schema and Chimera Models.
-
-;; When the Chimera module is loaded, it creates a Chimera data model from all
-;; the schema present in the Arachne Config, so that Chimera persistence ops &
-;; tools will work on the config. However, they are not required.
-
 [
   [
 
@@ -45,8 +36,12 @@
     :db/cardinality :db.cardinality/one
     :db/doc         "The maximum cardinality of an attribute"
     :db.install/_attribute :db.part/db}
-
-   ]
+   {:db/id          #arachne/tempid[:db.part/db]
+    :db/ident       :arachne/instance-of
+    :db/valueType   :db.type/ref
+    :db/cardinality :db.cardinality/one
+    :db/doc         "Explicit type declaration for an entity (optional)"
+    :db.install/_attribute :db.part/db}]
 
  ;; Meta
  [
@@ -61,8 +56,13 @@
    :db/doc         "The root type, the implicit supertype of all other configuration types"}
 
   {:db/id  #arachne/tempid[:db.part/db]
-   :db/ident :arachne.class/superclasses
+   :db/ident :arachne.type/supertypes
    :arachne.attribute/domain {:db/ident :arachne/Type}
+   :arachne.attribute/range {:db/ident :arachne/Type}}
+
+  {:db/id #arachne/tempid[:db.part/db]
+   :db/ident :arachne/instance-of
+   :arachne.attribute/domain {:db/ident :arachne/Entity}
    :arachne.attribute/range {:db/ident :arachne/Type}}
 
   {:db/id  #arachne/tempid[:db.part/db]
