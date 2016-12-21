@@ -27,17 +27,17 @@
           (cfg/with-provenance :test `basic-validations
             (core/build-config '[:org.arachne-framework/arachne-core] cfg-txdata))))))
 
-(deftest min-cardinality-test
+(defn min-cardinality-test []
   (let [script '(do
                   (require '[arachne.core.dsl :as dsl])
-
-                  (dsl/transact [{:arachne/id :test/rt2
-                                  :arachne/instance-of {:db/ident :arachne/Runtime}}])
-
                   (dsl/runtime :test/rt [:test/a])
-                  (dsl/component :test/a {} 'test/ctor)
+                  (dsl/transact [{:arachne/id :test/a
+                                  :arachne.component/dependencies
+                                  {:arachne.component.dependency/entity {:arachne/id :test/b}
+                                   :arachne.component.dependency/key :key}}])
 
-                  )]
+                  (dsl/component :test/b {} 'test/ctor))]
+
     (is (thrown-with-msg? arachne.ArachneException #"1 errors"
           (core/build-config '[:org.arachne-framework/arachne-core] script)))))
 

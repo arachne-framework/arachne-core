@@ -97,11 +97,14 @@
 
 (defn- format-ex-str
   "Given an error message string and an ex-data map, replace keywords in the
-  string with their corresponding values (if present)"
+  string with their corresponding values (if present).
+
+  Also normalizes spacing, prior to substituting vars"
   [msg ex-data]
-  (str/replace msg #"(?::)([\S]*\w)"
-    (fn [[match kw]]
-      (str (or (get ex-data (keyword kw) match) "nil")))))
+  (let [msg' (fmt/justify msg)]
+    (str/replace msg' #"(?::)([\S]*\w)"
+      (fn [[match kw]]
+        (str (or (get ex-data (keyword kw) match) "nil"))))))
 
 (deferror ::missing-error-type
   :message "Error while attempting to build exception: Unknown error type `:unknown-type`"

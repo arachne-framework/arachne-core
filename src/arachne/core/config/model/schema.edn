@@ -1,27 +1,37 @@
-;; Ontology for Configurations
+;; Model for Configurations
+
+;; Note that this model is similar to what is *generated* by the Chimera module.
+
+;; Chimera can also *read* models of this format, meaning that data modesl can
+;; be round-tripped between Arachne Schema and Chimera Models.
+
+;; When the Chimera module is loaded, it creates a Chimera data model from all
+;; the schema present in the Arachne Config, so that Chimera persistence ops &
+;; tools will work on the config. However, they are not required.
+
 [
   [
 
    ;; Classes
    {:db/id          #arachne/tempid[:db.part/db]
-    :db/ident       :arachne.class/superclasses
+    :db/ident       :arachne.type/supertypes
     :db/valueType   :db.type/ref
     :db/cardinality :db.cardinality/many
-    :db/doc         "The superclasses of a configuration class."
+    :db/doc         "The supertypes of a type"
     :db.install/_attribute :db.part/db}
 
    ;; Meta-attributes
    {:db/id          #arachne/tempid[:db.part/db]
     :db/ident       :arachne.attribute/domain
     :db/valueType   :db.type/ref
-    :db/cardinality :db.cardinality/many
-    :db/doc         "Defines that entities having this attribute are instances of the referenced classes."
+    :db/cardinality :db.cardinality/one
+    :db/doc         "Defines that entities having this attribute are instances of the referenced type."
     :db.install/_attribute :db.part/db}
    {:db/id          #arachne/tempid[:db.part/db]
     :db/ident       :arachne.attribute/range
     :db/valueType   :db.type/ref
-    :db/cardinality :db.cardinality/many
-    :db/doc         "Defines that entities that are the object of this attribute are instances of the referenced classes."
+    :db/cardinality :db.cardinality/one
+    :db/doc         "Defines that entities that are the object of this attribute are instances of the referenced type."
     :db.install/_attribute :db.part/db}
    {:db/id          #arachne/tempid[:db.part/db]
     :db/ident       :arachne.attribute/min-cardinality
@@ -36,46 +46,34 @@
     :db/doc         "The maximum cardinality of an attribute"
     :db.install/_attribute :db.part/db}
 
-   ;; Explicit type
-   {:db/id          #arachne/tempid[:db.part/db]
-    :db/ident       :arachne/instance-of
-    :db/valueType   :db.type/ref
-    :db/cardinality :db.cardinality/many
-    :db/doc         "Can be added to any entity to explicitly indicate the classes to which it is intended to belong. Usually used in situations where this cannot be inferred based on the entities other attributes."
-    :db.install/_attribute :db.part/db}
    ]
 
  ;; Meta
  [
   {:db/id          #arachne/tempid[:db.part/user]
-   :db/ident       :arachne/Class
-   :db/doc         "The class of Classes"}
+   :db/ident       :arachne/Type
+   :db/doc         "The type of Types"}
   {:db/id          #arachne/tempid[:db.part/user]
    :db/ident       :arachne/Attribute
-   :db/doc         "The class of Attributes"}
+   :db/doc         "The type of Attributes"}
   {:db/id          #arachne/tempid[:db.part/user]
    :db/ident       :arachne/Entity
-   :db/doc         "The root class, the implicit superclass of all other classes."}
-
-  {:db/id  #arachne/tempid[:db.part/db]
-   :db/ident :arachne/instance-of
-   :arachne.attribute/domain {:db/ident :arachne/Entity}
-   :arachne.attribute/range {:db/ident :arachne/Class}}
+   :db/doc         "The root type, the implicit supertype of all other configuration types"}
 
   {:db/id  #arachne/tempid[:db.part/db]
    :db/ident :arachne.class/superclasses
-   :arachne.attribute/domain {:db/ident :arachne/Class}
-   :arachne.attribute/range {:db/ident :arachne/Class}}
+   :arachne.attribute/domain {:db/ident :arachne/Type}
+   :arachne.attribute/range {:db/ident :arachne/Type}}
 
   {:db/id  #arachne/tempid[:db.part/db]
    :db/ident :arachne.attribute/domain
    :arachne.attribute/domain {:db/ident :arachne/Attribute}
-   :arachne.attribute/range {:db/ident :arachne/Class}}
+   :arachne.attribute/range {:db/ident :arachne/Type}}
 
   {:db/id  #arachne/tempid[:db.part/db]
    :db/ident :arachne.attribute/range
    :arachne.attribute/domain {:db/ident :arachne/Attribute}
-   :arachne.attribute/range {:db/ident :arachne/Class}}
+   :arachne.attribute/range {:db/ident :arachne/Type}}
 
   {:db/id  #arachne/tempid[:db.part/db]
    :db/ident :arachne.attribute/min-cardinality

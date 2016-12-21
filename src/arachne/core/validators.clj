@@ -2,20 +2,20 @@
   (:require [arachne.core.config :as cfg]
             [arachne.core.config.validation :as v]
             [arachne.error :as e :refer [error deferror]]
-            [arachne.core.config.ontology :as ont]
+            [arachne.core.config.model :as m]
             [arachne.core.util :as util]))
 
-(defn- count-any
-  "Counts the object, which might or might not be a collection"
-  [obj]
-  (cond
-    (nil? obj) 0
-    (and (coll? obj)
-      (not (map? obj))) (count obj)
-    :else 1))
+(defn- count-attr
+  "Returns the actual cardinality of an attribute on an entity"
+  [cfg eid attr]
+  (count
+    (cfg/q cfg '[:find [?v ...]
+                 :in $ ?e ?a
+                 :where [?e ?a ?v]]
+      eid attr)))
 
 (deferror ::min-cardinality-constraint
-  :message "Min-cardinality constraint was violated"
+  :message "Min-cardinality constraint on `:eid` for attr `:attr` was violated"
   :explanation "The entity with eid `:eid` violated a min-cardinality constraint. It was supposed to have at least :expected values for `:attr`, but :actual were found."
   :ex-data-docs {:entity "The failed entity"
                  :eid "The eid of the failed entity"
@@ -24,7 +24,7 @@
                  :actual "The actual cardinality"})
 
 (deferror ::max-cardinality-constraint
-  :message "Min-cardinality constraint was violated"
+  :message "Min-cardinality constraint on `:eid` for attr `:attr` was violated"
   :explanation "The entity with eid `:eid` violated a max-cardinality constraint. It was supposed to have no more than :expected values for `:attr`, but :actual were found."
   :ex-data-docs {:entity "The failed entity"
                  :eid "The eid of the failed entity"
@@ -41,16 +41,15 @@
                               :where
                               [?attr :arachne.attribute/min-cardinality ?min]
                               [?attr :arachne.attribute/domain ?class]
-                              (class ?class ?entity)
+                              (type ?class ?entity)
                               [?attr :db/ident ?attr-ident]]
-                   ont/rules)]
+                   m/rules)]
     (filter identity
-      (for [[entity attr min] entities]
-        (let [count (count-any (cfg/attr cfg entity attr))]
+      (for [[eid attr min] entities]
+        (let [count (count-attr cfg eid attr)]
           (when (< count min)
             (e/arachne-ex ::min-cardinality-constraint
-              {:entity entity
-               :eid (:db/id entity)
+              {:eid eid
                :attr attr
                :expected min
                :actual count} nil)))))))
@@ -62,18 +61,18 @@
                               :in $ %
                               :where
                               [?attr :arachne.attribute/max-cardinality ?max]
-                              [?attr :db/cardinality :db.cardinality/many]
+                              [?attr :db/cardinality ?card]
+                              [?card :db/ident :db.cardinality/many]
                               [?attr :arachne.attribute/domain ?class]
-                              (class ?class ?entity)
+                              (type ?class ?entity)
                               [?attr :db/ident ?attr-ident]]
-                   ont/rules)]
+                   m/rules)]
     (filter identity
-      (for [[entity attr max] entities]
-        (let [count (count-any (cfg/attr cfg entity attr))]
+      (for [[eid attr max] entities]
+        (let [count (count-attr cfg eid attr)]
           (when (< max count)
             (e/arachne-ex ::max-cardinality-constraint
-              {:entity entity
-               :eid (:db/id entity)
+              {:eid eid
                :attr attr
                :expected max
                :actual count} nil)))))))

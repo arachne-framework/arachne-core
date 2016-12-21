@@ -2,7 +2,7 @@
   (:require [clojure.test :refer :all]
             [arachne.core :as core]
             [arachne.core.config :as cfg]
-            [arachne.core.config.ontology :as o]
+            [arachne.core.config.model :as m]
             [arachne.core.runtime :as rt]
             [com.stuartsierra.component :as component]
             [arachne.core.util :as util]
@@ -37,10 +37,10 @@
 (def module-schema
   (constantly (concat
 
-                (o/class :test/Widget [:arachne/Component]
-                  "Class of Widget components"
+                (m/type :test/Widget [:arachne/Component]
+                  "Type of Widget components"
                   ::widget
-                  (o/attr :test.widget/name :one :string
+                  (m/attr :test.widget/name :one :string
                     "The name of a widget"))
 
                 )))

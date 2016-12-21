@@ -1,4 +1,4 @@
-(ns arachne.core.config.ontology.specs
+(ns arachne.core.config.model.specs
   (:require [clojure.spec :as s]
             [arachne.core.config.specs :as config-spec]))
 
@@ -44,7 +44,7 @@
                                   :max (s/or :value integer?
                                              :unbounded keyword?)))
 
-(s/fdef arachne.core.config.ontology/attr
+(s/fdef arachne.core.config.model/attr
   :args (s/cat :ident keyword?
                :attrs (s/+ (s/or :shorthand ::shorthand-schema
                                  :docstring string?
@@ -53,31 +53,12 @@
                                  :cardinality-range ::cardinality-range)))
   :ret ::config-spec/map-txform)
 
-(s/def ::class-ident (s/and keyword? namespace))
+(s/def ::ident (s/and keyword? namespace))
 
-(s/fdef arachne.core.config.ontology/class
-  :args (s/cat :ident ::class-ident
-               :supers (s/coll-of ::class-ident)
+(s/fdef arachne.core.config.model/type
+  :args (s/cat :ident ::ident
+               :supers (s/coll-of ::ident)
                :docstring string?
                :specs (s/* keyword?)
                :attrs (s/* map?))
   :ret ::config-spec/list-txform)
-
-(comment
-
-  (s/conform ::cardinality-range [1 2])
-
-  (s/conform (:args (s/spec 'arachne.core.config.ontology/attr))
-             [:foo/bar :uri :fulltext "hello" :arachne/Component [1 3] {:foo :bar}]
-
-             )
-
-  (s/conform
-    (:args (s/spec 'arachne.core.config.ontology/attr))
-    [:foo/bar :arachne.config/Component [0 :many]])
-
-
-
-
-
-  )

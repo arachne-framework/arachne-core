@@ -1,5 +1,7 @@
 (ns arachne.core.config.impl.common
   (:require [clojure.walk :as w]
+            [clojure.pprint :as pprint]
+            [arachne.error :as e :refer [deferror error]]
             [arachne.core.config :as cfg]))
 
 (defn- replace-tempid
@@ -44,3 +46,12 @@
                                (:tempids txresult)
                                dtid)])
                   atid->dtid))))))
+
+
+(defmethod pprint/simple-dispatch arachne.core.config.Configuration
+  [cfg]
+  (pr cfg))
+
+(prefer-method pprint/simple-dispatch
+  arachne.core.config.Configuration
+  clojure.lang.IPersistentMap)
