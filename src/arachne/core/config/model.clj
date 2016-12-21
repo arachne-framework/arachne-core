@@ -65,7 +65,7 @@
                      :arachne.type/supertypes (map (fn [super]
                                                         {:db/ident super})
                                                    supers)
-                     :arachne.component/spec specs})]
+                     :arachne.type/component-specs specs})]
     (cons type-map (map update-domain attrs))))
 
 (def rules
@@ -90,4 +90,3 @@
     [(type ?type ?entity)
      (supertype ?type ?subtype)
      (type ?subtype ?entity)]])
-

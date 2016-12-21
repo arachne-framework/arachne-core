@@ -10,10 +10,13 @@
        "Unique identifier for an entity in an Arachne configuration"
        {:arachne.attribute/domain {:db/ident :arachne/Entity}})]
 
+     (m/type :arachne/Type []
+       "The Type of an Arachne configuration type"
+       (m/attr :arachne.type/component-specs :many :keyword
+         "Spec to validate runtime instances of components of this type"))
+
      (m/type :arachne/Component []
       "The definition of a component used to build and Arachne system at runtime (using the Component library)"
-      (m/attr :arachne.component/spec :many :keyword
-        "Spec to validate runtime instances of this component.")
       (m/attr :arachne.component/dependencies
         :many :arachne.component/Dependency
         "The dependencies of a component.")

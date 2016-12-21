@@ -149,7 +149,7 @@
                :where
                (type ?class ?entity)
                [?class :db/ident ?class-ident]
-               [?class :arachne.component/spec ?spec]]
+               [?class :arachne.type/component-specs ?spec]]
     eid
     cfg-model/rules))
 
