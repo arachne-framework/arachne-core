@@ -96,3 +96,36 @@
       (empty? invokes) (error ::arity-detection-error {:f f})
       :else (count (.getParameterTypes (first invokes))))))
 
+(defn map->entity
+  "Utility function for transforming an arbitrary Clojure map into an Entity map, which is a common
+   but annoying task.
+
+   This utility makes it easier to deal with optional/missing keys and value transformations.
+
+   Takes an input map, an output base map and a series of 'mapping' triples.
+
+   A mapping triple has three elements:
+
+   1. The key in the input map.
+   2. The attribute key in the output map.
+   3. A function to apply to the value during the mapping.
+
+   If a key is missing from the input map, it will not be placed into the output map.
+
+   For example:
+
+   (map->entity {:a 1 :b 2} {}
+     :a :foo/a identity
+     :b :foo/b str
+     :c :foo/c identity)
+
+   yields:
+
+   {:foo/a 1, :foo/b \"2\"}"
+  [input output & mappings]
+  (let [triples (partition 3 mappings)]
+    (reduce (fn [output [src-key dest-key xform]]
+              (if (nil? (src-key input))
+                output
+                (assoc output dest-key (xform (src-key input)))))
+      output triples)))
