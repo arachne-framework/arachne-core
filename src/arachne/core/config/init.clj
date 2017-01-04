@@ -89,3 +89,4 @@
   script, form or literal txdata."
   [modules initializer]
   (apply-initializer (cfg/new modules) initializer))
+

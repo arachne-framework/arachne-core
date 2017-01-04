@@ -6,7 +6,9 @@
             [clojure.spec :as s]
             [clojure.spec.test :as st]
             [clojure.tools.logging :as log]
-            [arachne.error.format :as fmt]))
+            [arachne.error.format :as fmt])
+  (:import [java.util Date TimeZone]
+           [java.text SimpleDateFormat]))
 
 (def ^{:doc "global registry of Arachne error types and associated data"}
      error-registry (atom {}))
@@ -206,3 +208,14 @@
        (if (some #(error-type? t# %) ~types)
          (error ~throw-type ~ex-data t#)
          (throw t#)))))
+
+(def ^{:doc "Common UTC SimpleDateFormat to be used when reporting timestamps"}
+  utc-date-format
+  (let [f (SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ss.SSSz")]
+    (.setTimeZone f (TimeZone/getTimeZone "UTC"))
+    f))
+
+(defn format-date
+  "Convert a java.util.Date to a human-readable UTC string"
+  [date]
+  (.format utc-date-format date))
