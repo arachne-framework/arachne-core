@@ -96,8 +96,8 @@
       (empty? invokes) (error ::arity-detection-error {:f f})
       :else (count (.getParameterTypes (first invokes))))))
 
-(defn map->entity
-  "Utility function for transforming an arbitrary Clojure map into an Entity map, which is a common
+(defn map-transform
+  "Utility function for transforming maps into similar maps, which is a common
    but annoying task.
 
    This utility makes it easier to deal with optional/missing keys and value transformations.
@@ -114,7 +114,7 @@
 
    For example:
 
-   (map->entity {:a 1 :b 2} {}
+   (map-transform {:a 1 :b 2} {}
      :a :foo/a identity
      :b :foo/b str
      :c :foo/c identity)
@@ -123,9 +123,13 @@
 
    {:foo/a 1, :foo/b \"2\"}"
   [input output & mappings]
-  (let [triples (partition 3 mappings)]
+  (let [triples (partition 3 mappings)
+        omit? #(or (nil? %) (and (coll? %) (empty? %)))]
     (reduce (fn [output [src-key dest-key xform]]
-              (if (nil? (src-key input))
+              (if (omit? (src-key input))
                 output
-                (assoc output dest-key (xform (src-key input)))))
+                (let [v (xform (src-key input))]
+                  (if (omit? v)
+                    output
+                    (assoc output dest-key v)))))
       output triples)))
