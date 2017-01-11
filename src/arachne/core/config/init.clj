@@ -60,7 +60,7 @@
       (f))))
 
 (defmacro defdsl
-  "Convenience marco to define a DSL function that tracks provenance
+  "Convenience macro to define a DSL function that tracks provenance
    metadata, and validates its arguments according to the registered spec"
   [name docstr argvec & body]
   (let [fqn (symbol (str (ns-name *ns*)) (str name))]
