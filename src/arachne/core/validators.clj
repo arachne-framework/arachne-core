@@ -15,18 +15,20 @@
       eid attr)))
 
 (deferror ::min-cardinality-constraint
-  :message "Min-cardinality constraint on `:eid` for attr `:attr` was violated"
+  :message "Min-cardinality constraint on `:eid` (Arachne ID: `:aid`) for attr `:attr` was violated"
   :explanation "The entity with eid `:eid` violated a min-cardinality constraint. It was supposed to have at least :expected values for `:attr`, but :actual were found."
   :ex-data-docs {:entity "The failed entity"
+                 :aid "The Arachne ID of the failed entity"
                  :eid "The eid of the failed entity"
                  :attr "The attribute with the constraint"
                  :expected "The expected min cardinality"
                  :actual "The actual cardinality"})
 
 (deferror ::max-cardinality-constraint
-  :message "Min-cardinality constraint on `:eid` for attr `:attr` was violated"
+  :message "Min-cardinality constraint on `:eid` (Arachne ID: `:aid`) for attr `:attr` was violated"
   :explanation "The entity with eid `:eid` violated a max-cardinality constraint. It was supposed to have no more than :expected values for `:attr`, but :actual were found."
   :ex-data-docs {:entity "The failed entity"
+                 :aid "The Arachne ID of the failed entity"
                  :eid "The eid of the failed entity"
                  :attr "The attribute with the constraint"
                  :expected "The expected max cardinality"
@@ -50,6 +52,7 @@
           (when (< count min)
             (e/arachne-ex ::min-cardinality-constraint
               {:eid eid
+               :aid (cfg/attr cfg eid :arachne/id)
                :attr attr
                :expected min
                :actual count} nil)))))))
@@ -73,6 +76,7 @@
           (when (< max count)
             (e/arachne-ex ::max-cardinality-constraint
               {:eid eid
+               :aid (cfg/attr cfg eid :arachne/id)
                :attr attr
                :expected max
                :actual count} nil)))))))

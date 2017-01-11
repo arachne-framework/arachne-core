@@ -133,3 +133,12 @@
                     output
                     (assoc output dest-key v)))))
       output triples)))
+
+
+(defmacro keys**
+  "Define a regex alt spec that will either match a map, or a sequence of alternating keys/values
+   (s/keys or s/keys*). Arguments are as to s/keys*."
+  [& body]
+  `(s/alt
+     :kwargs (s/keys* ~@body)
+     :opts-map (s/keys ~@body)))
