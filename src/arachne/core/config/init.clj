@@ -44,6 +44,25 @@
   [txdata]
   (update (fn [cfg] (cfg/update cfg txdata))))
 
+(deferror ::nonexistent-aid
+  :message "Could not find entity identified by `:aid`"
+  :explanation "An entity with an Arachne ID of `:aid` was referenced from a `:dsl-form` DSL form. However, no entity with that Arachne ID actually exists in the config, yet.
+
+  The `:dsl-form` function does require that the entities it references be declared before they are used."
+  :suggestions ["Ensure that you have already created entities with the specified Arachne ID in your config script."
+                "Make sure that the Arachne IDs match exactly, with no typos."]
+  :tx-data-docs {:cfg "The config as of this invocation"
+                 :aid "The missing Arachne ID"
+                 :dsl-form "The DSL form in question"})
+
+(defn resolve-aid
+  "Return the EID of the entity with the specified Arachne ID, in the context config script. If it doesn't exist, throw an error explaining what happened."
+  [aid dsl-form]
+  (let [cfg (context-config)]
+    (if-let [eid (cfg/attr cfg [:arachne/id aid] :db/id)]
+      eid
+      (error ::nonexistent-aid {:cfg cfg, :aid aid, :dsl-form dsl-form}))))
+
 (defn- add-config-entity
   "Given a freshly initialized configuration, add a reified Configuration
   entity, referencing all the Runtime entities present in the config. Is a no-op
