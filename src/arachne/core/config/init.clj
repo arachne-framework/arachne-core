@@ -9,13 +9,21 @@
 
 (def
   ^{:dynamic true
+    :private true
     :doc "An atom containing the configuration currently in context in this init script"}
   *config*)
 
-(deferror ::update-outside-script
-  :message "Cannot update config in non-script context"
-  :explanation "You attempted to invoke one of Arachne's script-building DSL forms, but you're not currently in the context of a config initialization script. The script DSL works by updating a configuration that's currently \"in context\"; it is not meaningful to call DSL forms by themselves, or at the REPL."
+(deferror ::context-config-outside-of-script
+  :message "Cannot reference context config in non-script context"
+  :explanation "You attempted to use one of Arachne's script-building DSL forms, but you're not currently in the context of a config initialization script. The script DSL forms work by imperatively updating a configuration that's currently \"in context\"; it is not meaningful to call DSL forms by themselves, or at the REPL."
   :suggestions ["Use this DSL form only inside a config initalization script (such as you would pass to `arachne.core/build-config.)`"])
+
+(defn context-config
+  "Return the config value currently in context."
+  []
+  (if-not (bound? #'*config*)
+    (error ::context-config-outside-of-script {})
+    @*config*))
 
 (defn update
   "Update the current configuration by applying a function which takes the
@@ -23,7 +31,7 @@
   supplied function."
   [f & args]
   (if-not (bound? #'*config*)
-    (error ::update-outside-script {})
+    (error ::context-config-outside-of-script {})
     (apply swap! *config* f args)))
 
 (defn init-script-ns?

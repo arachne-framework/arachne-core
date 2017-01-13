@@ -2,7 +2,7 @@
  :version {:major 0, :minor 1, :patch 0, :qualifier :dev}
  :description "The core module for the Arachne web framework"
  :license {"Apache Software License 2.0" "http://www.apache.org/licenses/LICENSE-2.0"}
- :deps [[org.clojure/clojure "1.9.0-alpha12" :scope "provided"]
+ :deps [[org.clojure/clojure "1.9.0-alpha14" :scope "provided"]
         [aysylu/loom "0.5.4"]
         [com.stuartsierra/component "0.3.1"]
         [org.clojure/tools.logging "0.3.1"]
