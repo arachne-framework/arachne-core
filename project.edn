@@ -3,21 +3,31 @@
  :description "The core module for the Arachne web framework"
  :license {"Apache Software License 2.0" "http://www.apache.org/licenses/LICENSE-2.0"}
  :deps [[org.clojure/clojure "1.9.0-alpha14" :scope "provided"]
-        [aysylu/loom "0.5.4"]
-        [com.stuartsierra/component "0.3.1"]
-        [org.clojure/tools.logging "0.3.1"]
+        [aysylu/loom "0.5.4"
+         :exclusions [org.clojure/clojure]]
+        [com.stuartsierra/component "0.3.1"
+         :exclusions [org.clojure/clojure]]
+        [org.clojure/tools.logging "0.3.1"
+         :exclusions [org.clojure/clojure]]
         [adzerk/boot-test "1.1.2" :scope "test"]
-        [org.clojure/test.check "0.9.0" :scope "test"]
-        [org.clojure/tools.namespace "0.2.11" :scope "test"]
+        [org.clojure/test.check "0.9.0" :scope "test"
+         :exclusions [org.clojure/clojure]]
+        [org.clojure/tools.namespace "0.2.11" :scope "test"
+         :exclusions [org.clojure/clojure]]
         [datascript "0.15.3" :scope "test"]
-        [io.aviso/pretty "0.1.30"]
+        [io.aviso/pretty "0.1.30"
+         :exclusions [org.clojure/clojure]]
         [com.datomic/datomic-free "0.9.5350"
          :exclusions [org.slf4j/slf4j-api
                       org.slf4j/slf4j-nop
                       org.slf4j/slf4j-log4j12
-                      org.slf4j/log4j-over-slf4j]
+                      org.slf4j/log4j-over-slf4j
+                      org.slf4j/jcl-over-slf4j
+                      org.slf4j/jul-to-slf4j
+                      org.clojure/clojure]
          :scope "test"]
-        [ch.qos.logback/logback-classic "1.1.3" :scope "test"]
+        [ch.qos.logback/logback-classic "1.1.3" :scope "test"
+         :exclusions [org.slf4j/slf4j-api]]
         [org.slf4j/jul-to-slf4j "1.7.12" :exclusions [org.slf4j/slf4j-api] :scope "test"]
         [org.slf4j/jcl-over-slf4j "1.7.12" :scope "test"]
         [org.slf4j/log4j-over-slf4j "1.7.12" :scope "test"]]}

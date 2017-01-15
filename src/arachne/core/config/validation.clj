@@ -57,11 +57,16 @@
   [:arachne.core.validators/min-cardinality
    :arachne.core.validators/max-cardinality])
 
+(defn add-validators
+  "Add the given config validator functions to the config"
+  [cfg validators]
+  (let [cfg-eids (cfg/q cfg '[:find [?cfg ...]
+                              :where [?cfg :arachne.configuration/roots _]])]
+    (cfg/with-provenance :module `add-validators
+      (cfg/update cfg (for [v validators, c cfg-eids]
+                        [:db/add c :arachne.configuration/validators v])))))
+
 (defn add-core-validators
   "Add core config validator functions to the config"
   [cfg]
-  (let [cfg-eids (cfg/q cfg '[:find [?cfg ...]
-                              :where [?cfg :arachne.configuration/roots _]])]
-    (cfg/with-provenance :module `add-core-validators
-      (cfg/update cfg (for [v core-validators, c cfg-eids]
-                        [:db/add c :arachne.configuration/validators v])))))
+  (add-validators cfg core-validators))
