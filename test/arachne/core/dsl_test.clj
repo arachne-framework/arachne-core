@@ -25,28 +25,43 @@
 
   (a/component :test/c `test-ctor))
 
+(defn basic-system-cfg-nested []
+
+  ;; Alternate syntax for anonymous components
+  (a/runtime :test/rt [(a/component `test-ctor {:b :test/b
+                                                :c :test/c})])
+
+  (a/component :test/b `test-ctor {:c :test/c})
+
+  (a/component :test/c `test-ctor))
+
 (deftest basic-system
-  (let [cfg (core/build-config '[:org.arachne-framework/arachne-core] `(basic-system-cfg))
-        rt (component/start (rt/init cfg [:arachne/id :test/rt]))]
+  (let [cfg1 (core/build-config '[:org.arachne-framework/arachne-core] `(basic-system-cfg))
+        cfg2 (core/build-config '[:org.arachne-framework/arachne-core] `(basic-system-cfg-nested))]
 
-    (is (rt/lookup rt [:arachne/id :test/a]))
-    (is (rt/lookup rt [:arachne/id :test/b]))
-    (is (rt/lookup rt [:arachne/id :test/c]))
+    (doseq [cfg [cfg1 cfg2]]
+      (let [rt (component/start (rt/init cfg [:arachne/id :test/rt]))
+            a-eid (cfg/q cfg '[:find ?a .
+                               :where [?rt :arachne.runtime/components ?a]])]
 
-    (is (:running? (rt/lookup rt [:arachne/id :test/a])))
-    (is (:running? (rt/lookup rt [:arachne/id :test/b])))
-    (is (:running? (rt/lookup rt [:arachne/id :test/c])))
+        (is (rt/lookup rt a-eid))
+        (is (rt/lookup rt [:arachne/id :test/b]))
+        (is (rt/lookup rt [:arachne/id :test/c]))
 
-    (is (= (rt/lookup rt [:arachne/id :test/b])
-          (:b (rt/lookup rt [:arachne/id :test/a]))))
+        (is (:running? (rt/lookup rt a-eid)))
+        (is (:running? (rt/lookup rt [:arachne/id :test/b])))
+        (is (:running? (rt/lookup rt [:arachne/id :test/c])))
 
-    (is (= (rt/lookup rt [:arachne/id :test/c])
-          (:c (rt/lookup rt [:arachne/id :test/a]))))
+        (is (= (rt/lookup rt [:arachne/id :test/b])
+              (:b (rt/lookup rt a-eid))))
 
-    (is (= (rt/lookup rt [:arachne/id :test/c])
-          (:c (rt/lookup rt [:arachne/id :test/b]))))
+        (is (= (rt/lookup rt [:arachne/id :test/c])
+              (:c (rt/lookup rt a-eid))))
 
-    (component/stop rt)))
+        (is (= (rt/lookup rt [:arachne/id :test/c])
+              (:c (rt/lookup rt [:arachne/id :test/b]))))
+
+        (component/stop rt)))))
 
 (defn missing-runtime-cfg []
 

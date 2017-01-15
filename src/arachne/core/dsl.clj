@@ -55,25 +55,30 @@
 (s/def ::dependency-map (s/map-of keyword? ::ref :min-count 1))
 
 (defdsl component
-  "Low-level form for defining a component. Requires an Arachne ID, the full-qualified name of a
-   component constructor function, and an optional map of dependencies.
+  "Low-level form for defining a component. Requires an Arachne ID (optional), the full-qualified name of a
+   component constructor function (mandatory), and a map of dependencies (optional).
 
    For example:
 
       (component :my/some-component 'my.app/ctor)
+
    Or:
 
       (component :my/other-component 'my.app/ctor {:foobar :my/some-component})
 
-  Returns the entity ID of the component"
-  (s/cat :arachne-id ::arachne-id
+  Returns the entity ID of the component.
+
+  In general, an Arachne ID should always be provided, so the component can be referenced, unless
+  the `component` form is being nested in another DSL form and its returned eid is captured."
+  (s/cat :arachne-id  (s/? ::arachne-id)
          :constructor ::constructor
          :dependencies (s/? ::dependency-map))
-  [arachne-id constructor & [dependency-map]]
+  [<arachne-id> constructor <dependency-map>]
   (let [tid (cfg/tempid)
-        entity {:db/id tid
-                :arachne/id arachne-id
-                :arachne.component/constructor (keyword constructor)}
+        entity (util/mkeep
+                 {:db/id tid
+                  :arachne/id (:arachne-id &args)
+                  :arachne.component/constructor (keyword (:constructor &args))})
         txdata (map (fn [[k v]]
                       {:db/id tid
                        :arachne.component/dependencies
