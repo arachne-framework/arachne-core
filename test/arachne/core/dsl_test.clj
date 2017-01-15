@@ -3,7 +3,8 @@
             [arachne.core :as core]
             [arachne.core.runtime :as rt]
             [arachne.core.config :as cfg]
-            [com.stuartsierra.component :as component]))
+            [com.stuartsierra.component :as component]
+            [arachne.core.dsl :as a]))
 
 (defrecord TestComponent [running?]
   component/Lifecycle
@@ -13,15 +14,19 @@
 (defn test-ctor [_ _]
   (->TestComponent false))
 
+(defn basic-system-cfg []
+
+  (a/runtime :test/rt [:test/a])
+
+  (a/component :test/a `test-ctor {:b :test/b,
+                                   :c :test/c})
+
+  (a/component :test/b `test-ctor {:c :test/c})
+
+  (a/component :test/c `test-ctor))
+
 (deftest basic-system
-  (let [cfg (core/build-config '[:org.arachne-framework/arachne-core]
-              '(do (require '[arachne.core.dsl :as dsl])
-                   (dsl/runtime :test/rt [:test/a])
-                   (dsl/component :test/a {:test/b :b, :test/c :c}
-                     'arachne.core.dsl-test/test-ctor)
-                   (dsl/component :test/b {:test/c :c}
-                     'arachne.core.dsl-test/test-ctor)
-                   (dsl/component :test/c 'arachne.core.dsl-test/test-ctor)))
+  (let [cfg (core/build-config '[:org.arachne-framework/arachne-core] `(basic-system-cfg))
         rt (component/start (rt/init cfg [:arachne/id :test/rt]))]
 
     (is (rt/lookup rt [:arachne/id :test/a]))
@@ -43,12 +48,14 @@
 
     (component/stop rt)))
 
+(defn missing-runtime-cfg []
+
+  (a/runtime :test/rt [:test/a])
+  (a/component :test/a `test-ctor))
+
 (deftest missing-runtime
   (let [cfg (core/build-config '[:org.arachne-framework/arachne-core]
-              '(do (require '[arachne.core.dsl :as dsl])
-                   (dsl/runtime :test/rt [:test/a])
-                   (dsl/component :test/a {}
-                     'arachne.core.dsl-test/test-ctor)))]
+              `(missing-runtime-cfg))]
 
     (is (thrown-with-msg? arachne.ArachneException #"no-such-runtime"
           (component/start (rt/init cfg [:arachne/id :test/no-such-runtime]))))))

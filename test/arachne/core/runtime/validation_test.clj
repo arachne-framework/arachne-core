@@ -8,7 +8,7 @@
             [arachne.core.util :as util]
             [clojure.spec :as s]
             [clojure.tools.logging :as log]
-            [arachne.core.config.init :as init]))
+            [arachne.core.config.script :as init]))
 
 (def core
   {:db/id (cfg/tempid)

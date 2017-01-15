@@ -4,7 +4,7 @@
             [arachne.core.config :as cfg]
             [arachne.core.config.validation :as v]
             [arachne.core.runtime :as rt]
-            [arachne.core.config.init :as init]
+            [arachne.core.config.script :as script]
             [arachne.core.util :as util]
             [arachne.core.schema :as schema]
             [arachne.core.specs]
@@ -61,7 +61,7 @@
   ([modules initializer throw-validation-errors?]
    (e/assert-args `build-config modules initializer)
    (let [module-definitions (m/load modules)
-         cfg (init/initialize module-definitions initializer)
+         cfg (script/initialize module-definitions initializer)
          cfg (reduce (fn [c m] (m/configure m c))
                cfg (reverse module-definitions))]
      (v/validate cfg throw-validation-errors?))))

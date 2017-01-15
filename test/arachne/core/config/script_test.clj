@@ -1,15 +1,15 @@
-(ns arachne.core.config.init-test
+(ns arachne.core.config.script-test
   (:require [clojure.test :refer :all]
             [arachne.core :as core]
             [arachne.core.config :as cfg]
-            [arachne.core.config.init :as init]))
+            [arachne.core.config.script :as script]))
 
 (comment
 
   (def script '(do
 
                     (require '[arachne.core.config :as cfg])
-                    (require '[arachne.core.config.init :as script])
+                    (require '[arachne.core.config.script :as script])
 
                     (script/update
                       (fn [cfg]
@@ -40,7 +40,7 @@
   (let [script '(do
 
                   (require '[arachne.core.config :as cfg])
-                  (require '[arachne.core.config.init :as script])
+                  (require '[arachne.core.config.script :as script])
 
                   (script/update
                     (fn [cfg]
@@ -76,5 +76,5 @@
 
 (deftest throws-when-called-from-normal-code
   (is (thrown-with-msg? Throwable #"non-script context"
-        (init/update [{:db/id (arachne.core.config/tempid)
+        (script/update [{:db/id (arachne.core.config/tempid)
                       :arachne/id :dsl-test-1}]))))

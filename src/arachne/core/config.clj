@@ -75,6 +75,12 @@
   *provenance-txdata*
   nil)
 
+(def
+  ^{:dynamic true
+    :doc "The full qualified name of the current DSL function. Useful for error reporting in many contexts. Usually set by `with-provenance`."}
+  *dsl-function*
+  nil)
+
 (defn stack-provenance-txdata
   "Build provenance txdata based on the current stack frame, using the provided
   source and function symbol.
@@ -116,7 +122,8 @@
     `(let [txdata# ~(if stack-filter
                       `(stack-provenance-txdata ~source ~function ~stack-filter)
                       `(stack-provenance-txdata ~source ~function))]
-       (binding [*provenance-txdata* txdata#]
+       (binding [*provenance-txdata* txdata#
+                 *dsl-function* ~(:function args)]
          ~@body))))
 
 (declare update)
