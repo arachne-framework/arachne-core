@@ -74,3 +74,21 @@
 
     (is (thrown-with-msg? arachne.ArachneException #"no-such-runtime"
           (component/start (rt/init cfg [:arachne/id :test/no-such-runtime]))))))
+
+(defn dependencies-cfg []
+
+  (a/runtime :test/rt [:test/a])
+  (a/component :test/a `test-ctor {:b :test/b})
+  (a/component :test/b `test-ctor {:c :test/c})
+  (a/component :test/c `test-ctor {:d :test/d
+                                   :e :test/e})
+  (a/component :test/d `test-ctor)
+  (a/component :test/e `test-ctor))
+
+(deftest dependencies-test
+  (let [cfg (core/build-config '[:org.arachne-framework/arachne-core]
+              `(dependencies-cfg))]
+    (is (= 4 (count (cfg/dependencies cfg (cfg/attr cfg [:arachne/id :test/a] :db/id)))))
+    (is (= 3 (count (cfg/dependencies cfg (cfg/attr cfg [:arachne/id :test/b] :db/id)))))
+    (is (= 2 (count (cfg/dependencies cfg (cfg/attr cfg [:arachne/id :test/c] :db/id)))))
+    (is (= 0 (count (cfg/dependencies cfg (cfg/attr cfg [:arachne/id :test/d] :db/id)))))))

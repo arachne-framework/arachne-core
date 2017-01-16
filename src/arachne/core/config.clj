@@ -281,3 +281,24 @@
   :ex-data-docs {:lookup "The lookup ref or entity ID"
                  :config "The configuration in question"}
   )
+
+
+(def dependency-rules
+  "Datalog rule to recursively determine the dependency relationship between components"
+  '[[(depends ?component ?dependency)
+     [?component :arachne.component/dependencies ?dep]
+     [?dep :arachne.component.dependency/entity ?dependency]]
+
+    [(depends ?component ?dependency)
+     [?component :arachne.component/dependencies ?dep]
+     [?dep :arachne.component.dependency/entity ?trans]
+     (depends ?trans ?dependency)]])
+
+(defn dependencies
+  "Given the entity ID of a component, return all of its direct or transitive dependencies."
+  [cfg component-eid]
+  (q cfg '[:find [?entity ...]
+           :in $ % ?component
+           :where
+           (depends ?component ?entity)]
+    dependency-rules component-eid))
