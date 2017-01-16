@@ -10,4 +10,6 @@
       <appender-ref ref="STDOUT"/>
   </root>
 
+  <logger name="arachne.core.config.validation" level="OFF" />
+
 </configuration>
