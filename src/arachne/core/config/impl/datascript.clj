@@ -99,7 +99,7 @@
   [cfg writer]
   (.write writer (str cfg)))
 
-(defn ctor
-  "Construct and return an uninitialized instance of DatascriptConfig"
+(defn new
+  "Construct and return a fresh, uninitialized instance of DatascriptConfig"
   []
   (->DatascriptConfig nil nil))

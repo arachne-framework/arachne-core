@@ -10,7 +10,10 @@
             [arachne.core.util :as util]
             [arachne.core.schema :as schema]
             [arachne.error :as e]
-            [clojure.spec :as s]))
+            [clojure.spec :as s]
+            [arachne.core.util :as u])
+  (:import (java.io FileNotFoundException)
+           (clojure.lang Compiler$CompilerException)))
 
 (defn ^:no-doc instance-ctor
   "Component constructor that defines components by resolving a var"
@@ -78,35 +81,81 @@
 (s/fdef config
   :args (s/cat :module (s/alt :name :arachne/name
                               :definition :arachne.core.module/definition)
-               :throw-validation-errors? boolean?))
+               :blank-cfg (s/? ::cfg-spec/config)
+               :throw-validation-errors? (s/? boolean?)))
 
-(defn config
-  "Build and initialize a new Arachne configuration object.
+(defn- missing-implementation?
+  "Determine if an exception indicates a missing implementation"
+  [e]
+  (and
+    (instance? Compiler$CompilerException e)
+    (instance? FileNotFoundException (.getCause e))))
 
-  Takes the name of an Arachne module, which must be defined in an `arachne.edn` file on the root
-  of the classpath.
+(defn- default-blank-cfg
+  "Get either a Datomic or a DataScript blank config, depending on what's in the classpath.
+   DataScript if they both are."
+  []
+  (try
+    (@(u/require-and-resolve 'arachne.core.config.impl.datascript/new))
+    (catch Throwable ds-e
+      (if (missing-implementation? ds-e)
+        (@(u/require-and-resolve 'arachne.core.config.impl.datomic/new))
+        (throw ds-e)))))
 
-  Alternatively, instead of an application name, you may pass a module definition map directly.
-  The map must define a module that is *not* present in any `arachne.edn` file.
+(def
+  ^{:doc
+    "Initialize a new Arachne configuration object for this application
 
-  The optional second argument specifies whether configuration validation errors will cause an
-  exception to be thrown (they will be logged regardless.) Usually you should set this true only
-  when debugging, since an invalid config can cause any number of difficult-to-debug issues if it
-  is actually used."
-  ([module] (config module true))
-  ([module throw-validation-errors?]
-   (e/assert-args `config module throw-validation-errors?)
-   (m/config module throw-validation-errors?)))
+    Arguments are:
+
+      - module (mandatory): Either the name of an Arachne module defined in an `arachne.edn` file
+        on the classpath, or a direct module definition map. If a module definition map is
+        provided, it should have a unique `:arachne/name` that is *not* present in any
+        `arachne.edn` file on the classpath, to avoid conflicts.
+
+      - blank-cfg (optional): A blank, uninitialized configuration. To obtain such an
+        implementation, call:
+          - if using Datomic, `arachne.core.config.impl.datomic/new`
+          - if using Datascript, `arachne.core.config.impl.datascript/new`
+          - for module testing, `arachne.core.config.impl.multiplex/new`. It is important to use
+            this when developing a module to ensure that the result is compatible with both Datomic
+            and DataScript configurations.
+
+        Defaults to whichever of Datomic and DataScript are present on the classpath. If both are,
+        DataScript is used because it has a faster boot time.
+v
+      - throw-validation-errors? (optional): Set to false if a configuration should be returned
+        even if it contains validation errors. Defaults to true. Validation errors will be logged
+        in either case. Usually, this should be set to false only while debugging, since an invalid
+        config can cause any number of difficult-to-debug issues if it is actually used to start an
+        application."
+
+    :arglists '([module <blank-cfg> <throw-validation-errors?>])}
+  config
+  (fn [& [module & more :as args]]
+    (let [conformed (s/conform (:args (s/get-spec `config)) args)]
+      (m/config module
+                (or (:blank-cfg conformed) (default-blank-cfg))
+                (if (contains? conformed :throw-validation-errors?)
+                  (:throw-validation-errors? conformed)
+                  true)))))
 
 (defn ^:no-doc build-config
   "Build a new Arachne config, using an application/module that is defined on the fly.
 
-   This is the same as the previous API, and is preserved as it is useful for testing"
+   This is the same as the previous API, and is preserved as it is useful for testing.
+
+   Because it is mostly used for testing, defaults to a multiplex config."
   ([deps initializer] (build-config deps initializer true))
   ([deps initializer throw-validation-errors?]
+   (build-config deps initializer throw-validation-errors?
+     (@(u/require-and-resolve 'arachne.core.config.impl.multiplex/new))))
+  ([deps initializer throw-validation-errors? blank-cfg]
    (config {:arachne/name :arachne.core/app-module
             :arachne/dependencies deps
-            :arachne/inits [initializer]} throw-validation-errors?)))
+            :arachne/inits [initializer]}
+           blank-cfg
+           throw-validation-errors?)))
 
 (s/fdef runtime
   :args (s/cat :config ::cfg-spec/config

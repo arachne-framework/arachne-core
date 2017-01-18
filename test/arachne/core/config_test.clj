@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all]
             [clojure.set :as set]
             [arachne.core.module :as m]
-            [arachne.core.config :as cfg]))
+            [arachne.core.config :as cfg]
+            [arachne.core.config.impl.multiplex :as impl]))
 
 (def s1 [{:db/id (cfg/tempid :db.part/db)
                      :db/ident :test/basic
@@ -55,7 +56,7 @@
 
 (defn- setup
   []
-  (cfg/new [(arachne.core/schema) s1 s2 s3 s4 s5 s6]))
+  (cfg/init (impl/new) [(arachne.core/schema) s1 s2 s3 s4 s5 s6]))
 
 (deftest schema-loads-correctly
   (let [cfg (setup)

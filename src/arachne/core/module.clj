@@ -194,11 +194,11 @@
 
 (defn- config*
   "Build a config given a concrete definition map"
-  [all-definitions definition throw-validation-errors?]
+  [blank-cfg all-definitions definition throw-validation-errors?]
   (let [active-definitions (reachable all-definitions definition)
         active-definitions (topological-sort active-definitions)
         ;; Schema and initial config construction
-        cfg (cfg/new (keep schema active-definitions))
+        cfg (cfg/init blank-cfg (keep schema active-definitions))
         ;; Initialize phase: dependency order
         cfg (reduce initialize cfg active-definitions)
         ;; Configure phase: reverse dependency order
@@ -224,8 +224,8 @@
   :ex-data-docs {:name "The module name"})
 
 (defn ^:no-doc config
-  "Define a configuration. Intended to be called through arachen.core/config, which has the same API."
-  [module throw-validation-errors?]
+  "Define a configuration. Intended to be called through arachen.core/config."
+  [module blank-cfg throw-validation-errors?]
   (let [named? (keyword? module)
         name (if named? module (:arachne/name module))
         classpath-definitions (discover-definitions)
@@ -236,9 +236,7 @@
       (error ::module-already-exists {:name name}))
     (let [definition (if named? existing module)
           all-definitions (if named? classpath-definitions (conj classpath-definitions module))]
-      (config* all-definitions
-        definition
-        throw-validation-errors?))))
+      (config* blank-cfg all-definitions definition throw-validation-errors?))))
 
 
 

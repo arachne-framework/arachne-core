@@ -8,7 +8,8 @@
             [arachne.core.util :as util]
             [clojure.spec :as s]
             [clojure.tools.logging :as log]
-            [arachne.core.config.script :as init]))
+            [arachne.core.config.script :as init]
+            [arachne.core.config.impl.multiplex :as impl]))
 
 
 
@@ -37,7 +38,7 @@
 
 (defn- setup
   []
-  (cfg/new [(arachne.core/schema) module-schema]))
+  (cfg/init (impl/new) [(arachne.core/schema) module-schema]))
 
 (deftest successful-validation
   (let [cfg (setup)

@@ -39,7 +39,7 @@
   [cfg writer]
   (.write writer (str cfg)))
 
-(defn ctor
-  "Construct and return an uninitialized instance of DatomicConfig"
+(defn new
+  "Construct and return a fresh, uninitialized instance of DatomicConfig"
   []
   (->DatomicConfig nil nil))

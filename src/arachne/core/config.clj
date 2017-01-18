@@ -128,14 +128,14 @@
 (declare update)
 
 (defn init
-  "Given a seq of txdatas containing Datomic-style schema, return a new empty
-  configuration"
-  [config schema-txes]
-  (e/assert-args `init config schema-txes)
+  "Given a fresh blank config and a seq of txdatas containing Datomic-style schema, return a new
+  empty configuration with schema installed."
+  [blank-cfg schema-txes]
+  (e/assert-args `init blank-cfg schema-txes)
   (let [schema-txes (concat
                       (u/read-edn "arachne/core/config/model/schema.edn")
                       schema-txes)
-        cfg (init- config schema-txes)]
+        cfg (init- blank-cfg schema-txes)]
     (reduce (fn [cfg txdata]
               (update cfg txdata false))
       cfg
@@ -197,38 +197,6 @@
   [config expr id]
   (e/assert-args `pull config expr id)
   (pull- config expr id))
-
-(def ^:private datomic-ctor 'arachne.core.config.impl.datomic/ctor)
-(def ^:private datascript-ctor 'arachne.core.config.impl.datascript/ctor)
-(def ^:private multiplex-ctor 'arachne.core.config.impl.multiplex/ctor)
-
-(deferror ::could-not-find-config
-  :message "Could not find config implementation. You must include either Datomic or Datascript on your classpath."
-  :explanation "The system inspects the current classpath to see what config implementations are available. Either Datomic or DataScript is required, but neither could be found."
-  :suggestions ["Include either Datomic or DataScript on your classpath, as configured in your `project.clj` or `build.boot` file"])
-
-(defn- find-impl
-  "Return a config constructor, based on what is present in the classpath"
-  []
-  (let [maybe-resolve (fn [sym]
-                        (try
-                          (require (symbol (namespace sym)))
-                          (resolve sym)
-                          (catch Throwable t
-                            nil)))
-        datomic (maybe-resolve datomic-ctor)
-        datascript (maybe-resolve datascript-ctor)]
-    (cond
-      (and datomic datascript) (maybe-resolve multiplex-ctor)
-      datomic datomic
-      datascript datascript
-      :else (error ::could-not-find-config {}))))
-
-(defn new
-  "Given a seq of schema txdatas, return a new, empty config."
-  [schema-txes]
-  (let [ctor (find-impl)]
-    (init (@ctor) schema-txes)))
 
 (defn resolve-tempid
   "Given a configuration and an Arachne tempid, return concrete entity ID to

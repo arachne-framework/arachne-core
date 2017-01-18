@@ -125,7 +125,7 @@
   [cfg writer]
   (.write writer (str cfg)))
 
-(defn ctor
-  "Construct and return an uninitialized instance of a MultiplexedConfig"
+(defn new
+  "Construct and return a fresh, uninitialized instance of a MultiplexedConfig"
   []
-  (->MultiplexedConfig (datomic/ctor) (datascript/ctor) {}))
+  (->MultiplexedConfig (datomic/new) (datascript/new) {}))
