@@ -6,10 +6,10 @@
     </encoder>
   </appender>
 
-  <root level="WARN">
+  <root level="INFO">
       <appender-ref ref="STDOUT"/>
   </root>
 
-  <logger name="arachne.core.config.validation" level="OFF" />
+ <logger name="arachne.core.config.validation" level="OFF" />
 
 </configuration>

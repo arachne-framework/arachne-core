@@ -7,19 +7,16 @@
             [com.stuartsierra.component :as component]
             [arachne.core.util :as util]
             [clojure.spec :as s]
-            [clojure.tools.logging :as log]
+            [arachne.log :as log]
             [arachne.core.config.script :as init]
             [arachne.core.config.impl.multiplex :as impl]))
-
-
 
 (defprotocol Widget
   (dance [this] "Do the widget dance"))
 
 (defrecord TestWidget []
   Widget
-  (dance [_] (log/debug "the widget dances")))
-
+  (dance [_] (log/debug :msg "the widget dances")))
 
 (defrecord NotAWidget [])
 

@@ -8,7 +8,7 @@
             [clojure.spec :as s]
             [clojure.walk :as w]
             [clojure.java.io :as io]
-            [clojure.tools.logging :as log])
+            [arachne.log :as log])
   (:import [java.util Date]))
 
 (def ^:dynamic *default-partition* :db.part/user)
@@ -175,8 +175,7 @@
              tx (resolve-tempid- new-config tx-tempid)]
          (when add-provenance-txdata?
            (when-not (pull- new-config '[:arachne.transaction/source] tx)
-             (log/warn "No provenance metadata found on transaction"
-               (ex-info "" {:txdata txdata'}))))
+             (log/warn :exception (ex-info "No provenance metadata found on transaction" {:txdata txdata'}))))
          new-config)
        (catch Throwable t
          (error ::transaction-exception {:explicit-txdata txdata

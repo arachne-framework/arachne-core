@@ -5,7 +5,7 @@
   (:require [clojure.string :as str]
             [clojure.spec :as s]
             [clojure.spec.test :as st]
-            [clojure.tools.logging :as log]
+            [arachne.log :as log]
             [arachne.error.format :as fmt])
   (:import [java.util Date TimeZone]
            [java.text SimpleDateFormat]))
@@ -39,7 +39,7 @@
 
   This is implemented as a macro so as to not show up in stack traces."
   [& [msg ex-data cause]]
-  `(log/error (arachne-ex ~msg ~ex-data ~cause)))
+  `(log/error :exception (arachne-ex ~msg ~ex-data ~cause)))
 
 (defmacro error
   "Throw an ex-info with the given error message lookup key, optional cause, and

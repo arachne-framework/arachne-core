@@ -5,7 +5,7 @@
             [arachne.core.util :as util]
             [arachne.error :as e :refer [deferror error]]
             [clojure.string :as str]
-            [clojure.tools.logging :as log]))
+            [arachne.log :as log]))
 
 (defn- run-validator
   "Run the given validator (given as a keyword) against the specified config. If
@@ -45,7 +45,7 @@
       cfg
       (do
         (doseq [error errors]
-          (log/error "Config Validation Error" error))
+          (log/error :exception error))
         (if-not throw?
           cfg
           (error ::validation-errors

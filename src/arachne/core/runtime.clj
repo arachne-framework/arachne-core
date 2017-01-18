@@ -7,7 +7,7 @@
             [arachne.core.util :as util]
             [arachne.error :as e :refer [deferror error]]
             [arachne.core.runtime.specs]
-            [clojure.tools.logging :as log]
+            [arachne.log :as log]
             [clojure.spec :as s]
             [clojure.set :as set]))
 
@@ -192,10 +192,10 @@
 (defrecord ArachneRuntime [config system runtime]
   c/Lifecycle
   (start [rt]
-    (log/info "Starting Arachne runtime")
+    (log/info :msg "Starting Arachne runtime")
     (update rt :system validate-and-start config))
   (stop [rt]
-    (log/info "Stopping Arachne runtime")
+    (log/info :msg "Stopping Arachne runtime")
     (update rt :system c/stop)))
 
 (defn- find-runtimes
