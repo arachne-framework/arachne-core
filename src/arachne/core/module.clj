@@ -18,9 +18,9 @@
 (s/def :arachne/configure (s/and symbol? namespace))
 (s/def :arachne/dependencies (s/coll-of :arachne/name :min-count 1 :distinct true))
 (s/def :arachne/init (s/or :filename string?
-                           :literal list?
                            :symbol symbol?
-                           :vector vector?))
+                           :vector vector?
+                           :literal seq?))
 (s/def :arachne/inits (s/coll-of :arachne/init :min-count 1))
 
 (s/def ::definition

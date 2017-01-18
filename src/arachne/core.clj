@@ -133,6 +133,7 @@ v
     :arglists '([module <blank-cfg> <throw-validation-errors?>])}
   config
   (fn [& [module & more :as args]]
+    (apply e/assert-args `config args)
     (let [conformed (s/conform (:args (s/get-spec `config)) args)]
       (m/config module
                 (or (:blank-cfg conformed) (default-blank-cfg))
