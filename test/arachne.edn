@@ -1,0 +1,3 @@
+[{:arachne/name :test/app
+  :arachne/inits ["test/config/test.clj"]
+  :arachne/dependencies [:org.arachne-framework/arachne-core]}]
