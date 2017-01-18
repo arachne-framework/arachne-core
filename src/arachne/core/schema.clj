@@ -47,7 +47,7 @@
         "Validator functions for this configuration, as a namespace-qualified keyword. Validator functions take a config and either return successfully or throw an exception.")
       (m/attr :arachne.configuration/namespace :one-or-none :keyword :identity
         "The unique identifier of the configuration, as a non-namespaced keyword. Should be set and used as the `namespace` portion of all Arachne IDs for entities that are logically part of this configuration, in scenarios where multiple configurations are present in the same database.")
-      (m/attr :arachne.configuration/roots :one-or-more :arachne/Entity
+      (m/attr :arachne.configuration/roots :many :arachne/Entity
         "Reference to the top-level entities that are part of this configuration."))
 
     (m/type :arachne/Transaction []

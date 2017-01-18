@@ -1,8 +1,7 @@
 (ns arachne.core.config
   "Handles building and managing Arachne's central Config object"
   (:refer-clojure :exclude [new update])
-  (:require [arachne.core.module :as m]
-            [arachne.core.config.specs]
+  (:require [arachne.core.config.specs]
             [arachne.core.util :as u]
             [arachne.error :as e :refer [deferror error]]
             [clojure.string :as str]
@@ -226,12 +225,10 @@
       :else (error ::could-not-find-config {}))))
 
 (defn new
-  "Returns an empty config, with schema installed, for the given sequence of
-  modules."
-  [modules]
-  (e/assert-args `arachne.core.config/new modules)
+  "Given a seq of schema txdatas, return a new, empty config."
+  [schema-txes]
   (let [ctor (find-impl)]
-    (init (@ctor) (map m/schema modules))))
+    (init (@ctor) schema-txes)))
 
 (defn resolve-tempid
   "Given a configuration and an Arachne tempid, return concrete entity ID to

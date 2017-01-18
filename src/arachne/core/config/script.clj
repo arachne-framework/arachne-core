@@ -5,7 +5,8 @@
             [arachne.core.util :as u]
             [arachne.error :as e :refer [error deferror]]
             [clojure.edn :as edn]
-            [clojure.spec :as s])
+            [clojure.spec :as s]
+            [arachne.core.util :as util])
   (:import [java.util UUID]))
 
 (def
@@ -69,20 +70,6 @@
       eid
       (error ::nonexistent-aid {:cfg cfg, :aid aid, :dsl-fn dsl-fn}))))
 
-(defn- add-config-entity
-  "Given a freshly initialized configuration, add a reified Configuration
-  entity, referencing all the Runtime entities present in the config. Is a no-op
-  if a configuration entity already exists in the given config value."
-  [config]
-  (if (cfg/q config '[:find ?cfg .
-                            :where [?cfg :arachne.configuration/roots _]])
-    config
-    (let [runtimes (cfg/q config '[:find [?rt ...]
-                                   :where
-                                   [?rt :arachne.runtime/components _]])]
-      (cfg/with-provenance :system `add-config-entity
-        (cfg/update config [{:arachne.configuration/roots runtimes}])))))
-
 (defn- in-script-ns
   "Invoke the given no-arg function in the context of a new, unique namespace"
   [f]
@@ -117,15 +104,9 @@
   [cfg initializer]
   (binding [*config* (atom cfg)]
     (cond
+      (symbol? initializer) (swap! *config* (util/require-and-resolve initializer))
       (string? initializer) (in-script-ns #(load-file initializer))
-      (vector? initializer) (update cfg/update initializer)
+      (vector? initializer) (swap! *config* cfg/update initializer)
       (not-empty initializer) (in-script-ns #(eval initializer))
       :else nil)
-    (add-config-entity @*config*)))
-
-(defn initialize
-  "Create a brand new configuration using the given modules, initialized with a
-  script, form or literal txdata."
-  [modules initializer]
-  (apply-initializer (cfg/new modules) initializer))
-
+    @*config*))

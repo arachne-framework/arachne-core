@@ -10,17 +10,7 @@
             [clojure.tools.logging :as log]
             [arachne.core.config.script :as init]))
 
-(def core
-  {:db/id (cfg/tempid)
-   :arachne.module/name 'org.arachne-framework/arachne-core
-   :arachne.module/configure 'arachne.core/configure
-   :arachne.module/schema 'arachne.core/schema})
 
-(def module
-  {:db/id (cfg/tempid)
-   :arachne.module/name `module
-   :arachne.module/configure `module
-   :arachne.module/schema `module-schema})
 
 (defprotocol Widget
   (dance [this] "Do the widget dance"))
@@ -35,19 +25,19 @@
 (s/def ::widget #(satisfies? Widget %))
 
 (def module-schema
-  (constantly (concat
+  (concat
 
-                (m/type :test/Widget [:arachne/Component]
-                  "Type of Widget components"
-                  ::widget
-                  (m/attr :test.widget/name :one :string
-                    "The name of a widget"))
+    (m/type :test/Widget [:arachne/Component]
+      "Type of Widget components"
+      ::widget
+      (m/attr :test.widget/name :one :string
+        "The name of a widget"))
 
-                )))
+    ))
 
 (defn- setup
   []
-  (cfg/new [core module]))
+  (cfg/new [(arachne.core/schema) module-schema]))
 
 (deftest successful-validation
   (let [cfg (setup)

@@ -4,44 +4,44 @@
             [arachne.core.module :as m]))
 
 (def sample-good
-  '#{{:arachne.module/name         test.one
-      :arachne.module/constructor  test.one/const
-      :arachne.module/dependencies [test.two test.three]}
-     {:arachne.module/name         test.two
-      :arachne.module/constructor  test.two/const
-      :arachne.module/dependencies [test.three]}
-     {:arachne.module/name        test.three
-      :arachne.module/constructor test.three/const}})
+  '#{{:arachne/name         test.one
+      :arachne/constructor  test.one/const
+      :arachne/dependencies [test.two test.three]}
+     {:arachne/name         test.two
+      :arachne/constructor  test.two/const
+      :arachne/dependencies [test.three]}
+     {:arachne/name        test.three
+      :arachne/constructor test.three/const}})
 
 (def sample-dup
-  '#{{:arachne.module/name         test.one
-      :arachne.module/constructor  test.one/const
-      :arachne.module/dependencies [test.two]}
-     {:arachne.module/name         test.one
-      :arachne.module/constructor  test.one/const2
-      :arachne.module/dependencies [test.two]}})
+  '#{{:arachne/name         test.one
+      :arachne/constructor  test.one/const
+      :arachne/dependencies [test.two]}
+     {:arachne/name         test.one
+      :arachne/constructor  test.one/const2
+      :arachne/dependencies [test.two]}})
 
 (def sample-cycles
-  '#{{:arachne.module/name         test.one
-      :arachne.module/constructor  test.one/const
-      :arachne.module/dependencies [test.two]}
-     {:arachne.module/name         test.two
-      :arachne.module/constructor  test.two/const
-      :arachne.module/dependencies [test.three]}
-     {:arachne.module/name         test.three
-      :arachne.module/constructor  test.three/const
-      :arachne.module/dependencies [test.one]}})
+  '#{{:arachne/name         test.one
+      :arachne/constructor  test.one/const
+      :arachne/dependencies [test.two]}
+     {:arachne/name         test.two
+      :arachne/constructor  test.two/const
+      :arachne/dependencies [test.three]}
+     {:arachne/name         test.three
+      :arachne/constructor  test.three/const
+      :arachne/dependencies [test.one]}})
 
 (def sample-missing
-  '#{{:arachne.module/name         test.one
-      :arachne.module/constructor  test.one/const
-      :arachne.module/dependencies [test.two]}
-     {:arachne.module/name         test.two
-      :arachne.module/constructor  test.two/const
-      :arachne.module/dependencies [test.three]}
-     {:arachne.module/name         test.three
-      :arachne.module/constructor  test.three/const
-      :arachne.module/dependencies [test.four]}})
+  '#{{:arachne/name         test.one
+      :arachne/constructor  test.one/const
+      :arachne/dependencies [test.two]}
+     {:arachne/name         test.two
+      :arachne/constructor  test.two/const
+      :arachne/dependencies [test.three]}
+     {:arachne/name         test.three
+      :arachne/constructor  test.three/const
+      :arachne/dependencies [test.four]}})
 
 
 (deftest validate-missing-modules
@@ -56,23 +56,17 @@
         (@#'m/topological-sort sample-cycles)))
   (is (sequential? (@#'m/topological-sort sample-good))))
 
-(deftest validate-missing-root
-  (is (thrown-with-msg? arachne.ArachneException #"Could not find"
-        (@#'m/reachable sample-good ['test-four]))))
-
 (def sample-reachable
   (set/union sample-good
-    '#{{:arachne.module/name test.ten
-        :arachne.module/constructor test.ten/const
-        :arachne.module/dependencies [test.eleven]}
-       {:arachne.module/name test.eleven
-        :arachne.module/constructor test.eleven/const}}))
+    '#{{:arachne/name test.ten
+        :arachne/constructor test.ten/const
+        :arachne/dependencies [test.eleven]}
+       {:arachne/name test.eleven
+        :arachne/constructor test.eleven/const}}))
 
 (deftest validate-reachability
-  (is (= (set (@#'m/reachable sample-reachable '[test.one]))
-          (set sample-good)))
-  (is (= (set (@#'m/reachable sample-reachable '[test.one test.ten]))
-          (set sample-reachable))))
+  (is (= (set (@#'m/reachable sample-reachable '{:arachne/name test.one}))
+          (set sample-good))))
 
 
 (deftest should-fail

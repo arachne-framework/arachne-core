@@ -1,5 +1,6 @@
 (ns arachne.core.config.validation
   (:require [arachne.core.config :as cfg]
+            [arachne.core.config.model :as model]
             [arachne.core.util :as u]
             [arachne.core.util :as util]
             [arachne.error :as e :refer [deferror error]]
@@ -61,7 +62,11 @@
   "Add the given config validator functions to the config"
   [cfg validators]
   (let [cfg-eids (cfg/q cfg '[:find [?cfg ...]
-                              :where [?cfg :arachne.configuration/roots _]])]
+                              :in $ %
+                              :where
+                              [?type :db/ident :arachne/Configuration]
+                              (type ?type ?cfg)]
+                   model/rules)]
     (cfg/with-provenance :module `add-validators
       (cfg/update cfg (for [v validators, c cfg-eids]
                         [:db/add c :arachne.configuration/validators v])))))

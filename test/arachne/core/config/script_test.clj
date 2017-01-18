@@ -4,38 +4,6 @@
             [arachne.core.config :as cfg]
             [arachne.core.config.script :as script]))
 
-(comment
-
-  (def script '(do
-
-                    (require '[arachne.core.config :as cfg])
-                    (require '[arachne.core.config.script :as script])
-
-                    (script/update
-                      (fn [cfg]
-                        (cfg/update cfg
-                          [{:arachne/id :dsl-test-1
-                            :arachne.runtime/components {:arachne/id :dsl-test-2}}
-                           {:db/id (cfg/tempid :db.part/tx)
-                            :arachne.transaction/source :test}])))
-                    (script/update
-                      (fn [cfg]
-                        (cfg/update cfg
-                          [{:arachne/id :dsl-test-2
-                            :arachne.component/constructor :test/ctor}
-                           {:db/id (cfg/tempid :db.part/tx)
-                            :arachne.transaction/source :test}])))
-                    (script/transact
-                      [{:arachne/id :dsl-test-3}
-                       {:db/id (cfg/tempid :db.part/tx)
-                        :arachne.transaction/source :test}])))
-
-  (def cfg (core/build-config '[:org.arachne-framework/arachne-core] script ))
-
-
-
-  )
-
 (deftest basic-dsl
   (let [script '(do
 

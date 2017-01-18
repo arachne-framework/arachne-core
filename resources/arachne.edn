@@ -1,0 +1,4 @@
+[{:arachne/name :org.arachne-framework/arachne-core
+  :arachne/inits [arachne.core/initialize]
+  :arachne/schema arachne.core/schema
+  :arachne/configure arachne.core/configure}]

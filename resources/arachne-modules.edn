@@ -1,3 +1,0 @@
-[{:arachne.module/name :org.arachne-framework/arachne-core
-  :arachne.module/schema arachne.core/schema
-  :arachne.module/configure arachne.core/configure}]

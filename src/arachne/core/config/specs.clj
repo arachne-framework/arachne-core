@@ -74,10 +74,6 @@
                :entity-id (s/or :eid ::entity-id
                                 :lookup-ref ::lookup-ref)))
 
-(s/fdef arachne.core.config/new
-  :args (s/cat :modules (s/coll-of :arachne.core.module.specs/definition))
-  :ret ::config)
-
 (s/fdef arachne.core.config/resolve-tempid
   :args (s/cat :config ::config, :arachne-tempid tempid?)
   :ret pos-int?)
