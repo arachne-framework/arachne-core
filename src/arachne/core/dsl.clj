@@ -15,14 +15,14 @@
                    :eid ::entity-id
                    :tid ::tempid))
 
-(defn resolved-ref
+(defn ^:no-doc resolved-ref
   "Given the conformed value of a ::ref spec, return a concrete entity ID, throwing an error if it cannot be found."
   [[type ref]]
   (case type
     :aid (script/resolve-aid ref)
     ref))
 
-(defn ref
+(defn ^:no-doc ref
   "Given the conformed value of a ::ref spec, return txdata to identify the entity. The returned
    txdata is suitable for use as a ref value in an entity map. Arachne IDs do not need to have been
    previously used in the context config."
