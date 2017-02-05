@@ -14,7 +14,7 @@
      error-registry (atom {}))
 
 (def ^{:dynamic true
-       :doc "exception printer used for logging (among other things)"}
+       :doc "exception printer used for logging (among other things). Rebind to override how Arachne prints exceptions."}
   *print-exception*
   (fn [e writer]
     (.printStackTrace e (java.io.PrintWriter. writer))))
@@ -150,12 +150,9 @@
                 "Make sure the function spec defines the function arguments using :args"]
   :ex-data-docs {:fn-sym "Symbol naming the function in quesiton"})
 
-(def ^:dynamic *default-explain-opts* {:color true
-                                       :suggestions true
-                                       :ex-data-summary true
-                                       :cause true
-                                       :stacktrace true
-                                       :pretty-stacktrace false})
+(def ^{:dynamic true
+       :doc "Default options for how values are displayed. Can be reset or dynamically rebound to change how errors are explained. (see doc for `explain` function)"}
+   *default-explain-opts*)
 
 (defn explain
   "Print a pretty, formatted explanation of the most recent error to stdout.
@@ -179,7 +176,7 @@
     (println (fmt/format e opts)))))
 
 (defn bullet-list
-  "Format a sequence of items into a string containing a series of bullet points"
+  "Format a sequence of items into a string containing a series of bullet points."
   [items]
   (str/join "\n" (map #(str " - " %) items)))
 

@@ -1,4 +1,5 @@
 (ns arachne.core.config.impl.datascript
+  "Datascript implementation of an Arachne configuration"
   (:require [clojure.walk :as w]
             [datascript.core :as d]
             [datascript.query :as dq]
@@ -22,7 +23,7 @@
       :db.type/bigdec :db.type/instant :db.type/uuid :db.type/uri
       :db.type/bytes :db.type/keyword})
 
-(defn replace-idents
+(defn- replace-idents
   "Replace ident references with entity references, for consistency between
   DataScript and Datomic. Note: will only work for map tx forms."
   [data]

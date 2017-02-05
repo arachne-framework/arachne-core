@@ -1,4 +1,5 @@
 (ns arachne.core.config.impl.datomic
+  "Datomic implementation of an Arachne configuration"
   (:require [clojure.walk :as w]
             [datomic.api :as d]
             [arachne.core.config.impl.common :as common]

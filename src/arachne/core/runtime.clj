@@ -184,7 +184,7 @@
   (validate-component cfg key component)
   (#'c/start component))
 
-(defn validate-and-start
+(defn- validate-and-start
   "Start a Component system, validating each component before it starts"
   [system cfg]
   (update-system system (keys system) validate-and-start-component cfg))

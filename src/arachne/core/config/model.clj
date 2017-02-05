@@ -35,7 +35,9 @@
                             :db.cardinality/one
                             :db.cardinality/many))))))
 (defn attr
-  "Build an attribute definition map."
+  "Build an attribute definition map using a sequence of 'shorthand' keywords.
+
+   See the source for arachne/core/schema.clj for usage examples."
   [& args]
   (apply e/assert-args `attr args)
   (let [definition (s/conform (:args (s/get-spec `attr)) args)]
@@ -49,6 +51,8 @@
 
 (defn type
   "Build a type definition map, returning a seq of txdata.
+
+  See the source for arachne/core/schema.clj for usage examples.
 
   The `specs` arg should only be provided if the type being defined extends component."
   [& args]
@@ -69,7 +73,12 @@
     (cons type-map (map update-domain attrs))))
 
 (def rules
-  "Datalog rules to determine type relationships in an Arachne config"
+  "Datalog rules to determine type relationships in an Arachne config. Provided rules are:
+
+  - (supertype ?supertype ?subtype) - determine supertype/subtype relationships (including transitively)
+  - (type ?type ?entity) - determine what entities are instances of what types (if possible), based on its attributes.
+
+  "
   '[
     [(supertype ?supertype ?subtype)
      [?subtype :arachne.type/supertypes ?supertype]]
