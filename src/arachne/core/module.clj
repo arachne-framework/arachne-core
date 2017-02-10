@@ -13,9 +13,9 @@
             [arachne.error.format :as efmt]
             [arachne.core.util :as u]))
 
-(s/def :arachne/name (s/and keyword? namespace))
-(s/def :arachne/schema (s/and symbol? namespace))
-(s/def :arachne/configure (s/and symbol? namespace))
+(s/def :arachne/name qualified-keyword?)
+(s/def :arachne/schema qualified-symbol?)
+(s/def :arachne/configure qualified-symbol?)
 (s/def :arachne/dependencies (s/coll-of :arachne/name :min-count 1 :distinct true))
 (s/def :arachne/init (s/or :filename string?
                            :symbol symbol?
@@ -237,40 +237,3 @@
     (let [definition (if named? existing module)
           all-definitions (if named? classpath-definitions (conj classpath-definitions module))]
       (config* blank-cfg all-definitions definition throw-validation-errors?))))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

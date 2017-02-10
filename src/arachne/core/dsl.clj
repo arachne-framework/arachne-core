@@ -7,7 +7,7 @@
             [clojure.spec :as s])
   (:refer-clojure :exclude [ref]))
 
-(s/def ::arachne-id (s/and keyword? namespace))
+(s/def ::arachne-id qualified-keyword?)
 (s/def ::entity-id pos-int?)
 (s/def ::tempid #(instance? arachne.core.config.Tempid %))
 
@@ -51,7 +51,7 @@
                  :arachne.runtime/components (map ref (:roots &args))}]]
     (script/transact txdata tid)))
 
-(s/def ::constructor (s/and symbol? namespace))
+(s/def ::constructor qualified-symbol?)
 (s/def ::dependency-map (s/map-of keyword? ::ref :min-count 1))
 
 (defdsl component

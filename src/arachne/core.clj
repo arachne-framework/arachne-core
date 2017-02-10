@@ -160,7 +160,7 @@ v
 
 (s/fdef runtime
   :args (s/cat :config ::cfg-spec/config
-               :arachne-id (s/and keyword? namespace)))
+               :arachne-id qualified-keyword?))
 
 (defn runtime
   "Create a new Arachne runtime from the given configuration and the :arachne/id
