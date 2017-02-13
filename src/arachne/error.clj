@@ -74,7 +74,7 @@
     (error ::missing-spec {:fn-sym fn-sym})))
 
 
-(s/def ::type (s/and keyword? namespace))
+(s/def ::type qualified-keyword?)
 (s/def ::message string?)
 (s/def ::explanation string?)
 (s/def ::suggestions (s/coll-of string? :min-count 1))

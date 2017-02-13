@@ -38,7 +38,7 @@
 
 (s/def ::shorthand-schema (set (keys shorthand-schema)))
 
-(s/def ::class-reference (s/and keyword? namespace))
+(s/def ::class-reference qualified-keyword?)
 
 (s/def ::cardinality-range (s/cat :min-value integer?
                                   :max (s/or :value integer?
@@ -53,7 +53,7 @@
                                  :cardinality-range ::cardinality-range)))
   :ret ::config-spec/map-txform)
 
-(s/def ::ident (s/and keyword? namespace))
+(s/def ::ident qualified-keyword?)
 
 (s/fdef arachne.core.config.model/type
   :args (s/cat :ident ::ident
