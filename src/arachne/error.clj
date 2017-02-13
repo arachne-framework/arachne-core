@@ -141,14 +141,14 @@
   :explanation "The function `:fn-sym` was called, but the arguments that were provided did not conform to the Spec defined for that function."
   :suggestions ["Make sure the arguments to `:fn-sym` have the correct type and structure."
                 "If you wrote `:fn-sym`, make sure that its specification is correct and matches the kind of data you want to pass it."]
-  :ex-data-docs {:fn-sym "Symbol naming the function in quesiton"})
+  :ex-data-docs {:fn-sym "Symbol naming the function in question"})
 
 (deferror ::missing-spec
   :message  "No spec found for `:fn-sym`"
   :explanation "The function `:fn-sym` requires that it's arguments be validated according to it's spec, but no specification could be found for `:fn-sym`."
   :suggestions ["Make sure there is a function spec defined for `:fn-sym` before it is called (using `clojure.spec/fdef` or equivalent)"
                 "Make sure the function spec defines the function arguments using :args"]
-  :ex-data-docs {:fn-sym "Symbol naming the function in quesiton"})
+  :ex-data-docs {:fn-sym "Symbol naming the function in question"})
 
 (def ^{:dynamic true
        :doc "Default options for how values are displayed. Can be reset or dynamically rebound to change how errors are explained. (see doc for `explain` function)"}
