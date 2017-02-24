@@ -6,6 +6,7 @@
             [clojure.spec :as s]
             [loom.graph :as loom]
             [loom.alg :as loom-alg]
+            [clj-fuzzy.levenshtein :as lev]
             [arachne.core.config :as cfg]
             [arachne.core.config.script :as script]
             [arachne.core.config.validation :as v]
@@ -192,6 +193,86 @@
                                        :fn (:arachne/configure definition)} t))))))
 
 
+(deferror ::unresolved-ref
+  :message "Reference to `:value` not found in the config.:best-guess-msg-str"
+  :explanation "The configuration referenced an entity that had a value of `:value` for its identity attribute `:attr`. However, no such identity could be found in the config.
+
+  :candidates-str"
+  :suggestions ["Fix any typos in the reference name"
+                "Ensure that the referenced entity exists in your configuration"]
+  :ex-data-docs {:value "The missing identity"
+                 :attr "The identity attribute"
+                 :best-guess-msg-str "Formatted string of the best guess"
+                 :candidates "Possiblities by Levenshtein distance"
+                 :similar-values-str "Formatted string list of candidates"
+                 :cfg "The configuration"})
+
+(defn- missing-reference-error
+  "Throw a missing reference error"
+  [cfg entity attr rr rr-attr rr-value tx]
+  (let [possible-values (cfg/q cfg '[:find [?v ...]
+                                     :in $ ?attr
+                                     :where [_ ?attr ?v]] rr-attr)
+        candidates (->> possible-values
+                     (map #(vector % (lev/distance (str rr-value) (str %))))
+                     (filter (fn [[s dist]] (< dist (/ (count (str s)) 3))))
+                     (sort-by second)
+                     (take 3))
+        [[best best-dist] & _] candidates]
+    (error ::unresolved-ref {:attr rr-attr
+                             :value rr-value
+                             :cfg cfg
+                             :candidates candidates
+                             :candidates-str (if (seq candidates)
+                                               (format "Some similar values in the config:\n\n%s\n\nDid you mean to type one of these instead?"
+                                                 (e/bullet-list
+                                                   (map (fn [[str dist]]
+                                                          (format "`%s` (edit distance: %s)" str dist)) candidates)))
+                                               "")
+                             :best-guess-msg-str (when (and (number? best-dist) (< best-dist 5))
+                                                   (format " Did you mean `%s`?" best))})))
+
+(defn- original-tx-provenance
+  "Return an entity map of the reproducible portion of the original transaction's provenance
+   metadata"
+  [cfg original-tx]
+  [(assoc
+    (cfg/pull cfg '[:arachne.transaction/source-file
+                    :arachne.transaction/source-line
+                    :arachne.transaction/function
+                    :arachne.transaction/source]
+      original-tx)
+     :db/id (cfg/tempid :db.part/tx))])
+
+(defn- resolve-reified-reference
+  "Resolve a reified reference and return a config with the value replaced. Throw an exception if
+   the value can't be found."
+  [cfg [entity attr rr rr-attr rr-value tx]]
+  (let [replacement (cfg/q cfg '[:find ?e .
+                                 :in $ ?attr ?val
+                                 :where [?e ?attr ?val]]
+                      rr-attr rr-value)]
+    (if replacement
+      (cfg/update cfg
+        (concat [[:db/retract entity attr rr]
+                 [:db/add entity attr replacement]]
+          (original-tx-provenance cfg tx)))
+      (missing-reference-error cfg entity attr rr rr-attr rr-value tx))))
+
+(defn- resolve-reified-references
+  "Replace all ReifiedReference entities in the config with a direct entity reference. Throws an
+   error if a reference cannot be found."
+  [cfg]
+  (let [rrefs (cfg/q cfg '[:find ?entity ?attr-ident ?rr ?rr-attr ?rr-value ?tx
+                           :where
+                           [?rr :arachne.reified-reference/attr ?rr-attr]
+                           [?rr :arachne.reified-reference/value ?rr-value]
+                           [?entity ?attr ?rr ?tx]
+                           [?attr-eid :db/ident ?attr]
+                           [?attr-eid :db/ident ?attr-ident]
+                           ])]
+    (reduce resolve-reified-reference cfg rrefs)))
+
 (defn- config*
   "Build a config given a concrete definition map"
   [blank-cfg all-definitions definition throw-validation-errors?]
@@ -201,6 +282,8 @@
         cfg (cfg/init blank-cfg (keep schema active-definitions))
         ;; Initialize phase: dependency order
         cfg (reduce initialize cfg active-definitions)
+        ;; At this point, resolve all ReifiedReference entities
+        cfg (resolve-reified-references cfg)
         ;; Configure phase: reverse dependency order
         cfg (reduce configure cfg (reverse active-definitions))]
     (v/validate cfg throw-validation-errors?)))

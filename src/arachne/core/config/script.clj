@@ -39,7 +39,7 @@
 (defn init-script-ns?
   "Test if a StackTraceElement is from a config init script"
   [^StackTraceElement ste]
-  (re-matches #"^arachne_init_script_.*" (.getClassName ste)))
+  (re-matches #"^arachne_config_script.*" (.getClassName ste)))
 
 (defn transact
   "Update the context configuration with the given txdata. If a tempid is provided as an optional
@@ -70,13 +70,21 @@
       eid
       (error ::nonexistent-aid {:cfg cfg, :aid aid, :dsl-fn dsl-fn}))))
 
+(defmacro config
+  "Header for a configuration DSL script. Identical in form and function to `clojure.core/ns`,
+   except does not allow specification of a namespace name (since config scripts are not part of a
+   project's codebase and may not be required."
+  [& body]
+  `(ns ~(gensym "arachne-config-script") ~@body))
+
 (defn- in-script-ns
   "Invoke the given no-arg function in the context of a new, unique namespace"
   [f]
   (binding [*ns* *ns*]
-    (let [script-ns (symbol (str "arachne-init-script-" (UUID/randomUUID)))]
+    (let [script-ns (gensym "arachne-config-script")]
       (in-ns script-ns)
       (clojure.core/with-loading-context (clojure.core/refer 'clojure.core))
+      (refer 'arachne.core.config.script :only ['config])
       (f))))
 
 (defmacro defdsl

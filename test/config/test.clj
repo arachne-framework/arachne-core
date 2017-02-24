@@ -1,5 +1,5 @@
-(require '[arachne.core.dsl :as a])
+(config (:require [arachne.core.dsl :as a]))
 
-(a/runtime :test/rt [:test/component])
+(a/id :test/rt (a/runtime [:test/component]))
 
-(a/component :test/component 'arachne-test.core/test-component)
+(a/id :test/component (a/component 'arachne-test.core/test-component))

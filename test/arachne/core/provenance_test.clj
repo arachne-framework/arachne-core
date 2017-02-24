@@ -21,8 +21,31 @@
                             :in $
                             :where
                             [?rt :arachne.runtime/components _ ?tx]
-                            [?tx :arachne.transaction/source :user]
                             [?tx :arachne.transaction/source-file "script.clj"]
                             [?tx :arachne.transaction/source-line 3]
                             [?tx :arachne.transaction/function :arachne.core.dsl/runtime]]))))))
 
+
+(comment
+
+  (require '[clojure.tools.namespace.repl :as repl])
+  (repl/refresh-all)
+
+  (def cfg (core/build-config '[:org.arachne-framework/arachne-core]
+             "test/arachne/core/provenance_test/script.clj"))
+
+  (cfg/q cfg '[:find ?tx
+               :in $
+               :where
+               [?rt :arachne.runtime/components _ ?tx]
+               ;[?tx :arachne.transaction/source :user]
+               ;[?tx :arachne.transaction/source-file "script.clj"]
+               ;[?tx :arachne.transaction/source-line 3]
+               ;[?tx :arachne.transaction/function :arachne.core.dsl/runtime]
+
+               ])
+
+  (cfg/pull cfg '[*] 13194139534333)
+
+
+  )

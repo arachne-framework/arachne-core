@@ -8,12 +8,22 @@
 
     [(m/attr :arachne/id :one-or-none :keyword :identity
        "Unique identifier for an entity in an Arachne configuration"
+       {:arachne.attribute/domain {:db/ident :arachne/Entity}})
+     (m/attr :arachne/doc :one-or-none :string
+       "Optional documentation string that can be used on any entity"
        {:arachne.attribute/domain {:db/ident :arachne/Entity}})]
 
      (m/type :arachne/Type []
        "The Type of an Arachne configuration type"
        (m/attr :arachne.type/component-specs :many :keyword
          "Spec to validate runtime instances of components of this type"))
+
+    (m/type :arachne/ReifiedReference []
+      "A reified reference entity. Reified references are pointers to another entity that may not exist yet, and are resolved and replaced by their reference as a final phase of constructing the configuration. The ReifiedReference may be used as as the value of *any* ref; an error will be thrown if its referent is not created by the time config construction is complete."
+      (m/attr :arachne.reified-reference/attr :one :keyword
+        "The identity attribute used to identify the object of the reference (the referent.)")
+      (m/attr :arachne.reified-reference/value :one :keyword
+        "The value used to identify the object of the reference."))
 
      (m/type :arachne/Component []
       "The definition of a component used to build and Arachne system at runtime (using the Component library)"
