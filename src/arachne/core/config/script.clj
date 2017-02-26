@@ -2,6 +2,7 @@
   "Initialziation & script support for user configuration values."
   (:refer-clojure :exclude [update])
   (:require [arachne.core.config :as cfg]
+            [arachne.core.config.impl.debug :as debug-cfg]
             [arachne.core.util :as u]
             [arachne.error :as e :refer [error deferror]]
             [clojure.edn :as edn]
@@ -13,21 +14,23 @@
 
 (def
   ^{:dynamic true
-    :private true
     :doc "An atom containing the configuration currently in context in this init script"}
   *config*)
 
-(deferror ::context-config-outside-of-script
-  :message "Cannot reference context config in non-script context"
-  :explanation "You attempted to use one of Arachne's script-building DSL forms, but you're not currently in the context of a config initialization script. The script DSL forms work by imperatively updating a configuration that's currently \"in context\"; it is not meaningful to call DSL forms by themselves, or at the REPL."
-  :suggestions ["Use this DSL form only inside a config initalization script (such as you would pass to `arachne.core/build-config.)`"])
+(def
+  ^{:dynamic true
+    :doc "Modifies behavior if a DSL form is evaluated outside of a config script context.
+          If true, will dump txdata to stdout instead of failing."}
+  *debug-dsl-txdata* false)
 
-(defn context-config
-  "Return the config value currently in context."
-  []
-  (if-not (bound? #'*config*)
-    (error ::context-config-outside-of-script {})
-    @*config*))
+(deferror ::no-context-cfg
+  :message "Cannot use config DSL outside of config script context."
+  :explanation "You attempted to use one of Arachne's script-building DSL forms, but you're not currently in the context of a config initialization script. Without a \"current\" config to update, the DSL forms can't do anything meaningful.
+
+  If you just want to debug the DSL form and see what kind of changes it would transact to a config (if there was a real one in context), you can bind *debug-dsl-txdata* to true by calling `arachne.core.dsl/enable-debug!`
+
+  When debugging is enabled, evaluating a DSL form outside a script context will not throw an error, but it won't update a config either. Instead, it will print the transaction data that a DSL form to System/out. This cannot be used to run Arachne, but it is useful for debugging DSL forms."
+  :suggestions ["Use this DSL form only inside a config initalization script (such as you would pass to `arachne.core/build-config.)`"])
 
 (defn update
   "Update the current configuration by applying a function which takes the
@@ -35,7 +38,9 @@
   supplied function."
   [f & args]
   (if-not (bound? #'*config*)
-    (error ::context-config-outside-of-script {})
+    (if *debug-dsl-txdata*
+      (apply f (debug-cfg/->DebugConfig) args)
+      (error ::no-context-cfg {}))
     (apply swap! *config* f args)))
 
 (defn init-script-ns?
@@ -61,16 +66,6 @@
   :ex-data-docs {:cfg "The config as of this invocation"
                  :aid "The missing Arachne ID"
                  :dsl-fn "The DSL form in question"})
-
-(defn resolve-aid
-  "Return the EID of the entity with the specified Arachne ID, in the context config script. If it
-   doesn't exist, throw an error explaining what happened."
-  [aid]
-  (let [cfg (context-config)
-        dsl-fn (or (str cfg/*dsl-function*) "<unknown>")]
-    (if-let [eid (cfg/attr cfg [:arachne/id aid] :db/id)]
-      eid
-      (error ::nonexistent-aid {:cfg cfg, :aid aid, :dsl-fn dsl-fn}))))
 
 (defmacro ^:private in-script-ns
   "Invoke the body in the context of a new, unique config namespace"

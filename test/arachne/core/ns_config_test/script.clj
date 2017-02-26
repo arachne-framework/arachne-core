@@ -2,4 +2,6 @@
   (:require [arachne.core.dsl :as a]
             [arachne.core.ns-config-test.dep-a]))
 
+(a/enable-debug!)
+
 (a/id :test/rt (a/runtime [:test/a]))

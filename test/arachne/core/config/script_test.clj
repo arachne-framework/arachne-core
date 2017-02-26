@@ -43,6 +43,6 @@
                        [?e :arachne/id :dsl-test-3]])))))
 
 (deftest throws-when-called-from-normal-code
-  (is (thrown-with-msg? Throwable #"non-script context"
+  (is (thrown-with-msg? Throwable #"outside of config script context"
         (script/update [{:db/id (arachne.core.config/tempid)
                       :arachne/id :dsl-test-1}]))))

@@ -15,13 +15,6 @@
                    :eid ::entity-id
                    :tid ::tempid))
 
-(defn ^:no-doc resolved-ref
-  "Given the conformed value of a ::ref spec, return a concrete entity ID, throwing an error if it cannot be found."
-  [[type ref]]
-  (case type
-    :aid (script/resolve-aid ref)
-    ref))
-
 (defn ^:no-doc reified-ref
   "Return a txdata map for a Reified Ref entity referring to the specified entity ID.
 
@@ -118,3 +111,21 @@
                  (:dependencies &args))
         txdata (conj txdata entity)]
     (script/transact txdata tid)))
+
+(defn enable-debug!
+  "Globally enable DSL script debugging. This allows you to evaluate DSL forms outside the context of a
+   config script (for example, by themselves at the REPL.)
+
+   However, instead of updating a configuration (since there is none to update), any transactions
+   are simply pretty-printed to System/out instead. This is useful for debugging DSL forms and
+   understanding how they map to data in the configuration.
+
+   DSL forms which normally woudl return a resolved entity ID will instead return a random
+   integer, allowing nested DSL forms to be debugged."
+  []
+  (alter-var-root #'script/*debug-dsl-txdata* (constantly true)))
+
+(defn disable-debug!
+  "Globally disable DSL script debugging."
+  []
+  (alter-var-root #'script/*debug-dsl-txdata* (constantly false)))
