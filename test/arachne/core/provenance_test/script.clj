@@ -1,4 +1,4 @@
-(config (:require [arachne.core.dsl :as a]))
+(require '[arachne.core.dsl :as a])
 
 (a/id :test/rt (a/runtime [:test/a]))
 

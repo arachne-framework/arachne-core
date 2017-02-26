@@ -3,6 +3,10 @@
  :description "The core module for the Arachne web framework"
  :license {"Apache Software License 2.0" "http://www.apache.org/licenses/LICENSE-2.0"}
  :deps [[org.clojure/clojure "1.9.0-alpha14" :scope "provided"]
+        [org.clojure/tools.namespace "0.2.11"
+         :exclusions [org.clojure/clojure]]
+        [org.clojure/java.classpath "0.2.3"
+         :exclusions [org.clojure/clojure]]
         [clj-fuzzy "0.3.3"
          :exclusions [org.clojure/clojure]]
         [io.pedestal/pedestal.log "0.5.2"
@@ -11,7 +15,6 @@
          :exclusions [org.clojure/clojure]]
         [com.stuartsierra/component "0.3.1"
          :exclusions [org.clojure/clojure]]
-        [adzerk/boot-test "1.1.2" :scope "test"]
         [org.clojure/test.check "0.9.0" :scope "test"
          :exclusions [org.clojure/clojure]]
         [org.clojure/tools.namespace "0.2.11" :scope "test"
