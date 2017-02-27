@@ -4,6 +4,7 @@
             [arachne.core.config :as cfg]
             [arachne.core.config.model :as m]
             [arachne.core.runtime :as rt]
+            [arachne.core.module :as module]
             [com.stuartsierra.component :as component]
             [arachne.core.util :as util]
             [clojure.spec :as s]
@@ -41,13 +42,14 @@
   (let [cfg (setup)
         cfg (init/apply-initializer cfg
               '(do
-                 (require '[arachne.core.dsl :as c])
+                 (require '[arachne.core.dsl :as a])
 
-                 (c/runtime :test/rt [:test/a])
-                 (c/transact [{:arachne/id :test/a
+                 (a/id :test/rt (a/runtime [:test/a]))
+                 (a/transact [{:arachne/id :test/a
                                :test.widget/name "foo"
                                :arachne.component/constructor :arachne.core.runtime.validation-test/->TestWidget}])))
 
+        cfg (@#'module/resolve-reified-references cfg)
         rt (component/start (rt/init cfg [:arachne/id :test/rt]))]
     (is (instance? arachne.core.runtime.ArachneRuntime rt))))
 
@@ -55,12 +57,13 @@
   (let [cfg (setup)
         cfg (init/apply-initializer cfg
               '(do
-                 (require '[arachne.core.dsl :as c])
+                 (require '[arachne.core.dsl :as a])
 
-                 (c/runtime :test/rt [:test/a])
+                 (a/id :test/rt (a/runtime [:test/a]))
 
-                 (c/transact [{:arachne/id :test/a
+                 (a/transact [{:arachne/id :test/a
                                :test.widget/name "foo"
-                               :arachne.component/constructor :arachne.core.runtime.validation-test/->NotAWidget}])))]
+                               :arachne.component/constructor :arachne.core.runtime.validation-test/->NotAWidget}])))
+        cfg (@#'module/resolve-reified-references cfg)]
     (is (thrown-with-msg? Throwable #"Error in component"
           (component/start (rt/init cfg [:arachne/id :test/rt]))))))

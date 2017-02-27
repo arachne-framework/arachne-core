@@ -123,7 +123,7 @@
 
         Defaults to whichever of Datomic and DataScript are present on the classpath. If both are,
         DataScript is used because it has a faster boot time.
-v
+
       - throw-validation-errors? (optional): Set to false if a configuration should be returned
         even if it contains validation errors. Defaults to true. Validation errors will be logged
         in either case. Usually, this should be set to false only while debugging, since an invalid

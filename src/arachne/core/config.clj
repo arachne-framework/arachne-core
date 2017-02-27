@@ -105,6 +105,7 @@
                                                   (name function))}]]
      (if ste
        (concat txdata [{:db/id (tempid :db.part/tx)
+                        :arachne.transaction/class (.getClassName ste)
                         :arachne.transaction/source-file (.getFileName ste)
                         :arachne.transaction/source-line (.getLineNumber ste)}])
        txdata))))
@@ -238,8 +239,7 @@
 
   However, the entity identified (`:lookup`) did not actually exist in the config.
 
-  Rather than returning nil, DataScript throws an error, and so for consistency
-  replicates the same behavior."
+  Rather than returning nil, DataScript throws an error in this situation, and so for consistency Arachne replicates the same behavior for all configurations."
   :suggestions ["Ensure that the entity ID or lookup ref is correct"
                 "Ensure that the desired entity actually exists in the configuration"]
   :ex-data-docs {:lookup "The lookup ref or entity ID"

@@ -1,5 +1,5 @@
-(require '[arachne.core.dsl :as dsl])
+(ns ^:config arachne.core.provenance-test.script
+  (:require [arachne.core.dsl :as a]
+            [arachne.core.provenance-test.dep-a]))
 
-(dsl/runtime :test/rt [:test/a])
-
-(dsl/component :test/a 'arachne.core.provenance-test/test-ctor)
+(a/id :test/rt (a/runtime [:test/a]))

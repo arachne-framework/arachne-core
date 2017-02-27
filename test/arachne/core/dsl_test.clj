@@ -16,24 +16,24 @@
 
 (defn basic-system-cfg []
 
-  (a/runtime :test/rt [:test/a])
+  (a/id :test/rt (a/runtime [:test/a]))
 
-  (a/component :test/a `test-ctor {:b :test/b,
-                                   :c :test/c})
+  (a/id :test/a (a/component `test-ctor {:b :test/b,
+                                          :c :test/c}))
 
-  (a/component :test/b `test-ctor {:c :test/c})
+  (a/id :test/b (a/component `test-ctor {:c :test/c}))
 
-  (a/component :test/c `test-ctor))
+  (a/id :test/c (a/component `test-ctor)))
 
 (defn basic-system-cfg-nested []
 
   ;; Alternate syntax for anonymous components
-  (a/runtime :test/rt [(a/component `test-ctor {:b :test/b
-                                                :c :test/c})])
+  (a/id :test/rt (a/runtime [(a/component `test-ctor {:b :test/b
+                                                :c :test/c})]))
 
-  (a/component :test/b `test-ctor {:c :test/c})
+  (a/id :test/b (a/component `test-ctor {:c :test/c}))
 
-  (a/component :test/c `test-ctor))
+  (a/id :test/c (a/component `test-ctor)))
 
 (deftest basic-system
   (let [cfg1 (core/build-config '[:org.arachne-framework/arachne-core] `(basic-system-cfg))
@@ -65,8 +65,8 @@
 
 (defn missing-runtime-cfg []
 
-  (a/runtime :test/rt [:test/a])
-  (a/component :test/a `test-ctor))
+  (a/id :test/rt (a/runtime [:test/a]))
+  (a/id :test/a (a/component `test-ctor)))
 
 (deftest missing-runtime
   (let [cfg (core/build-config '[:org.arachne-framework/arachne-core]
@@ -77,13 +77,13 @@
 
 (defn dependencies-cfg []
 
-  (a/runtime :test/rt [:test/a])
-  (a/component :test/a `test-ctor {:b :test/b})
-  (a/component :test/b `test-ctor {:c :test/c})
-  (a/component :test/c `test-ctor {:d :test/d
-                                   :e :test/e})
-  (a/component :test/d `test-ctor)
-  (a/component :test/e `test-ctor))
+  (a/id :test/rt (a/runtime [:test/a]))
+  (a/id :test/a (a/component `test-ctor {:b :test/b}))
+  (a/id :test/b (a/component `test-ctor {:c :test/c}))
+  (a/id :test/c (a/component `test-ctor {:d :test/d
+                                          :e :test/e}))
+  (a/id :test/d (a/component `test-ctor))
+  (a/id :test/e (a/component `test-ctor)))
 
 (deftest dependencies-test
   (let [cfg (core/build-config '[:org.arachne-framework/arachne-core]
