@@ -6,6 +6,7 @@
             [arachne.core.util :as u]
             [arachne.error :as e :refer [error deferror]]
             [clojure.edn :as edn]
+            [clojure.string :as str]
             [clojure.spec :as s]
             [clojure.tools.namespace.find :as find]
             [clojure.tools.namespace.reload :as reload]
@@ -43,10 +44,13 @@
       (error ::no-context-cfg {}))
     (apply swap! *config* f args)))
 
-(defn init-script-ns?
-  "Test if a StackTraceElement is from a config init script"
-  [^StackTraceElement ste]
-  (re-matches #"^arachne_config_script.*" (.getClassName ste)))
+(defn ^:no-doc in-script-ns?
+  "Return a predicate function to test if a StackTraceElement is from the specified script"
+  [ns]
+  (let [nsname (ns-name ns)
+        classname (str/replace nsname \- \_)]
+    (fn [ste]
+      (.startsWith (.getClassName ste) classname))))
 
 (defn transact
   "Update the context configuration with the given txdata. If a tempid is provided as an optional
@@ -89,7 +93,7 @@
          (let [~argvec args#]
            (apply e/assert-args (quote ~fqn) args#)
            (cfg/with-provenance :user (quote ~fqn)
-             :stack-filter-pred init-script-ns?
+             :stack-filter-pred (in-script-ns? *ns*)
              (let [~'&args (s/conform (:args (s/get-spec (quote ~fqn))) args#)]
                ~@body))))
        (alter-meta! (var ~name) assoc :arglists (list (quote ~argvec)))

@@ -239,6 +239,7 @@
   [(assoc
     (cfg/pull cfg '[:arachne.transaction/source-file
                     :arachne.transaction/source-line
+                    :arachne.transaction/class
                     :arachne.transaction/function
                     :arachne.transaction/source]
       original-tx)

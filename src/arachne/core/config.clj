@@ -105,6 +105,7 @@
                                                   (name function))}]]
      (if ste
        (concat txdata [{:db/id (tempid :db.part/tx)
+                        :arachne.transaction/class (.getClassName ste)
                         :arachne.transaction/source-file (.getFileName ste)
                         :arachne.transaction/source-line (.getLineNumber ste)}])
        txdata))))

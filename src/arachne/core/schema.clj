@@ -64,6 +64,8 @@
       "Entity reifying a single transaction to the config"
       (m/attr :arachne.transaction/source :one-or-none :keyword
         "Keyword that indicates the source of this config txdata. Valid values are :user (for the initial user-supplied configuration), :module (for txdata built from modules or :system (for bookkeeping data used by Arachne itself). :test is also permitted in tests, to supress the warning about a lack of provenance data.")
+      (m/attr :arachne.transaction/class :one-or-none :string
+        "The class name of the JVM class containing the code that initiated this transaction. This can be used to derive the Clojure namespace in a way that is not potentially ambiguous (unlike the source-file).")
       (m/attr :arachne.transaction/source-file :one-or-none :string
         "The filename of the source file (possibly a DSL script) containing the code that initiated this transaction.")
       (m/attr :arachne.transaction/source-line :one-or-none :long
