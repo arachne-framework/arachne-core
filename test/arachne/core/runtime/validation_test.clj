@@ -9,6 +9,7 @@
             [arachne.core.util :as util]
             [clojure.spec :as s]
             [arachne.log :as log]
+            [arachne.core.config.reified-ref :as rr]
             [arachne.core.config.script :as init]
             [arachne.core.config.impl.multiplex :as impl]))
 
@@ -49,7 +50,7 @@
                                :test.widget/name "foo"
                                :arachne.component/constructor :arachne.core.runtime.validation-test/->TestWidget}])))
 
-        cfg (@#'module/resolve-reified-references cfg)
+        cfg (rr/resolve-reified-references cfg)
         rt (component/start (rt/init cfg [:arachne/id :test/rt]))]
     (is (instance? arachne.core.runtime.ArachneRuntime rt))))
 
@@ -64,6 +65,6 @@
                  (a/transact [{:arachne/id :test/a
                                :test.widget/name "foo"
                                :arachne.component/constructor :arachne.core.runtime.validation-test/->NotAWidget}])))
-        cfg (@#'module/resolve-reified-references cfg)]
+        cfg (rr/resolve-reified-references cfg)]
     (is (thrown-with-msg? Throwable #"Error in component"
           (component/start (rt/init cfg [:arachne/id :test/rt]))))))

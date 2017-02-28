@@ -37,12 +37,16 @@
                        ::attribute
                        ::value))
 
+(s/def ::fn-txform (s/cat :fn keyword?
+                          :args (s/* any?)))
+
 (s/def ::map-txform (s/map-of ::attribute (s/or :value ::value
                                                 :nested ::map-txform)))
 
 (s/def ::txdata (s/coll-of (s/or :list ::list-txform
+                                 :fn ::fn-txform
                                  :map ::map-txform)
-                           :min-count 1))
+                                 :min-count 1))
 
 (s/fdef arachne.core.config/init
   :args (s/cat :config ::config, :schema-txes (s/coll-of ::txdata :min-count 1))
