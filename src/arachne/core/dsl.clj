@@ -37,6 +37,18 @@
     :aid (reified-ref ref)
     ref))
 
+(defn ^:no-doc ref-txmap
+  "Given the conformed value of a ::ref spec, return map txdata.
+
+   The map will have a :db/id attribute, referring to either a concrete entity
+   ID or the tempid of a reified ref."
+  [[type ref]]
+  (case type
+    :aid (assoc
+          (reified-ref ref)
+           :db/id (cfg/tempid))
+    {:db/id ref}))
+
 (defdsl transact
   "Update the context configuration with the given txdata. If a tempid is provided as an optional
    second argument, then the resolved entity ID will be returned, otherwise nil."
