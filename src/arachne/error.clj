@@ -63,6 +63,22 @@
                                 ::explain-str explain-str}
                           ex-data)))))
 
+(defn conform
+  "Conform the given data against the given spec, throwing the specified error
+   and ex-data if the validation fails. Returns the conformed data if
+   validation is successful."
+  [spec data error-type ex-data]
+  (let [conformed (s/conform spec data)]
+    (if (= ::s/invalid conformed)
+      (let [explain-data (s/explain-data spec data)
+            explain-str (with-out-str (s/explain-out explain-data))]
+        (error error-type (merge {::spec spec
+                                  ::failed-data data
+                                  ::explain-data explain-data
+                                  ::explain-str explain-str}
+                            ex-data)))
+      conformed)))
+
 (defn assert-args
   "Given a fully qualified symbol naming a function and some number of
    arguments, assert that the arguments are valid according to the spec
