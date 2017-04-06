@@ -5,6 +5,8 @@
             [arachne.core.config :as cfg]
             [com.stuartsierra.component :as component]))
 
+(arachne.error/explain-test-errors!)
+
 (defrecord TestComponent [running?]
   component/Lifecycle
   (start [this] (assoc this :running? true))

@@ -4,7 +4,7 @@
   (:refer-clojure :exclude [assert])
   (:require [clojure.string :as str]
             [clojure.spec :as s]
-            [clojure.spec.test :as st]
+            [clojure.test :as test]
             [arachne.log :as log]
             [arachne.error.format :as fmt])
   (:import [java.util Date TimeZone]
@@ -238,3 +238,34 @@
   "Convert a java.util.Date to a human-readable UTC string"
   [date]
   (.format utc-date-format date))
+
+(defn- report-error
+  "clojure.test error reporter that uses Arachne's error formatter
+
+  Does exactly the same things built in clojure.test does except for the
+  exception printing."
+  [m]
+  (test/with-test-out
+    (test/inc-report-counter :error)
+    (println "\nERROR in" (test/testing-vars-str m))
+    (when (seq test/*testing-contexts*) (println (test/testing-contexts-str)))
+    (when-let [message (:message m)] (println message))
+    (println "expected:" (pr-str (:expected m)))
+    (let [actual (:actual m)]
+      (if (instance? Throwable actual)
+        (explain actual)
+        (prn actual)))))
+
+(def ^:private original-report test/report)
+
+(defn explain-test-errors!
+  "Modify the behavior of clojure.test to print out an Arachne explanation
+   when an exception is thrown, rather than the default stack trace.
+
+   This is global and permanent (for the lifetime of the Clojure runtime.)"
+  []
+  (alter-var-root #'clojure.test/report
+    (constantly (fn [report]
+                  (if (= :error (:type report))
+                    (report-error report)
+                    (original-report report))))))
