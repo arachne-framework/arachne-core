@@ -5,7 +5,7 @@
             [arachne.core.util :as u]
             [arachne.error :as e :refer [deferror error]]
             [clojure.string :as str]
-            [clojure.spec :as s]
+            [clojure.spec.alpha :as s]
             [clojure.walk :as w]
             [clojure.java.io :as io]
             [arachne.log :as log])

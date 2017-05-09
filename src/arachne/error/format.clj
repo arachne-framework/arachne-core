@@ -3,7 +3,7 @@
   (:require [io.aviso.ansi :as ansi]
             [io.aviso.exception :as aviso]
             [clojure.string :as str]
-            [clojure.spec :as s]
+            [clojure.spec.alpha :as s]
             [clojure.pprint :as pprint]
             [clojure.stacktrace :as st])
   (:import [java.io StringWriter]

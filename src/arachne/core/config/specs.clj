@@ -1,5 +1,5 @@
 (ns arachne.core.config.specs
-  (:require [clojure.spec :as s]
+  (:require [clojure.spec.alpha :as s]
             [arachne.core.util :as u]))
 
 (def config? (u/lazy-satisfies? arachne.core.config/Configuration))

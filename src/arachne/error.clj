@@ -3,7 +3,7 @@
   a standardized way. See ADR-13."
   (:refer-clojure :exclude [assert])
   (:require [clojure.string :as str]
-            [clojure.spec :as s]
+            [clojure.spec.alpha :as s]
             [clojure.test :as test]
             [arachne.log :as log]
             [arachne.error.format :as fmt])

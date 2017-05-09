@@ -1,6 +1,6 @@
 (ns arachne.core.util
   (:require [clojure.java.io :as io]
-            [clojure.spec :as s]
+            [clojure.spec.alpha :as s]
             [clojure.string :as str]
             [arachne.core.util.specs]
             [arachne.error :as e :refer [deferror error]])

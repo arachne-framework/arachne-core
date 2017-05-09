@@ -1,5 +1,5 @@
 (ns arachne.core.config.model.specs
-  (:require [clojure.spec :as s]
+  (:require [clojure.spec.alpha :as s]
             [arachne.core.config.specs :as config-spec]))
 
 (def shorthand-schema

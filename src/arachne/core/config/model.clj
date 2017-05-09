@@ -1,7 +1,7 @@
 (ns arachne.core.config.model
   "Utilities for creating a configuration schema using a richer data model."
   (:refer-clojure :exclude [type])
-  (:require [clojure.spec :as s]
+  (:require [clojure.spec.alpha :as s]
             [arachne.core.config.model.specs :as ms]
             [arachne.core.config :as cfg]
             [arachne.error :as e]

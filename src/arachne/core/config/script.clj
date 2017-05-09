@@ -7,7 +7,7 @@
             [arachne.error :as e :refer [error deferror]]
             [clojure.edn :as edn]
             [clojure.string :as str]
-            [clojure.spec :as s]
+            [clojure.spec.alpha :as s]
             [clojure.tools.namespace.find :as find]
             [clojure.tools.namespace.reload :as reload]
             [clojure.java.classpath :as cp])
