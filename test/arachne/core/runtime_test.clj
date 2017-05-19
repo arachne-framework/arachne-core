@@ -6,6 +6,8 @@
             [com.stuartsierra.component :as component]
             [arachne.core.util :as util]))
 
+(arachne.error/explain-test-errors!)
+
 (def basic-config
   [{:db/id (cfg/tempid)
     :arachne/id :test-rt

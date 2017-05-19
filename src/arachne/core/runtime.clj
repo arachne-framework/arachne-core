@@ -8,7 +8,7 @@
             [arachne.error :as e :refer [deferror error]]
             [arachne.core.runtime.specs]
             [arachne.log :as log]
-            [clojure.spec :as s]
+            [clojure.spec.alpha :as s]
             [clojure.set :as set]))
 
 (def ^:private component-dependency-rules

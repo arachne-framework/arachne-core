@@ -7,7 +7,7 @@
             [arachne.core.module :as module]
             [com.stuartsierra.component :as component]
             [arachne.core.util :as util]
-            [clojure.spec :as s]
+            [clojure.spec.alpha :as s]
             [arachne.log :as log]
             [arachne.core.config.reified-ref :as rr]
             [arachne.core.config.script :as init]

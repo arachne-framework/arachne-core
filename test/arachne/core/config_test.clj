@@ -1,9 +1,12 @@
 (ns arachne.core.config-test
   (:require [clojure.test :refer :all]
             [clojure.set :as set]
+            [arachne.core]
             [arachne.core.module :as m]
             [arachne.core.config :as cfg]
             [arachne.core.config.impl.multiplex :as impl]))
+
+(arachne.error/explain-test-errors!)
 
 (def s1 [{:db/id (cfg/tempid :db.part/db)
                      :db/ident :test/basic

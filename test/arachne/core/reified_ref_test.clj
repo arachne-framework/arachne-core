@@ -6,6 +6,8 @@
             [com.stuartsierra.component :as component]
             [arachne.core.dsl :as a]))
 
+(arachne.error/explain-test-errors!)
+
 (defn rref-target-cfg []
 
   (a/id :test/rt (a/runtime [:test/a]))

@@ -4,6 +4,8 @@
             [arachne.core.runtime :as rt]
             [arachne.core.config :as cfg]))
 
+(arachne.error/explain-test-errors!)
+
 (deftest ns-config-test
   (let [cfg-a (core/build-config '[:org.arachne-framework/arachne-core]
               'arachne.core.ns-config-test.script)

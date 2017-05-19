@@ -3,7 +3,7 @@
   (:refer-clojure :exclude [load sort])
   (:require [clojure.edn :as edn]
             [clojure.set :as set]
-            [clojure.spec :as s]
+            [clojure.spec.alpha :as s]
             [loom.graph :as loom]
             [loom.alg :as loom-alg]
             [arachne.core.config :as cfg]

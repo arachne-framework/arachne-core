@@ -1,5 +1,5 @@
 (ns arachne.core.runtime.specs
-  (:require [clojure.spec :as s]
+  (:require [clojure.spec.alpha :as s]
             [arachne.core.util :as util]))
 
 (def runtime? (util/lazy-instance? arachne.core.runtime.ArachneRuntime))

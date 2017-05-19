@@ -3,8 +3,8 @@
   a standardized way. See ADR-13."
   (:refer-clojure :exclude [assert])
   (:require [clojure.string :as str]
-            [clojure.spec :as s]
-            [clojure.spec.test :as st]
+            [clojure.spec.alpha :as s]
+            [clojure.test :as test]
             [arachne.log :as log]
             [arachne.error.format :as fmt])
   (:import [java.util Date TimeZone]
@@ -62,6 +62,22 @@
                                 ::explain-data explain-data
                                 ::explain-str explain-str}
                           ex-data)))))
+
+(defn conform
+  "Conform the given data against the given spec, throwing the specified error
+   and ex-data if the validation fails. Returns the conformed data if
+   validation is successful."
+  [spec data error-type ex-data]
+  (let [conformed (s/conform spec data)]
+    (if (= ::s/invalid conformed)
+      (let [explain-data (s/explain-data spec data)
+            explain-str (with-out-str (s/explain-out explain-data))]
+        (error error-type (merge {::spec spec
+                                  ::failed-data data
+                                  ::explain-data explain-data
+                                  ::explain-str explain-str}
+                            ex-data)))
+      conformed)))
 
 (defn assert-args
   "Given a fully qualified symbol naming a function and some number of
@@ -222,3 +238,34 @@
   "Convert a java.util.Date to a human-readable UTC string"
   [date]
   (.format utc-date-format date))
+
+(defn- report-error
+  "clojure.test error reporter that uses Arachne's error formatter
+
+  Does exactly the same things built in clojure.test does except for the
+  exception printing."
+  [m]
+  (test/with-test-out
+    (test/inc-report-counter :error)
+    (println "\nERROR in" (test/testing-vars-str m))
+    (when (seq test/*testing-contexts*) (println (test/testing-contexts-str)))
+    (when-let [message (:message m)] (println message))
+    (println "expected:" (pr-str (:expected m)))
+    (let [actual (:actual m)]
+      (if (instance? Throwable actual)
+        (explain actual)
+        (prn actual)))))
+
+(def ^:private original-report test/report)
+
+(defn explain-test-errors!
+  "Modify the behavior of clojure.test to print out an Arachne explanation
+   when an exception is thrown, rather than the default stack trace.
+
+   This is global and permanent (for the lifetime of the Clojure runtime.)"
+  []
+  (alter-var-root #'clojure.test/report
+    (constantly (fn [report]
+                  (if (= :error (:type report))
+                    (report-error report)
+                    (original-report report))))))

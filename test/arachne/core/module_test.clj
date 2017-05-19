@@ -3,6 +3,8 @@
             [clojure.set :as set]
             [arachne.core.module :as m]))
 
+(arachne.error/explain-test-errors!)
+
 (def sample-good
   '#{{:arachne/name         test.one
       :arachne/constructor  test.one/const

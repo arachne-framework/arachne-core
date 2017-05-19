@@ -6,6 +6,8 @@
             [com.stuartsierra.component :as component]
             [arachne.core.dsl :as a]))
 
+(arachne.error/explain-test-errors!)
+
 (defrecord TestComponent [running?]
   component/Lifecycle
   (start [this] (assoc this :running? true))

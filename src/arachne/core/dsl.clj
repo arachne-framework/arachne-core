@@ -4,7 +4,7 @@
             [arachne.core.config.script :as script :refer [defdsl]]
             [arachne.core.config.specs :as cfg-specs]
             [arachne.core.util :as util]
-            [clojure.spec :as s])
+            [clojure.spec.alpha :as s])
   (:refer-clojure :exclude [ref def]))
 
 (s/def ::arachne-id qualified-keyword?)
