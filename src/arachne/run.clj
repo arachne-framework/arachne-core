@@ -1,5 +1,6 @@
 (ns arachne.run
   "Application entry point for running an Arachne application"
+  (:gen-class)
   (:require [arachne.core :as a]
             [com.stuartsierra.component :as c]
             [clojure.string :as str]
