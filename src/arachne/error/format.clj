@@ -33,13 +33,14 @@
 (defn- colorize
   "Colorize a string using a rudimentary regex-based parser"
   [base-color s]
-  (if *color*
-    (-> s
-      (str/replace #"`(.*?)`" (fn [[_ inner]]
-                                (str (ansi/yellow inner) base-color)))
-      (str/replace #"\*(.*?)\*" (fn [[_ inner]]
-                                  (str (ansi/blue inner) base-color))))
-    s))
+  (when s
+    (if *color*
+      (-> s
+        (str/replace #"`(.*?)`" (fn [[_ inner]]
+                                  (str (ansi/yellow inner) base-color)))
+        (str/replace #"\*(.*?)\*" (fn [[_ inner]]
+                                    (str (ansi/blue inner) base-color))))
+      s)))
 
 (defn justify
   "Clean up newlines so everything is left-justified"
