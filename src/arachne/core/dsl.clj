@@ -62,12 +62,12 @@
   Typically used to immediately capture an entity yeilded by a DSL form, and assign it an entity
   ID. For example:
 
-      (def :my/thing (component 'my/constructor))
+      (id :my/thing (component 'my/constructor))
 
   Optionally takes a docstring as well, which will be added to the entity under the `:arachne/doc`
   attribute. For example:
 
-      (def :my/thing
+      (id :my/thing
          \"The main thing that the other things use to do the thing\"
          (component 'my/constructor))
 
