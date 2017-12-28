@@ -226,7 +226,7 @@
   :ex-data-docs {:name "The module name"})
 
 (defn ^:no-doc config
-  "Define a configuration. Intended to be called through arachen.core/config."
+  "Define a configuration. Intended to be called through arachne.core/config."
   [module blank-cfg throw-validation-errors?]
   (let [named? (keyword? module)
         name (if named? module (:arachne/name module))
