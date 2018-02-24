@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+mkdir -p target
+javac -cp `clj -Spath` -d target `find src -name "*.java"`

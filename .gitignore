@@ -4,3 +4,4 @@ project.clj
 .nrepl-*
 target
 .git-deps
+.cpcache
