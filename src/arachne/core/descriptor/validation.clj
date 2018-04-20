@@ -67,7 +67,7 @@
                               [?type :db/ident :arachne/Configuration]
                               (type ?type ?cfg)]
                    model/rules)]
-    (cfg/with-provenance :module `add-validators
+    (cfg/with-provenance `add-validators
       (cfg/update cfg (for [v validators, c cfg-eids]
                         [:db/add c :arachne.configuration/validators v])))))
 

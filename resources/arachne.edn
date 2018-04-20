@@ -1,4 +1,6 @@
-[{:arachne/name :org.arachne-framework/arachne-core
-  :arachne/inits [arachne.core/initialize]
-  :arachne/schema arachne.core/schema
-  :arachne/configure arachne.core/configure}]
+[{:rdf/about :org.arachne-framework/arachne-core
+  :arachne.module/inits [arachne.core.schema/schema]
+  :arachne.module/configure [arachne.core/add-instance-constructors]}]
+
+
+

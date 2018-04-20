@@ -12,10 +12,13 @@
   "
   (:require [io.pedestal.log :as log]))
 
-(defmacro trace [& keyvals] `(log/trace ~@keyvals))
-(defmacro debug [& keyvals] `(log/debug ~@keyvals))
-(defmacro info [& keyvals] `(log/info ~@keyvals))
-(defmacro warn [& keyvals] `(log/warn ~@keyvals))
-(defmacro error [& keyvals] `(log/error ~@keyvals))
+(def log-expr @#'log/log-expr)
+
+(defmacro trace [& keyvals] (log-expr &form :trace keyvals))
+(defmacro debug [& keyvals] (log-expr &form :debug keyvals))
+(defmacro info [& keyvals] (log-expr &form :info keyvals))
+(defmacro warn [& keyvals] (log-expr &form :warn keyvals))
+(defmacro error [& keyvals] (log-expr &form :error keyvals))
+
 
 ;; TODO: Support Pedetal metrics here as well

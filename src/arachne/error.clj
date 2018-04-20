@@ -111,7 +111,8 @@
        ::message message
        ::explanation explanation
        ::suggestions suggestions
-       ::ex-data-docs ex-data-docs})))
+       ::ex-data-docs ex-data-docs}))
+  nil)
 
 (defn- format-ex-str
   "Given an error message string and an ex-data map, replace keywords in the
@@ -227,6 +228,15 @@
        (if (some #(error-type? t# %) ~types)
          (error ~throw-type ~ex-data t#)
          (throw t#)))))
+
+(defmacro attempt
+  "Attempt to execute the body, throwing an Arachne exception of the
+   specified type if the body throws an exception."
+  [type ex-data & body]
+  `(try
+     ~@body
+     (catch Throwable t#
+       (error ~type ~ex-data t#))))
 
 (def ^{:doc "Common UTC SimpleDateFormat to be used when reporting timestamps"}
   utc-date-format

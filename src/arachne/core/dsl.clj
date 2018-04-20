@@ -1,100 +1,47 @@
 (ns arachne.core.dsl
   "User-facing DSL for use in init scripts"
-  (:require [arachne.core.config :as cfg]
-            [arachne.core.config.script :as script :refer [defdsl]]
-            [arachne.core.config.specs :as cfg-specs]
+  (:require [arachne.core.descriptor :as d]
+            [arachne.core.descriptor.script :as script :refer [defdsl]]
+            [arachne.aristotle.graph :as g]
             [arachne.core.util :as util]
             [clojure.spec.alpha :as s])
+  (:import [java.util UUID])
   (:refer-clojure :exclude [ref def]))
 
-(s/def ::arachne-id qualified-keyword?)
-(s/def ::entity-id pos-int?)
-(s/def ::tempid #(instance? arachne.core.config.Tempid %))
+(s/def ::id (s/or :iri ::g/iri, :blank ::g/named-blank))
 
-(s/def ::ref (s/or :aid ::arachne-id
-                   :eid ::entity-id
-                   :tid ::tempid))
+(defn new-bnode
+  "Construct a new blank node symbol"
+  []
+  (symbol (str '_ (UUID/randomUUID))))
 
-(defn ^:no-doc reified-ref
-  "Return a txdata map for a Reified Ref entity referring to the specified entity ID.
-
-  Reified Refs provide a way to reference other entities in a configuration, even if they may not
-  have been created yet.
-
-  They are resolved and replaced with their referent at the beginning of the module Configure
-  phase. If a referent cannot be found in a completed config when the Configure phase begins, an
-  error will be thrown."
-  [arachne-id]
-  {:arachne.reified-reference/attr :arachne/id
-   :arachne.reified-reference/value arachne-id})
-
-(defn ^:no-doc ref
-  "Given the conformed value of a ::ref spec, return txdata to identify the entity. The returned
-   txdata is suitable for use as a ref value in an entity map. Arachne IDs will be replaced with a
-   Reified Reference (see `reified-ref`)."
-  [[type ref]]
-  (case type
-    :aid (reified-ref ref)
-    ref))
-
-(defn ^:no-doc ref-txmap
-  "Given the conformed value of a ::ref spec, return map txdata.
-
-   The map will have a :db/id attribute, referring to either a concrete entity
-   ID or the tempid of a reified ref."
-  [[type ref]]
-  (case type
-    :aid (assoc
-          (reified-ref ref)
-           :db/id (cfg/tempid))
-    {:db/id ref}))
+(defn id-from-args
+  "Given conformed arguments containing an :id, return the given ID or
+  construct a new blank node if one is not found."
+  [conformed-args]
+  (if (:id conformed-args) (s/unform ::id (:id conformed-args)) (new-bnode)))
 
 (defdsl transact
-  "Update the context configuration with the given txdata. If a tempid is provided as an optional
-   second argument, then the resolved entity ID will be returned, otherwise nil."
-  (s/cat :txdata ::cfg-specs/txdata :tempid (s/? ::tempid))
-  [txdata & [tempid]]
-  (script/transact txdata tempid))
-
-(defdsl id
-  "Declare an Arachne ID for an entity.
-
-  Typically used to immediately capture an entity yeilded by a DSL form, and assign it an entity
-  ID. For example:
-
-      (def :my/thing (component 'my/constructor))
-
-  Optionally takes a docstring as well, which will be added to the entity under the `:arachne/doc`
-  attribute. For example:
-
-      (def :my/thing
-         \"The main thing that the other things use to do the thing\"
-         (component 'my/constructor))
-
-  Returns the entity ID."
-  (s/cat :arachne-id ::arachne-id
-         :docstr (s/? string?)
-         :entity-id ::entity-id)
-  [arachne-id <docstr> entity]
-  (script/transact [(util/mkeep
-                      {:db/id (:entity-id &args)
-                       :arachne/id (:arachne-id &args)
-                       :arachne/doc (:docstr &args)})])
-  (:entity-id &args))
+  "Update the context configuration with the given data. The data must
+  be interpretable as RDF data using Aristotle."
+  (s/cat :data ::g/triples)
+  [data]
+  (script/transact data))
 
 (defdsl runtime
-  "Defines an Arachne runtime containing the given root components.
-
-   Returns the entity ID of the runtime."
-  (s/cat :roots (s/coll-of ::ref :min-count 1))
-  [roots]
-  (let [tid (cfg/tempid)
-        txdata [{:db/id tid
-                 :arachne.runtime/components (map ref (:roots &args))}]]
-    (script/transact txdata tid)))
+  "Defines an Arachne runtime containing the given root
+  components. Returns the ID of the runtime, which may be provided. If
+  none is provided, a blank node ID will be generated."
+  (s/cat :id (s/? ::id) :roots (s/coll-of ::id :min-count 1))
+  [<id> roots]
+  (let [id (id-from-args &args)
+        data {:rdf/about id
+              :arachne.runtime/components (map #(s/unform ::id %) (:roots &args))}]
+    (script/transact data)
+    id))
 
 (s/def ::constructor qualified-symbol?)
-(s/def ::dependency-map (s/map-of keyword? ::ref :min-count 1))
+(s/def ::dependency-map (s/map-of keyword? ::id :min-count 1))
 
 (defdsl component
   "Low-level form for defining a component. Takes the fully-qualified name of a component
@@ -102,28 +49,25 @@
 
    For example:
 
-      (component 'my.app/ctor)
+      (component :my.app/some-component 'my.app/ctor)
 
    Or:
 
-      (component 'my.app/ctor {:foobar :my/some-component})
+      (component :my.app/some-component 'my.app/ctor {:foobar :my/some-component})
 
-  Returns the entity ID of the component."
-  (s/cat :constructor ::constructor
+  Returns the id of the component."
+  (s/cat :id (s/? ::id)
+         :constructor ::constructor
          :dependencies (s/? ::dependency-map))
-  [constructor <dependency-map>]
-  (let [tid (cfg/tempid)
-        entity (util/mkeep
-                 {:db/id tid
-                  :arachne.component/constructor (keyword (:constructor &args))})
-        txdata (map (fn [[k v]]
-                      {:db/id tid
-                       :arachne.component/dependencies
-                       [{:arachne.component.dependency/key k
-                         :arachne.component.dependency/entity (ref v)}]})
-                 (:dependencies &args))
-        txdata (conj txdata entity)]
-    (script/transact txdata tid)))
+  [<id> constructor <dependency-map>]
+  (let [id (id-from-args &args)
+        data {:rdf/about id
+              :arachne.component/constructor (:constructor &args)
+              :arachne.component/dependencies (map (fn [[kw id]]
+                                                     {:arachne.component.dependency/key (str kw)
+                                                      :arachne.component.dependency/entity id})
+                                                (s/unform ::dependency-map (:dependencies &args)))}]
+    (script/transact data)))
 
 (defn enable-debug!
   "Globally enable DSL script debugging. This allows you to evaluate DSL forms outside the context of a

@@ -8,19 +8,20 @@
         com.stuartsierra/component {:mvn/version "0.3.1"}
         io.aviso/pretty {:mvn/version "0.1.30"}
         org.arachne-framework/aristotle {:local/root "../aristotle"}}
- :aliases {:test {:extra-paths ["test"]
-                  :main-opts ["-m" "cognitect.test-runner"]
-                  :extra-deps {com.cognitect/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git"
-                                                          :sha "4ff72ab4effb33b7726d827a3785ac750160a80d"}
-                               ch.qos.logback/logback-classic {:mvn/version "1.2.3"}
-                               org.clojure/test.check {:mvn/version "0.9.0"}
-                               datascript/datascript {:mvn/version "0.15.3"}
-                               com.datomic/datomic-free {:mvn/version "0.9.5350"
-                                                         :exclusions [org.slf4j/slf4j-api
-                                                                      org.slf4j/slf4j-nop
-                                                                      org.slf4j/slf4j-log4j12
-                                                                      org.slf4j/log4j-over-slf4j
-                                                                      org.slf4j/jcl-over-slf4j
-                                                                      org.slf4j/jul-to-slf4j]}
-                               reloaded.repl/reloaded.repl {:mvn/version "0.2.3"}}}}}
-
+ :aliases
+ {:test {:extra-paths ["test"]
+         :main-opts ["-m" "cognitect.test-runner"]
+         :extra-deps {com.cognitect/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git"
+                                                 :sha "4ff72ab4effb33b7726d827a3785ac750160a80d"}
+                      ch.qos.logback/logback-classic {:mvn/version "1.2.3"}
+                      org.clojure/test.check {:mvn/version "0.9.0"}
+                      com.clojure-goes-fast/clj-memory-meter {:mvn/version "0.1.0"}
+                      datascript/datascript {:mvn/version "0.15.3"}
+                      com.datomic/datomic-free {:mvn/version "0.9.5350"
+                                                :exclusions [org.slf4j/slf4j-api
+                                                             org.slf4j/slf4j-nop
+                                                             org.slf4j/slf4j-log4j12
+                                                             org.slf4j/log4j-over-slf4j
+                                                             org.slf4j/jcl-over-slf4j
+                                                             org.slf4j/jul-to-slf4j]}
+                      reloaded.repl/reloaded.repl {:mvn/version "0.2.3"}}}}}
