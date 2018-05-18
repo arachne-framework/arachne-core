@@ -1,3 +1,3 @@
 [{:rdf/about :org.arachne-framework/test-app
-  :arachne.module/inits [test-app.descriptor]
+  :arachne.module/include ["test-app.rdf.edn"]
   :arachne.module/dependencies [:org.arachne-framework/arachne-core]}]

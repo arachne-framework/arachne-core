@@ -1,50 +1,37 @@
 (ns arachne.core.runtime
   "Dependency Injection and lifecycle management"
-  (:require [com.stuartsierra.component :as c]
+  (:require [arachne.core.descriptor :as d]
+
+            [arachne.aristotle.graph :as g]
+            [com.stuartsierra.component :as c]
             [com.stuartsierra.dependency :as dep]
-            [arachne.core.config :as cfg]
-            [arachne.core.config.model :as cfg-model]
             [arachne.core.util :as util]
             [arachne.error :as e :refer [deferror error]]
-            [arachne.core.runtime.specs]
             [arachne.log :as log]
             [clojure.spec.alpha :as s]
             [clojure.set :as set]))
 
-(def ^:private component-dependency-rules
-  "Datalog rule for determininge transitive component dependencies"
-  '[[(dependency ?component ?dep)
-     [?component :arachne.component/dependencies ?mapping]
-     [?mapping :arachne.component.dependency/entity ?dep]]
-    [(dependency ?component ?dep)
-     [?component :arachne.component/dependencies ?mapping]
-     [?mapping :arachne.component.dependency/entity ?mid]
-     (dependency ?mid ?dep)]])
-
 (def ^:private component-pull
   "Pull expression for retrieving necessary data about a component"
-  [:db/id
+  [:rdf/about
    :arachne.component/constructor
    {:arachne.component/dependencies [:arachne.component.dependency/key
                                      :arachne.component.dependency/entity]}])
 
-
-(defn- components
-  "Given a runtime entity ID, return all components that are part of the
-  runtime. Components are returned as entity maps."
-  [cfg runtime-eid]
-  (let [roots (cfg/q cfg '[:find [?root ...]
-                           :in $ ?rt
-                           :where [?rt :arachne.runtime/components ?root]]
-                runtime-eid)
-        deps (cfg/q cfg '[:find [?e ...]
-                          :in $ [?root ...] %
-                          :where
-                          (dependency ?root ?e)]
-               roots
-               component-dependency-rules)]
-    (map #(cfg/pull cfg component-pull %)
-      (set (concat roots deps)))))
+(defn components
+  "Given a runtime IRI, return all components that are part of the
+  runtime (as maps)."
+  [d runtime]
+  (let [roots (d/query d ['?c]
+                '[:bgp [?rt :arachne.runtime/components ?c]]
+                {'?rt runtime})
+        root-components (map #(d/pull d (first %) component-pull) roots)
+        with-deps (fn with-deps [c]
+                    (let [deps (->> c :arachne.component/dependencies
+                                 (map :arachne.component.dependency/entity)
+                                 (map #(d/pull d % component-pull)))]
+                      (conj (mapcat with-deps deps) c)))]
+    (mapcat with-deps root-components)))
 
 (deferror ::error-instantiating
   :message "Error instantiating component `:eid` (Arachne ID: `:aid`)"
@@ -82,8 +69,8 @@
       instance)))
 
 (defn- system-map
-  "Given a configuration and collection of component maps, instantiates the
-  components and return a Component system map to pass to component/system-map."
+  "Given a descriptor and collection of component maps, instantiates the
+  descriptor and return a Component system map to pass to component/system-map."
   [cfg components]
   (into {} (map (fn [component-map]
                   [(:db/id component-map)
@@ -103,10 +90,12 @@
              {eid eid}))
       (:arachne.component/dependencies component))))
 
+;;; TODO: FIXING THIS
 (defn- dependency-map
-  "Given a collection of component entities, return a Component dependency map to
-  pass to component/system-using. Each component will have its dependencies
-  associated under the key specified in the config, as well as the entity ID of each dependency."
+  "Given a collection of component entities, return a Component
+  dependency map to pass to component/system-using. Each component
+  will have its dependencies associated under the key specified in the
+  descriptor, as well as the IRI of each dependency."
   [components]
   (into {}
     (filter #(not-empty (second %))
@@ -115,13 +104,13 @@
         components))))
 
 (defn- system
-  "Given a configuration and the entity ID of a Runtime entity, return an
+  "Given a descriptor and the IRI of a runtime entity, return an (unstarted) Component system.
   (unstarted) Component system"
-  [cfg runtime-eid]
-  (let [components (components cfg runtime-eid)
+  [descriptor iri]
+  (let [components (components descriptor iri)
         dep-map (dependency-map components)]
     (c/system-using
-      (merge (c/system-map) (system-map cfg components))
+      (merge (c/system-map) (system-map descriptor components))
       dep-map)))
 
   (defn- update-system
@@ -219,24 +208,27 @@
                  :found "IDs of runtimes that were actually in the config"
                  :found-formatted "Bullet list of runtimes in the config"})
 
+(s/def ::runtime #(instance? ArachneRuntime %))
+
+
+(s/fdef init
+  :args (s/cat :descriptor d/descriptor? :iri ::g/iri)
+  :ret ::runtime)
+
 (defn init
-  "Given a configuration and an entity ID or lookup ref representing a Runtime
-  entity, return an instantiated (but unstarted) ArachneRuntime object."
-  [config runtime-ref]
-  (e/assert-args `init config runtime-ref)
-  (let [runtime-eid (e/wrap-error (:db/id (cfg/pull config [:db/id] runtime-ref))
-                      [::cfg/entity-not-found]
-                      ::runtime-not-found (let [found (find-runtimes config)]
-                                            {:missing runtime-ref
-                                             :found found
-                                             :found-formatted (e/bullet-list found)}))
-        sys (system config runtime-eid)]
-    (->ArachneRuntime config sys runtime-eid)))
+  "Given a descriptor and an IRI representing a Runtime resource
+  entity, return an instantiated (but unstarted) ArachneRuntime
+  object."
+  [descriptor iri]
+  (e/assert-args `init descriptor iri)
+  (->ArachneRuntime descriptor (system descriptor iri) iri))
+
+(s/fdef lookup
+  :args (s/cat :runtime ::runtime  :iri ::g/iri))
 
 (defn lookup
   "Given a runtime and an entity ID or lookup ref, return the associated
   component instance (if present.)"
-  [rt entity-ref]
-  (e/assert-args  `lookup rt entity-ref)
-  (let [eid (:db/id (cfg/pull (:config rt) [:db/id] entity-ref))]
-    (get-in rt [:system eid])))
+  [runtime iri]
+  (e/assert-args `lookup runtime iri)
+  (get-in runtime [:system iri]))

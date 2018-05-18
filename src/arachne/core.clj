@@ -4,7 +4,6 @@
             [arachne.core.descriptor :as d]
             #_[arachne.core.runtime :as rt]
             #_[arachne.core.config.validation :as v]
-            #_[arachne.core.config.script :as script]
             [arachne.aristotle.graph :as g]
             [arachne.core.util :as util]
             [arachne.core.schema :as schema]
@@ -21,7 +20,7 @@
   "Implement :arachne.component/instance in terms of :arachne.component/constructor"
   [d]
   (let [components (d/query d '[?c]
-                            '[:bgp [?c :arachne.component/instance ?i]])]
+                     '[:bgp [?c :arachne.component/instance ?i]])]
     (if (empty? components)
       d
       (d/with-provenance `add-instance-constructors
@@ -44,15 +43,13 @@
     before returning."
   [& args]
   (let [{:keys [module data validate]} (s/conform ::descriptor-args args)]
-    (m/descriptor module (s/unform ::g/triples data) validate)))
+    (m/descriptor (s/unform ::g/iri module) (s/unform ::g/triples data) validate)))
 
-#_(s/fdef runtime
-  :args (s/cat :config nil
-               :resource nil))
+(s/fdef runtime
+  :args (s/cat :descriptor d/descriptor? :iri ::g/iri))
 
 #_(defn runtime
-  "Create a new Arachne runtime from the given configuration and the :arachne/id
-  of the root runtime entity"
-  [cfg arachne-id]
-  (e/assert-args `runtime cfg arachne-id)
-  (rt/init cfg [:arachne/id arachne-id]))
+  "Instantiate an Arachne runtime from the given runtime, in the given descriptor."
+  [descriptor iri]
+  (e/assert-args `runtime descriptor iri)
+  (rt/init descriptor iri))

@@ -1,4 +1,4 @@
-(ns arachne-test.core
+(ns test-app.core
   (:require [com.stuartsierra.component :as c]))
 
 (defrecord TestComponent []

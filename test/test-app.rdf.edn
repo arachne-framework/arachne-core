@@ -1,0 +1,6 @@
+[{:rdf/about :test/rt
+  :arachne.runtime/components [:test/component]}
+
+ {:rdf/about :test/component
+  :arachne.component/constructor arachne-test.core/test-component}
+ ]

@@ -26,32 +26,32 @@
 (def base-schema
   "OWL Schema for fundamental descriptor attrs"
   [(scm/class :clojure/Var []
-              "Entity representing a Clojure Var. The IRI of the entity should be a URN indicating the fully qualified var name.")
+     "Entity representing a Clojure Var. The IRI of the entity should be a URN indicating the fully qualified var name.")
    (scm/class :clojure/Namespace []
-              "Entity representing a Clojure Namespace. The IRI of the entity should be a URN indicating the namespace name.")
+     "Entity representing a Clojure Namespace. The IRI of the entity should be a URN indicating the namespace name.")
 
    {:rdf/about :clojure/Var
     :owl/disjointWith :clojure/Namespace}
 
    (scm/class :arachne/Provenance []
-              "Subject colleccting properties about the origin of associated data."
-              :arachne.provenance/module :one :required :rdfs/Resource
-              "The module that generated this data"
-              :arachne.provenance/function :one :required :clojure/Var
-              "The function that was being executed when this data was generated."
-              :arachne.provenance/stack-frame :one :optional :arachne/StackFrame
-              "The stack frame from whence the data was generated."
-              :arachne.provenance/parent :one :optional :arachne/Provenance
-              "Link to another higher or more general provenance entity also pertaining to this data.")
+     "Subject colleccting properties about the origin of associated data."
+     :arachne.provenance/module :one :required :rdfs/Resource
+     "The module that generated this data"
+     :arachne.provenance/function :one :required :clojure/Var
+     "The function that was being executed when this data was generated."
+     :arachne.provenance/stack-frame :one :optional :arachne/StackFrame
+     "The stack frame from whence the data was generated."
+     :arachne.provenance/parent :one :optional :arachne/Provenance
+     "Link to another higher or more general provenance entity also pertaining to this data.")
 
    (scm/class :arachne/StackFrame []
-              "Represenation of a JVM stack frame for debugging purposes"
-              :arachne.stack-frame/class :one :optional :xsd/string
-              "JVM class name"
-              :arachne.stack-frame/source-file :one :optional :xsd/string
-              "Java or Clojure source file"
-              :arachne.stack-frame/source-line :one :optional :xsd/integer
-              "Line number in the source file")
+     "Represenation of a JVM stack frame for debugging purposes"
+     :arachne.stack-frame/class :one :optional :xsd/string
+     "JVM class name"
+     :arachne.stack-frame/source-file :one :optional :xsd/string
+     "Java or Clojure source file"
+     :arachne.stack-frame/source-line :one :optional :xsd/integer
+     "Line number in the source file")
 
    {:rdf/about :arachne.descriptor/tx
     :rdfs/domain :rdf/Statement
@@ -59,24 +59,23 @@
     :rdf/comment "Link between an RDF statement and the Arachne transaction which created the statement."}
 
    (scm/class :arachne.descriptor/Tx []
-              "Represents a single insertion point of data into an Arachne descriptor."
-              :arachne.descriptor.tx/index :one :required :xsd/integer
-              "The absolute insertion order of this transaction in the descriptor."
-              :arachne.descriptor.tx/provenance :one :optional :arachne/Provenance
-              "Link to information about where the data came from.")
+     "Represents a single insertion point of data into an Arachne descriptor."
+     :arachne.descriptor.tx/index :one :required :xsd/integer
+     "The absolute insertion order of this transaction in the descriptor."
+     :arachne.descriptor.tx/provenance :one :optional :arachne/Provenance
+     "Link to information about where the data came from.")
 
    (scm/class :arachne/Module []
-              "An Arachne module"
-              :arachne.module/dependencies :many :optional :arachne/Module
-              "A module's dependencies"
-              :arachne.module/configure :many :optional :clojure.core/symbol
-              "Configure functions to run on a module. Each configure function is a 1-arg function that accepts and returns a descriptor.")
+     "An Arachne module"
+     :arachne.module/dependencies :many :optional :arachne/Module
+     "A module's dependencies"
+     :arachne.module/configure :many :optional :clojure.core/symbol
+     "Configure functions to run on a module. Each configure function is a 1-arg function that accepts and returns a descriptor.")
 
-   {:rdf/about :arachne.module/inits
-    :rdf/comment "Data created/added by a module at initialization time, including OWL schema.
+   {:rdf/about :arachne.module/include
+    :rdf/comment "Data included in a module at initialization time, including OWL schema.
    - strings should refer to classpath-relative RDF files, which will be loaded directly
-   - Clojure vars identify either a var containing RDF/EDN data, or a 0-arg Clojure function returning RDF/EDN data.
-   - Clojure namespaces indicating a config DSL namespace"
+   - Clojure vars identify either a var containing RDF/EDN data, or a 0-arg Clojure function returning RDF/EDN data."
     :rdfs/domain :arachne/Module
     :rdfs/range {:rdf/type :owl/Class
                  :owl/unionOf [:xsd/string :clojure/Var :clojure/Namespace]}}
