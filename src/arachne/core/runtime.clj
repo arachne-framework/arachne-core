@@ -107,10 +107,10 @@
 (defrecord ArachneRuntime [descriptor iri system]
   c/Lifecycle
   (start [this]
-    (log/info :msg "Starting Arachne runtime")
+    (log/info :msg "Starting Arachne runtime" :iri iri)
     (update this :system c/start))
   (stop [this]
-    (log/info :msg "Stopping Arachne runtime")
+    (log/info :msg "Stopping Arachne runtime" :iri iri)
     (update this :system c/stop)))
 
 (defn- find-runtimes

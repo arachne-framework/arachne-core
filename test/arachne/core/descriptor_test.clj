@@ -45,7 +45,6 @@
                            [?tx :arachne.descriptor.tx/provenance ?p]]))
           prov (d/pull d p '[* {:arachne.provenance/parent ...
                                 :arachne.provenance/stack-frame [*]}])]
-      (clojure.pprint/pprint prov)
       (is (-> prov :arachne.provenance/function (= `foobar)))
       (is (-> prov :arachne.provenance/parent :arachne.provenance/function (= `foo)))
       (is (-> prov :arachne.provenance/parent :arachne.provenance/stack-frame
