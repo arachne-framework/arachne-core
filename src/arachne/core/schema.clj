@@ -21,7 +21,7 @@
      :arachne.component.dependency/entity :one :required :arachne/Component
      "Links a component dependency to another component entity."
      :arachne.component.dependency/key :one :optional :xsd/string
-     "The key with which to inject a dependency (as a string). If omitted, the key will default to the iri of the dependency.")
+     "The key with which to inject a dependency. The value will be parsed using `clojure.core/read-string`, allowing keys of any type. If omitted, the key will default to the iri of the dependency.")
 
    (s/class :arachne/Runtime []
     "Entity describing a particular Arachne runtime"

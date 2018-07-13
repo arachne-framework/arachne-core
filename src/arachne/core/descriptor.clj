@@ -26,9 +26,9 @@
 (def base-schema
   "OWL Schema for fundamental descriptor attrs"
   [(scm/class :clojure/Var []
-     "Entity representing a Clojure Var. The IRI of the entity should be a URN indicating the fully qualified var name.")
+     "Entity representing a Clojure Var. The IRI of the entity should be a URN of the form `urn:clojure:namespace/name` (i.e, one that Aristotle will interpret as a Clojure symbol when converting back to Clojure data.) ")
    (scm/class :clojure/Namespace []
-     "Entity representing a Clojure Namespace. The IRI of the entity should be a URN indicating the namespace name.")
+     "Entity representing a Clojure Namespace. The IRI of the entity should be a URN of the form `urn:clojure:namespace` (i.e, one that Aristotle will interpret as a Clojure symbol when converting back to Clojure data.) ")
 
    {:rdf/about :clojure/Var
     :owl/disjointWith :clojure/Namespace}

@@ -55,7 +55,7 @@
                      (condp = (util/arity @ctor-fn)
                        0 (ctor-fn)
                        1 (ctor-fn component-map)
-                       (ctor-fn descriptor (:rdf/about component-map))))
+                       2 (ctor-fn descriptor (:rdf/about component-map))))
                    (catch Throwable t
                      (error ::error-instantiating
                        {:ex-type (.getName (class t))
@@ -63,7 +63,8 @@
                         :iri (:rdf/about component-map)
                         :ctor constructor} t)))]
     (if (map? instance)
-      (merge component-map instance)
+      (reduce (fn [i [k v]] (if (contains? i k) i (assoc i k v)))
+        instance component-map)
       instance)))
 
 (defn- system-map
@@ -80,7 +81,7 @@
     :arachne.component/dependencies
     (map (fn [{:keys [:arachne.component.dependency/entity
                       :arachne.component.dependency/key]}]
-           (if key {key entity, entity entity} {entity entity})))
+           (if key {(read-string key) entity, entity entity} {entity entity})))
     (apply merge)))
 
 (defn- dependency-map
@@ -107,7 +108,7 @@
   c/Lifecycle
   (start [this]
     (log/info :msg "Starting Arachne runtime")
-    (update this :system c/start descriptor))
+    (update this :system c/start))
   (stop [this]
     (log/info :msg "Stopping Arachne runtime")
     (update this :system c/stop)))
