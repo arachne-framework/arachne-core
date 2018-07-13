@@ -40,7 +40,7 @@
   - The IRI of the root Arachne module to load
   - A RDF/EDN data structure of data to add to the descriptor (optional)
   - A boolean indicator of whether or not to validate the descriptor
-    before returning."
+    before returning (optional)."
   [& args]
   (let [{:keys [module data validate]} (s/conform ::descriptor-args args)]
     (m/descriptor (s/unform ::g/iri module) (s/unform ::g/triples data) validate)))

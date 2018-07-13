@@ -75,7 +75,8 @@
    {:rdf/about :arachne.module/include
     :rdf/comment "Data included in a module at initialization time, including OWL schema.
    - strings should refer to classpath-relative RDF files, which will be loaded directly
-   - Clojure vars identify either a var containing RDF/EDN data, or a 0-arg Clojure function returning RDF/EDN data."
+   - Clojure vars identify either a var containing RDF/EDN data, or a 0-arg Clojure function returning RDF/EDN data.
+"
     :rdfs/domain :arachne/Module
     :rdfs/range {:rdf/type :owl/Class
                  :owl/unionOf [:xsd/string :clojure/Var :clojure/Namespace]}}
