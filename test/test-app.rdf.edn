@@ -1,5 +1,5 @@
-[#rdf/prefix [:example "http://example.com/test/"]
- {:rdf/about :example/rt
-  :arachne.runtime/components [:example/component]}
- {:rdf/about :example/component
+[#rdf/global-prefix [:test "http://example.com/test/"]
+ {:rdf/about :test/rt
+  :arachne.runtime/components [:test/component]}
+ {:rdf/about :test/component
   :arachne.component/constructor test-app.core/test-component}]

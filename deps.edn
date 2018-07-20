@@ -12,7 +12,7 @@
  {:test {:extra-paths ["test"]
          :main-opts ["-m" "cognitect.test-runner"]
          :extra-deps {com.cognitect/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git"
-                                                 :sha "4ff72ab4effb33b7726d827a3785ac750160a80d"}
+                                                 :sha "028a6d41ac9ac5d5c405dfc38e4da6b4cc1255d5"}
                       ch.qos.logback/logback-classic {:mvn/version "1.2.3"}
                       org.clojure/test.check {:mvn/version "0.9.0"}
                       com.clojure-goes-fast/clj-memory-meter {:mvn/version "0.1.0"}
