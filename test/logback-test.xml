@@ -2,7 +2,7 @@
 
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level - %msg%n</pattern>
+      <pattern>%d{HH:mm:ss.SSS} %-5level %msg%n</pattern>
     </encoder>
   </appender>
 
@@ -10,6 +10,6 @@
       <appender-ref ref="STDOUT"/>
   </root>
 
- <logger name="arachne.core.config.validation" level="OFF" />
+ <logger name="arachne" level="DEBUG" />
 
 </configuration>

@@ -5,6 +5,7 @@
             #_[arachne.core.runtime :as rt]
             #_[arachne.core.config.validation :as v]
             [arachne.aristotle.graph :as g]
+            [arachne.aristotle.registry :as reg]
             [arachne.core.util :as util]
             [arachne.core.schema :as schema]
             [arachne.error :as e]
@@ -30,8 +31,8 @@
 (s/def ::descriptor-args (s/cat :module ::g/iri
                                 :data (s/? ::g/triples)
                                 :validate? (s/? boolean?)))
-(s/fdef descriptor
-  :args ::descriptor-args)
+
+(s/fdef descriptor :args ::descriptor-args)
 
 (defn descriptor
   "Initialize a new Arachne descriptor for this application. Arguments
@@ -43,7 +44,7 @@
     before returning (optional)."
   [& args]
   (let [{:keys [module data validate]} (s/conform ::descriptor-args args)]
-    (m/descriptor (s/unform ::g/iri module) (s/unform ::g/triples data) validate)))
+    (m/descriptor (s/unform ::g/iri module) (when data (s/unform ::g/triples data)) validate)))
 
 (s/fdef runtime
   :args (s/cat :descriptor d/descriptor? :iri ::g/iri))

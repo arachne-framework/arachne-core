@@ -16,6 +16,15 @@
    {:arachne.component/dependencies [:arachne.component.dependency/key
                                      :arachne.component.dependency/entity]}])
 
+(deferror ::missing-runtime
+  :message "No runtime found for `:rt`"
+  :explanation "There was no runtime with the with the specified IRI found in the descriptor, or it was invalid because it was not associated with any components. Valid runtimes in the descriptor are: \n\n :runtimes-str"
+  :suggestions ["Make sure that `:rt` is correct and exists in the descriptor."
+                "Make sure `:rt` is associated with one or more root components."]
+  :ex-data-docs {:descriptor "The descriptor"
+                 :rt "The IRI of the missing runtime"
+                 :runtimes "Valid runtimes in the descriptor"})
+
 (defn components
   "Given a runtime IRI, return all components that are part of the
   runtime (as maps). The descriptor itself is included under
@@ -24,6 +33,14 @@
   (let [roots (d/query d ['?c]
                 '[:bgp [?rt :arachne.runtime/components ?c]]
                 {'?rt runtime})
+        _ (when (empty? roots)
+            (let [valid-runtimes (map first
+                                   (d/query d '[?rt]
+                                     '[:bgp [?rt :arachne.runtime/components _]]))]
+              (error ::missing-runtime {:descriptor d
+                                        :rt runtime
+                                        :runtimes valid-runtimes
+                                        :runtimes-str (e/bullet-list valid-runtimes)})))
         root-components (map #(d/pull d (first %) component-pull) roots)
         with-deps (fn with-deps [c]
                     (let [deps (->> c :arachne.component/dependencies

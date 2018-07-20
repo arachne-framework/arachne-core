@@ -1,3 +1,4 @@
-[{:rdf/about :org.arachne-framework/test-app
+[#rdf/prefix [:example "http://example.com/test/"]
+ {:rdf/about :example/test-app
   :arachne.module/include ["test-app.rdf.edn"]
   :arachne.module/dependencies [:org.arachne-framework/arachne-core]}]

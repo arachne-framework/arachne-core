@@ -318,8 +318,7 @@
                            {:descriptor d
                             :type (::v/type e)
                             :message (::v/description e)
-                            :details (::v/details e)})
-                         ))))))
+                            :details (::v/details e)})))))))
 
 (defn validate
   "Validate the given descriptor. If it contains any validation errors, throw an exception with the errors in its ex-data."

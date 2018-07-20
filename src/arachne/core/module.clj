@@ -44,12 +44,26 @@
                           results)]
     (loom/digraph results-m)))
 
+(deferror ::missing-module
+  :message "Could not find module `:module`"
+  :explanation "Could not initialize module with IRI `:module`, because no subject with that name was found in the given descriptor. Known modules IRIs are:\n\n :known-modules-str."
+  :suggestions ["Make sure the module IRI is correct and typo-free"
+                "Make sure the requested module definition file (arachne.edn) is on the classpath."]
+  :ex-data-docs {:descriptor "The descriptor"
+                 :module "The missing IRI"
+                 :known-modules "Modules discovered on the classpath."})
+
 (defn- modules
   "Query a descriptor to return all the modules contained by that descriptor."
   [d module]
   (let [graph (module-graph d)
         ordered (loom-alg/topsort graph)
         module (graph/data (graph/node module))]
+    (when-not (loom/has-node? graph module)
+      (error ::missing-module {:descriptor d
+                               :module module
+                               :known-modules ordered
+                               :known-modules-str (e/bullet-list ordered)}))
     (filter (set (loom-alg/pre-traverse graph module)) ordered)))
 
 (defn- initialize
@@ -60,7 +74,7 @@
                               {'?m m})]
     (d/with-provenance `initialize
       (doseq [[m i] initializers]
-        (log/info :msg "Initializing module" :module m :initializer i)
+        (log/debug :msg "Initializing module" :module m :initializer i)
         (cond
           (string? i) (d/add-file! d i)
           (and (symbol? i) (namespace i)) (let [v (u/require-and-resolve i)]
@@ -78,7 +92,7 @@
                              {'?m m})]
     (d/with-provenance `configure
       (doseq [[c] configurers]
-        (log/info :msg "Configuring module" :module m :configure c)
+        (log/debug :msg "Configuring module" :module m :configure c)
         ((u/require-and-resolve c) d)))))
 
 (defn ^:no-doc descriptor
