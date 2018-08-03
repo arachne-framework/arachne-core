@@ -34,7 +34,7 @@
 
 (deftest basic-dependencies
   (let [d (a/descriptor :org.arachne-framework/arachne-core basic-descriptor)
-        rt (rt/init d :test/rt)
+        rt (a/runtime d :test/rt)
         instances (:system rt)]
     (is (= 1 (count instances)))
     ;; Note: It comes back as a set because we never said it was cardinality one
@@ -69,7 +69,7 @@
 
 (deftest linear-dependencies
   (let [d (a/descriptor :org.arachne-framework/arachne-core linear-descriptor)
-        rt (rt/init d :test/rt)
+        rt (a/runtime d :test/rt)
         rt (component/start rt)
         instances (:system rt)]
     (is (= 3 (count instances)))
@@ -111,7 +111,7 @@
 
 (deftest complex-dependencies
   (let [d (a/descriptor :org.arachne-framework/arachne-core complex-descriptor)
-        rt (rt/init d :test/rt)
+        rt (a/runtime d :test/rt)
         instances (:system rt)]
     (is (= 4 (count instances)))
     (is (:test/c1 instances))
@@ -124,7 +124,7 @@
 
 (deftest basic-lifecycle
   (let [d (a/descriptor :org.arachne-framework/arachne-core linear-descriptor)
-        rt (rt/init d :test/rt)
+        rt (a/runtime d :test/rt)
         instances (:system rt)]
     (is (= 3 (count instances)))
     (is (every? #(satisfies? component/Lifecycle %) (vals instances)))

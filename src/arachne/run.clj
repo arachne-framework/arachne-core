@@ -27,5 +27,5 @@ indefinitely until you terminate it manually with a kill signal.")
     (do
       (log/info :msg "Launching Arachne application" :name module :runtime runtime)
       (let [d (a/descriptor (read-string module))
-            rt (rt/init d (read-string runtime))]
+            rt (a/runtime d (read-string runtime))]
         (c/start rt)))))

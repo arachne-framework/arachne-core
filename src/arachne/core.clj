@@ -1,6 +1,7 @@
 (ns arachne.core
   "The core Arachne module that bootstraps everything else"
   (:require [arachne.core.module :as m]
+            [arachne.core.runtime :as rt]
             [arachne.core.descriptor :as d]
             [arachne.aristotle.graph :as g]
             [arachne.aristotle.registry :as reg]
@@ -16,7 +17,8 @@
   @(util/require-and-resolve (:arachne.component/instance component)))
 
 (defn ^:no-doc add-instance-constructors
-  "Implement :arachne.component/instance in terms of :arachne.component/constructor"
+  "Configure function: Implement :arachne.component/instance in terms
+  of :arachne.component/constructor"
   [d]
   (let [components (d/query d '[?c]
                      '[:bgp [?c :arachne.component/instance ?i]])]
@@ -27,7 +29,7 @@
           (d/update! d [c :arachne.component/constructor 'arachne.core/instance-ctor]))))))
 
 (defn ^:no-doc distinct-vars
-  "Assert that all :clojure/Var resources in the descriptor are mutually distinct"
+  "Configure function: Assert that all :clojure/Var resources in the descriptor are mutually distinct"
   [d]
   (let [vars (d/query d '[?v]
                '[:bgp [?v :rdf/type :clojure/Var]])
@@ -58,8 +60,13 @@
 (s/fdef runtime
   :args (s/cat :descriptor d/descriptor? :iri ::g/iri))
 
-#_(defn runtime
-  "Instantiate an Arachne runtime from the given runtime, in the given descriptor."
+(defn runtime
+  "Instantiate and return an unstarted Arachne runtime, for the runtime with the given IRI in the given descriptor."
   [descriptor iri]
   (e/assert-args `runtime descriptor iri)
   (rt/init descriptor iri))
+
+(defn component
+  "Given a runtime and a component IRI, return the component instance (if it exists.)"
+  [runtime iri]
+  (rt/lookup runtime iri))

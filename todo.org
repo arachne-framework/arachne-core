@@ -1,7 +1,7 @@
 * DONE complete tests in runtime_test.
 * DONE Add global_prefix reader macro
-* write test for validations
-* clean up public API structure (single ns or multiple, not both...)
+* DONE write test for validations
+* DONE clean up public API structure (single ns or multiple, not both...)
 * clean up warn-on-reflection
 * enable tagged literal-based data dsl
 ** for schema dsl as well as files
