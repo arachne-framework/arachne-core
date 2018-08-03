@@ -8,7 +8,8 @@
             [arachne.log :as log]
             [arachne.error.format :as fmt])
   (:import [java.util Date TimeZone]
-           [java.text SimpleDateFormat]))
+           [java.text SimpleDateFormat]
+           [java.io Writer]))
 
 (def ^{:doc "global registry of Arachne error types and associated data"}
      error-registry (atom {}))
@@ -16,7 +17,7 @@
 (def ^{:dynamic true
        :doc "exception printer used for logging (among other things). Rebind to override how Arachne prints exceptions."}
   *print-exception*
-  (fn [e writer]
+  (fn [^Throwable e ^Writer writer]
     (.printStackTrace e (java.io.PrintWriter. writer))))
 
 (defmethod print-method clojure.lang.ExceptionInfo
@@ -238,7 +239,8 @@
      (catch Throwable t#
        (error ~type ~ex-data t#))))
 
-(def ^{:doc "Common UTC SimpleDateFormat to be used when reporting timestamps"}
+(def ^{:doc "Common UTC SimpleDateFormat to be used when reporting timestamps"
+       :tag SimpleDateFormat}
   utc-date-format
   (let [f (SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ss.SSSz")]
     (.setTimeZone f (TimeZone/getTimeZone "UTC"))
@@ -246,7 +248,7 @@
 
 (defn format-date
   "Convert a java.util.Date to a human-readable UTC string"
-  [date]
+  [^Date date]
   (.format utc-date-format date))
 
 (defn- report-error

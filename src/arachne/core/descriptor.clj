@@ -16,8 +16,10 @@
             [arachne.aristotle.query :as q]
             [arachne.aristotle.validation :as v])
   (:import [java.util Date]
+           [org.apache.jena.graph Graph]
            [org.apache.jena.shared LockMutex Lock]
-           [org.apache.jena.sparql.algebra Op]))
+           [org.apache.jena.sparql.algebra Op]
+           [java.lang StackTraceElement]))
 
 (reg/prefix :org.arachne-framework "http://arachne-framework.org/name/")
 (reg/prefix :arachne.* "urn:arachne:")
@@ -101,7 +103,7 @@
    (stack-provenance-txdata function (constantly false)))
   ([function stack-filter-pred]
    (let [stack (seq (.getStackTrace (Thread/currentThread)))
-         ste (first (filter stack-filter-pred stack))
+         ste ^StackTraceElement (first (filter stack-filter-pred stack))
          pdata {:arachne.provenance/function (symbol function)}]
      (if ste
        (assoc pdata :arachne.provenance/stack-frame
@@ -144,7 +146,7 @@
   (read- [this f] "Apply the given function within a read lock and
   return its result. The result should be a realized immutable value."))
 
-(deftype Descriptor [^:volatile-mutable ^:public graph ^Lock mutex]
+(deftype Descriptor [^:volatile-mutable ^:public ^Graph graph ^Lock mutex]
   Object
   (toString [this]
     (str "#arachne.descriptor[hash=" (.hashCode this)
@@ -331,8 +333,6 @@
       1 (throw (first errors))
       (e/error ::validation-errors {:count (count errors)
                                     :errors errors
-                                    :messages (apply str "\n" (str/join "\n\n" (map #(.getMessage %) errors)))
+                                    :messages (apply str "\n" (str/join "\n\n" (map #(.getMessage ^Throwable %) errors)))
                                     :descriptor d})))
   d)
-
-

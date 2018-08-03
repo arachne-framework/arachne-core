@@ -14,7 +14,8 @@
             [arachne.error :as e :refer [error deferror]]
             [arachne.error.format :as efmt]
             [arachne.core.util :as u]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io])
+  (:import [org.apache.jena.reasoner.rulesys FBRuleInfGraph]))
 
 (reg/prefix :org.arachne-framework "http://arachne-framework.org/name/")
 (reg/prefix :arachne.* "urn:arachne:")
@@ -105,7 +106,7 @@
     (let [modules (modules d module)]
       (doseq [m (reverse modules)] (initialize d m))
       (doseq [m modules] (configure d m)))
-    (d/read- d #(.rebindAll %))
+    (d/read- d #(.rebindAll ^FBRuleInfGraph %))
     (when validate? (d/validate d))
     d))
 

@@ -7,13 +7,14 @@
             [clojure.pprint :as pprint]
             [clojure.stacktrace :as st])
   (:import [java.io StringWriter]
-           [clojure.lang IExceptionInfo]))
+           [clojure.lang IExceptionInfo]
+           [java.lang StackTraceElement Throwable]))
 
 
 (defn- source-location
   "Return a string with the class, file and line number of the given exception"
-  [e]
-  (let [ste (first (.getStackTrace e))]
+  [^Throwable e]
+  (let [^StackTraceElement ste (first (.getStackTrace e))]
     (str (.getClassName ste) "(" (.getFileName ste) ":" (.getLineNumber ste) ")")))
 
 
@@ -101,7 +102,8 @@
   :pretty-stacktrace? - Print a stacktrace for the exception, formatted using io.aviso/pretty (default false).
 
   "
-  [e {:keys [color suggestions stacktrace ex-data-summary
+  [^Throwable
+   e {:keys [color suggestions stacktrace ex-data-summary
              cause pretty-stacktrace]
       :as opts
       :or {color false

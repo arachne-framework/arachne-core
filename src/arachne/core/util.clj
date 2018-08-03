@@ -4,7 +4,8 @@
             [clojure.string :as str]
             [arachne.core.util.specs]
             [arachne.error :as e :refer [deferror error]])
-  (:import [java.io FileNotFoundException])
+  (:import [java.io FileNotFoundException]
+           [java.lang.reflect Method])
   (:refer-clojure :exclude [alias]))
 
 (defn read-edn
@@ -88,13 +89,13 @@
   "Given a function, return its arity (or :many if the function is variadic)"
   [f]
   (let [methods (.getDeclaredMethods (class f))
-        invokes (filter #(= "invoke" (.getName %)) methods)
-        do-invokes (filter #(= "doInvoke" (.getName %)) methods)]
+        invokes (filter #(= "invoke" (.getName ^Method %)) methods)
+        do-invokes (filter #(= "doInvoke" (.getName ^Method %)) methods)]
     (cond
       (not (empty? do-invokes)) :many
       (< 1 (count invokes)) :many
       (empty? invokes) (error ::arity-detection-error {:f f})
-      :else (count (.getParameterTypes (first invokes))))))
+      :else (count (.getParameterTypes ^Method (first invokes))))))
 
 (defn map-transform
   "Utility function for transforming maps into similar maps, which is a common
