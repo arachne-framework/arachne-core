@@ -1,23 +1,11 @@
 * DONE complete tests in runtime_test.
+* DONE Add global_prefix reader macro
 * write test for validations
+* clean up public API structure (single ns or multiple, not both...)
+* clean up warn-on-reflection
 * enable tagged literal-based data dsl
-** for classes as well as files
+** for schema dsl as well as files
 ** specify rdf/edn files, rdf files, or functions that return data pervasively
 * modernize error handling, use expound by default
-* build, move to bitbucket, move to circleci 2
 * merge to master
-
-* Idea, to simplify a great many things:
-
-Have Aristotle convert namespaced Clojure keywords to IRIs with a :clojure:keyword: URN.
-
-Namespace conversions could be handled at the import/export layer.
-
-Advantage: we can freely round-trip without worrying about registrations or lack thereof.
-
-Disadvantage: extra consideration is needed to "rename" entities. Less
-seamless interoperability with RDF. Need to do inferencing to support
-using keywords in docs.
-
-Alternative idea: 
-
+* build, move to bitbucket, move to circleci 2

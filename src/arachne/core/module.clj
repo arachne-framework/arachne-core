@@ -105,6 +105,7 @@
     (let [modules (modules d module)]
       (doseq [m (reverse modules)] (initialize d m))
       (doseq [m modules] (configure d m)))
+    (d/read- d #(.rebindAll %))
     (when validate? (d/validate d))
     d))
 

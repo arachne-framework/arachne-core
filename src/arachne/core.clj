@@ -2,8 +2,6 @@
   "The core Arachne module that bootstraps everything else"
   (:require [arachne.core.module :as m]
             [arachne.core.descriptor :as d]
-            #_[arachne.core.runtime :as rt]
-            #_[arachne.core.config.validation :as v]
             [arachne.aristotle.graph :as g]
             [arachne.aristotle.registry :as reg]
             [arachne.core.util :as util]
@@ -28,6 +26,17 @@
         (doseq [[c] components]
           (d/update! d [c :arachne.component/constructor 'arachne.core/instance-ctor]))))))
 
+(defn ^:no-doc distinct-vars
+  "Assert that all :clojure/Var resources in the descriptor are mutually distinct"
+  [d]
+  (let [vars (d/query d '[?v]
+               '[:bgp [?v :rdf/type :clojure/Var]])
+        vars (set (apply concat vars))]
+    (d/with-provenance `distinct-vars
+      (let [data {:rdf/type :owl/AllDifferent
+                  :owl/distinctMembers (g/rdf-list vars)}]
+        (d/update! d data)))))
+
 (s/def ::descriptor-args (s/cat :module ::g/iri
                                 :data (s/? ::g/triples)
                                 :validate? (s/? boolean?)))
@@ -43,8 +52,8 @@
   - A boolean indicator of whether or not to validate the descriptor
     before returning (optional)."
   [& args]
-  (let [{:keys [module data validate]} (s/conform ::descriptor-args args)]
-    (m/descriptor (s/unform ::g/iri module) (when data (s/unform ::g/triples data)) validate)))
+  (let [{:keys [module data validate?]} (s/conform ::descriptor-args args)]
+    (m/descriptor (s/unform ::g/iri module) (when data (s/unform ::g/triples data)) validate?)))
 
 (s/fdef runtime
   :args (s/cat :descriptor d/descriptor? :iri ::g/iri))

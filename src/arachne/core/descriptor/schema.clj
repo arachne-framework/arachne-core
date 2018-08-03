@@ -40,9 +40,14 @@
     {:rdf/about (s/unform ::g/iri (:class args))
      :rdf/comment (:doc args)
      :rdfs/_domain (mapv (fn [attr]
-                           {:rdf/about (s/unform ::g/iri (:attr attr))
-                            :rdfs/range (s/unform ::g/iri (:range attr))
-                            :rdf/comment (:doc attr)})
+                           (let [range (->> attr :range (s/unform ::g/iri) g/node g/data)
+                                 type (if (and (keyword? range) (= "xsd" (namespace range)))
+                                        :owl/DataTypeProperty
+                                        :owl/ObjectProperty)]
+                             {:rdf/about (s/unform ::g/iri (:attr attr))
+                              :rdfs/range range
+                              :rdf/type type
+                              :rdf/comment (:doc attr)}))
                          (:attrs args))
      :rdfs/subClassOf (concat (keep cardinality-restriction (:attrs args))
                               (mapv #(s/unform ::g/iri %) (:supers args)))}))

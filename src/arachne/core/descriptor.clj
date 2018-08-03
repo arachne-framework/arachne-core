@@ -34,8 +34,6 @@
     :owl/disjointWith :clojure/Namespace}
 
    (scm/class :arachne/Provenance []
-     "Subject colleccting properties about the origin of associated data."
-     :arachne.provenance/module :one :required :rdfs/Resource
      "The module that generated this data"
      :arachne.provenance/function :one :required :clojure/Var
      "The function that was being executed when this data was generated."
@@ -291,7 +289,7 @@
 
 
 (deferror ::validation-errors
-  :message "Found :count errors while validating the configuration"
+  :message "Found :count errors while validating the configuration. See ex-data for individual exceptions."
   :explanation "After it was constructed, the descriptor was found to be invalid. There were :count different errors:\n :messages"
   :suggestions ["Check the errors key in the ex-data to retrieve the individual validation exceptions. You can then inspect them individually using `arachne.error/explain`."]
   :ex-data-docs {:errors "The collection of validation exceptions"
@@ -311,7 +309,7 @@
   "Return a seq of validation errors, one for each consistency error returned by Aristotle"
   [d]
   (read- d (fn [g]
-             (->> (v/validate g [v/built-in v/min-cardinality])
+             (->> (v/validate g [v/min-cardinality])
                   (filter ::v/error?)
                   (map (fn [e]
                          (e/arachne-ex ::consistency-error
@@ -328,7 +326,9 @@
         fns (map first fns)
         fns (conj fns default-validator)
         errors (mapcat #(% d) fns)]
-    (when-not (empty? errors)
+    (case (count errors)
+      0 d
+      1 (throw (first errors))
       (e/error ::validation-errors {:count (count errors)
                                     :errors errors
                                     :messages (apply str "\n" (str/join "\n\n" (map #(.getMessage %) errors)))

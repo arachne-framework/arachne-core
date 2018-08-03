@@ -139,16 +139,16 @@
 
 (deferror ::runtime-not-found
   :message "Runtime `:missing` was not found."
-  :explanation "The Arachne runtime was instructed to start using a runtime entity identified by `:missing`. However, no such IRI could be found in the config that was provided.
+  :explanation "The Arachne runtime was instructed to start using a runtime entity identified by `:missing`. However, no such IRI could be found in the descriptor that was provided.
 
-   The configuration did, however, contain the following runtime entities:
+   The descriptor did, however, contain the following runtime entities:
 
    :found-formatted"
-  :suggestions ["Select a runtime that is actually present in the config"
+  :suggestions ["Select a runtime that is actually present in the descriptor"
                 "Make sure there are no typos in the runtime IRI"]
   :ex-data-docs {:missing "The runtime that could not be found"
-                 :found "IDs of runtimes that were actually in the config"
-                 :found-formatted "Bullet list of runtimes in the config"})
+                 :found "IDs of runtimes that were actually in the descriptor"
+                 :found-formatted "Bullet list of runtimes in the descriptor"})
 
 (s/def ::runtime #(instance? ArachneRuntime %))
 
