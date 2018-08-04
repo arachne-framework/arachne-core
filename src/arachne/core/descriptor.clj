@@ -25,67 +25,6 @@
 (reg/prefix :arachne.* "urn:arachne:")
 (reg/prefix :clojure.* "urn:arachne:clojure:")
 
-(def base-schema
-  "OWL Schema for fundamental descriptor attrs"
-  [(scm/class :clojure/Var []
-     "Entity representing a Clojure Var. The IRI of the entity should be a URN of the form `urn:clojure:namespace/name` (i.e, one that Aristotle will interpret as a Clojure symbol when converting back to Clojure data.) ")
-   (scm/class :clojure/Namespace []
-     "Entity representing a Clojure Namespace. The IRI of the entity should be a URN of the form `urn:clojure:namespace` (i.e, one that Aristotle will interpret as a Clojure symbol when converting back to Clojure data.) ")
-
-   {:rdf/about :clojure/Var
-    :owl/disjointWith :clojure/Namespace}
-
-   (scm/class :arachne/Provenance []
-     "The module that generated this data"
-     :arachne.provenance/function :one :required :clojure/Var
-     "The function that was being executed when this data was generated."
-     :arachne.provenance/stack-frame :one :optional :arachne/StackFrame
-     "The stack frame from whence the data was generated."
-     :arachne.provenance/parent :one :optional :arachne/Provenance
-     "Link to another higher or more general provenance entity also pertaining to this data.")
-
-   (scm/class :arachne/StackFrame []
-     "Represenation of a JVM stack frame for debugging purposes"
-     :arachne.stack-frame/class :one :optional :xsd/string
-     "JVM class name"
-     :arachne.stack-frame/source-file :one :optional :xsd/string
-     "Java or Clojure source file"
-     :arachne.stack-frame/source-line :one :optional :xsd/integer
-     "Line number in the source file")
-
-   {:rdf/about :arachne.descriptor/tx
-    :rdfs/domain :rdf/Statement
-    :rdfs/range :arachne.descriptor/Tx
-    :rdf/comment "Link between an RDF statement and the Arachne transaction which created the statement."}
-
-   (scm/class :arachne.descriptor/Tx []
-     "Represents a single insertion point of data into an Arachne descriptor."
-     :arachne.descriptor.tx/index :one :required :xsd/integer
-     "The absolute insertion order of this transaction in the descriptor."
-     :arachne.descriptor.tx/provenance :one :optional :arachne/Provenance
-     "Link to information about where the data came from.")
-
-   (scm/class :arachne/Module []
-     "An Arachne module"
-     :arachne.module/dependencies :many :optional :arachne/Module
-     "A module's dependencies"
-     :arachne.module/configure :many :optional :clojure.core/symbol
-     "Configure functions to run on a module. Each configure function is a 1-arg function that accepts and returns a descriptor.")
-
-   {:rdf/about :arachne.module/include
-    :rdf/comment "Data included in a module at initialization time, including OWL schema.
-   - strings should refer to classpath-relative RDF files, which will be loaded directly
-   - Clojure vars identify either a var containing RDF/EDN data, or a 0-arg Clojure function returning RDF/EDN data.
-"
-    :rdfs/domain :arachne/Module
-    :rdfs/range {:rdf/type :owl/Class
-                 :owl/unionOf [:xsd/string :clojure/Var :clojure/Namespace]}}
-
-   (scm/class :arachne.descriptor/Validator []
-     "A validation function that will be used to validate this descriptor."
-     :arachne.descriptor.validator/fn :one :required :clojure.core/symbol
-     "Function implementing the validator. The function should take a descriptor, and return a sequence of ArachneException objects. Nil or an empty sequence indicates that there were no validation failures.")])
-
 (def
   ^{:dynamic true
     :doc "Data regarding the provenance of descriptor updates ocurring in this stack context"}
@@ -171,12 +110,13 @@
 (s/def ::descriptor descriptor?)
 
 (declare update!)
+(declare add-file!)
 
 (defn new
   "Create a new, empty descriptor."
   []
   (-> (Descriptor. (ar/graph :jena-mini) (LockMutex.))
-      (update! base-schema)))
+    (add-file! "arachne/core/schema.edn")))
 
 (s/fdef new
   :args (s/cat)
