@@ -8,8 +8,6 @@
 
 (reg/prefix :test "http://example.com/test/")
 
-(arachne.error/explain-test-errors!)
-
 (deftest inference-errors
   (testing "Min-card violation"
     (is (thrown-with-msg? arachne.ArachneException #"violation"

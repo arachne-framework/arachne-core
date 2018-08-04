@@ -7,9 +7,10 @@
         aysylu/loom {:mvn/version "0.5.4"}
         com.stuartsierra/component {:mvn/version "0.3.1"}
         io.aviso/pretty {:mvn/version "0.1.30"}
+        expound {:mvn/version "0.7.1"}
         org.arachne-framework/aristotle {:local/root "../aristotle"}}
  :aliases
- {:run-tests {:main-opts ["-m" "cognitect.test-runner"]}
+ {:run-tests {:main-opts ["-m" "arachne.error.test-runner"]}
   :test {:extra-paths ["test"]
          :extra-deps {com.cognitect/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git"
                                                  :sha "028a6d41ac9ac5d5c405dfc38e4da6b4cc1255d5"}

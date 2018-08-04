@@ -53,6 +53,7 @@
   - A boolean indicator of whether or not to validate the descriptor
     before returning (optional)."
   [& args]
+  (apply e/assert-args `descriptor args)
   (let [{:keys [module data validate?]} (s/conform ::descriptor-args args)]
     (m/descriptor (s/unform ::g/iri module) (when data (s/unform ::g/triples data)) (or (nil? validate?) validate?))))
 
@@ -69,3 +70,24 @@
   "Given a runtime and a component IRI, return the component instance (if it exists.)"
   [runtime iri]
   (rt/lookup runtime iri))
+
+(defn explain
+  "Print a pretty, formatted explanation of an error to stdout. If you don't pass an
+  exception object, will explain the most recent error in the current REPL (*e).
+
+  Additionally, takes a number of kwargs for additional options.
+
+  Options are:
+
+  :color - use ANSI color in the output (default true).
+  :suggestions - Show any suggestions in the error (default true).
+  :ex-data-summary - Show a table of the keys available in the exception's ex-data (default true)
+  :cause - Show the exception's cause (default true)
+  :stacktrace - Print a stacktrace for the exception (default true)
+  :pretty-stacktrace - Print a stacktrace for the exception, formatted using io.aviso/pretty (default false)
+
+  You can also set the default values for these options by binding or resetting
+  arachne.error/*default-explain-opts*"
+  [& args]
+  (apply e/explain args))
+

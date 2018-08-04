@@ -7,6 +7,7 @@
 ** for schema dsl as well as files
 ** specify rdf/edn files, rdf files, or functions that return data pervasively
 * modernize error handling, use expound by default
+* Fix :line nil on pedestal logs
 * Improve class DSL to be more readable
 * Improved documentation system
 ** Markdown

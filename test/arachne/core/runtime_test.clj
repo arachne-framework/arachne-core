@@ -24,8 +24,6 @@
 (defn c3 [entity-map] (->SimpleComponent :this-is-c3 false))
 (defn c4 [] (->SimpleComponent :this-is-c4 false))
 
-(arachne.error/explain-test-errors!)
-
 (def basic-descriptor
   [{:rdf/about :test/rt
     :arachne.runtime/components {:rdf/about :test/c1
@@ -153,14 +151,18 @@
     [{:rdf/about :test/rt
       :arachne.runtime/components {:rdf/about :test/c1
                                    :test/foo 32
-                                   :arachne.component/constructor ['foo/quiz 'foo/quiz]
+                                   :arachne.component/constructor 'foo/quiz
                                    }}])
 
-  (def d (a/descriptor :org.arachne-framework/arachne-core error-descriptor))
+  (def d (a/descriptor :org.arachne-framework/arachne-core error-descriptor true 32))
+
+  (a/explain)
+
+  (clojure.pprint/pprint (arachne.error/all-ex-data *e))
+
+  (arachne.log/error :msg "foo" :exception (.getCause *e))
 
   (def rt (a/runtime d :test/rt))
-
-
 
 
 

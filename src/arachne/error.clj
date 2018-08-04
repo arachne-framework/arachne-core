@@ -14,19 +14,18 @@
 (def ^{:doc "global registry of Arachne error types and associated data"}
      error-registry (atom {}))
 
-(def ^{:dynamic true
-       :doc "exception printer used for logging (among other things). Rebind to override how Arachne prints exceptions."}
-  *print-exception*
-  (fn [^Throwable e ^Writer writer]
-    (.printStackTrace e (java.io.PrintWriter. writer))))
-
 (defmethod print-method clojure.lang.ExceptionInfo
-  [e writer]
-  (*print-exception* e writer))
+  [e ^Writer writer]
+  (.write writer (str "#" (.getName (class e))
+                   "{:msg " (pr-str (.getMessage e)) ", "
+                   ":data-keys " (keys (ex-data e)) "}")))
 
 (defmethod print-method arachne.ArachneException
-  [e writer]
-  (*print-exception* e writer))
+  [^arachne.ArachneException e ^Writer writer]
+  (.write writer (str "#" (.getName (class e))
+                   "{:type " (.-type e) ", "
+                   ":msg " (pr-str (.getMessage e)) ", "
+                   ":data-keys " (keys (ex-data e)) "}")))
 
 (declare assert-args)
 
@@ -272,12 +271,22 @@
 
 (defn explain-test-errors!
   "Modify the behavior of clojure.test to print out an Arachne explanation
-   when an exception is thrown, rather than the default stack trace.
+   when an exception is thrown, rather than the default stack trace."
+  ([] (explain-test-errors! true))
+  ([install?]
+   (alter-var-root #'clojure.test/report
+     (constantly (if install?
+                   (fn [report]
+                     (if (= :error (:type report))
+                       (report-error report)
+                       (original-report report)))
+                   original-report)))))
 
-   This is global and permanent (for the lifetime of the Clojure runtime.)"
-  []
-  (alter-var-root #'clojure.test/report
-    (constantly (fn [report]
-                  (if (= :error (:type report))
-                    (report-error report)
-                    (original-report report))))))
+(defn all-ex-data
+  "Given an exception, return a seq of ex-data maps for the exception and all of its causes."
+  ([] (all-ex-data *e))
+  ([ex] (->> ex
+          (iterate #(.getCause %))
+          (take-while identity)
+          (map ex-data)
+          (filter #(not (nil? %))))))
