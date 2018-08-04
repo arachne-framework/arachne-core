@@ -171,7 +171,7 @@
 (def ^{:dynamic true
        :doc "Default options for how values are displayed. Can be reset or dynamically rebound to change how errors are explained. (see doc for `explain` function)"}
    *default-explain-opts*
-  {:color false
+  {:color true
    :suggestions true
    :ex-data-summary true
    :cause true
