@@ -109,15 +109,3 @@
     (d/read- d #(.rebindAll ^FBRuleInfGraph %))
     (when validate? (d/validate d))
     d))
-
-(comment
-
-  (require '[clj-memory-meter.core :as mm])
-
-  (def d (descriptor :org.arachne-framework/test-app nil true))
-  )
-
-;; TODO: - implement descriptor DSL loading
-;; TODO: - audit tests
-;; TODO: - get CI working again
-;; TODO: - move on to other metrics.

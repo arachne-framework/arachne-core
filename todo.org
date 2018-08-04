@@ -3,7 +3,7 @@
 * DONE write test for validations
 * DONE clean up public API structure (single ns or multiple, not both...)
 * DONE clean up warn-on-reflection
-* enable tagged literal-based data dsl
+* DONE enable tagged literal-based data dsl
 ** for schema dsl as well as files
 ** specify rdf/edn files, rdf files, or functions that return data pervasively
 * modernize error handling, use expound by default
