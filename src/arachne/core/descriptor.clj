@@ -241,7 +241,9 @@
 
 (deferror ::consistency-error
   :message ":message"
-  :explanation "The descriptor's built in inference model returned an inconsistency of type :type ."
+  :explanation "The descriptor's OWL reasoner discovered an internal inconsistency in the RDF model. The type of the inconsistency was `:type`. "
+  :suggestions ["Make sure that the data in the descriptor is valid and does not violate any OWL schema elements."
+                "Pay attention to the error message for clues to what the specific problem is."]
   :ex-data-docs {:descriptor "The invalid descriptor."
                  :type "The type of the error"
                  :message "The error message"

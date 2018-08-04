@@ -146,3 +146,22 @@
                   [:stop :this-is-c2]
                   [:stop :this-is-c3]]
                 @*tracker*)))))))
+
+(comment
+
+  (def error-descriptor
+    [{:rdf/about :test/rt
+      :arachne.runtime/components {:rdf/about :test/c1
+                                   :test/foo 32
+                                   :arachne.component/constructor ['foo/quiz 'foo/quiz]
+                                   }}])
+
+  (def d (a/descriptor :org.arachne-framework/arachne-core error-descriptor))
+
+  (def rt (a/runtime d :test/rt))
+
+
+
+
+
+  )

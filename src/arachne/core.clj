@@ -54,7 +54,7 @@
     before returning (optional)."
   [& args]
   (let [{:keys [module data validate?]} (s/conform ::descriptor-args args)]
-    (m/descriptor (s/unform ::g/iri module) (when data (s/unform ::g/triples data)) validate?)))
+    (m/descriptor (s/unform ::g/iri module) (when data (s/unform ::g/triples data)) (or (nil? validate?) validate?))))
 
 (s/fdef runtime
   :args (s/cat :descriptor d/descriptor? :iri ::g/iri))

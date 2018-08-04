@@ -159,7 +159,8 @@
             (print (pprint-str-truncated fd 10))
             (c ansi/reset-font)))
 
-        (when (:arachne.error/suggestions d)
+        (when (and (:arachne.error/suggestions d)
+                (not (empty? (:arachne.error/suggestions (ex-data e)))))
           (cfprint ansi/bold-red "\n\nSUGGESTIONS:\n\n")
           (let [suggs (:arachne.error/suggestions (ex-data e))]
             (doseq [[i s] (map-indexed (fn [i s] [i s]) suggs)]

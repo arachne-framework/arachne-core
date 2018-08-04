@@ -53,8 +53,8 @@
 (deferror ::error-instantiating
   :message "Error instantiating component `:iri`"
   :explanation "An exception was thrown when trying to instantiate a component with IRI `:iri` while building the Arachne runtime. This component was configured to use a constructor function `:ctor`, but when it was invoked, instead of returning a component instance, the constructor function threw an exception of type `:ex-type`"
-  :suggestions ["Investigate the cause below to determine the underlying reason for the failure."
-                "Make sure `:ctor` is correct and error-free"]
+  :suggestions ["Make sure `:ctor` is a valid constructor function, correct and error-free"
+                "Investigate the cause below to determine the underlying reason for the failure."]
   :ex-data-docs {:descriptor "The descriptor"
                  :iri "IRI of the component"
                  :ctor "The name of the constructor that failed"

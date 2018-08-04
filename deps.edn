@@ -9,8 +9,8 @@
         io.aviso/pretty {:mvn/version "0.1.30"}
         org.arachne-framework/aristotle {:local/root "../aristotle"}}
  :aliases
- {:test {:extra-paths ["test"]
-         :main-opts ["-m" "cognitect.test-runner"]
+ {:run-tests {:main-opts ["-m" "cognitect.test-runner"]}
+  :test {:extra-paths ["test"]
          :extra-deps {com.cognitect/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git"
                                                  :sha "028a6d41ac9ac5d5c405dfc38e4da6b4cc1255d5"}
                       ch.qos.logback/logback-classic {:mvn/version "1.2.3"}
