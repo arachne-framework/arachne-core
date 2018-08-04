@@ -1,5 +1,5 @@
 [{:rdf/about :org.arachne-framework/arachne-core
-  :arachne.module/include [arachne.core.schema/schema]
+  :arachne.module/include ["arachne/core/schema.edn"]
   :arachne.module/configure [arachne.core/add-instance-constructors
                              arachne.core/distinct-vars]}]
 

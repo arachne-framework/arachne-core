@@ -50,6 +50,9 @@
                               :rdf/comment (:doc attr)}))
                          (:attrs args))
      :rdfs/subClassOf (concat (keep cardinality-restriction (:attrs args))
-                              (mapv #(s/unform ::g/iri %) (:supers args)))}))
+                        (mapv #(s/unform ::g/iri %) (:supers args)))}))
+
+(defn class-rdr [definition]
+  (apply class definition))
 
 (s/fdef class :args ::class-args)

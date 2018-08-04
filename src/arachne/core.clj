@@ -6,7 +6,6 @@
             [arachne.aristotle.graph :as g]
             [arachne.aristotle.registry :as reg]
             [arachne.core.util :as util]
-            [arachne.core.schema :as schema]
             [arachne.error :as e]
             [clojure.spec.alpha :as s]
             [arachne.core.util :as u]))

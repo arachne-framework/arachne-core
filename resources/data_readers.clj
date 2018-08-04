@@ -1,1 +1,1 @@
-{arachne/tempid arachne.core.config/tempid-literal}
+{arachne/class arachne.core.descriptor.schema/class-rdr}

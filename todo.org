@@ -2,10 +2,17 @@
 * DONE Add global_prefix reader macro
 * DONE write test for validations
 * DONE clean up public API structure (single ns or multiple, not both...)
-* clean up warn-on-reflection
+* DONE clean up warn-on-reflection
 * enable tagged literal-based data dsl
 ** for schema dsl as well as files
 ** specify rdf/edn files, rdf files, or functions that return data pervasively
 * modernize error handling, use expound by default
+* Improve class DSL to be more readable
+* Improved documentation system
+** Markdown
+** Annotation for Clojure functions or RDF attributes
+** Separate files, on classpath
+** Inline doc browser (OWL aware)
 * merge to master
 * build, move to bitbucket, move to circleci 2
+
