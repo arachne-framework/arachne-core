@@ -36,14 +36,16 @@
 
 (defn- module-graph
   [d]
-  (let [results (d/query d '[?module ?dep]
-                         '[:bgp
-                           [?module :arachne.module/dependencies ?dep]])
-        results-m (reduce (fn [g [m dep]]
-                            (update g m (fnil conj #{}) dep))
-                          {}
-                          results)]
-    (loom/digraph results-m)))
+  (let [modules (d/query d '[?module]
+                  '[:bgp [?module :rdf/type :arachne/Module]])
+        deps (d/query d '[?module ?dep]
+               '[:bgp [?module :arachne.module/dependencies ?dep]])
+        node-graph (zipmap (apply concat modules) (repeat #{}))
+        node-graph (reduce (fn [g [m dep]]
+                            (update g m conj dep))
+                     node-graph
+                     deps)]
+    (loom/digraph node-graph)))
 
 (deferror ::missing-module
   :message "Could not find module `:module`"
