@@ -36,21 +36,24 @@
   only be used if your class definition fits the '80% case'."
   [& args]
   (apply e/assert-args `class args)
-  (let [args (s/conform ::class-args args)]
-    {:rdf/about (s/unform ::g/iri (:class args))
-     :rdf/comment (:doc args)
-     :rdfs/_domain (mapv (fn [attr]
-                           (let [range (->> attr :range (s/unform ::g/iri) g/node g/data)
-                                 type (if (and (keyword? range) (= "xsd" (namespace range)))
-                                        :owl/DataTypeProperty
-                                        :owl/ObjectProperty)]
-                             {:rdf/about (s/unform ::g/iri (:attr attr))
-                              :rdfs/range range
-                              :rdf/type type
-                              :rdf/comment (:doc attr)}))
-                         (:attrs args))
-     :rdfs/subClassOf (concat (keep cardinality-restriction (:attrs args))
-                        (mapv #(s/unform ::g/iri %) (:supers args)))}))
+  (let [args (s/conform ::class-args args)
+        mm {:rdf/about (s/unform ::g/iri (:class args))
+            :rdf/comment (:doc args)
+            :rdfs/_domain (mapv (fn [attr]
+                                  (let [range (->> attr :range (s/unform ::g/iri) g/node g/data)
+                                        type (if (and (keyword? range) (= "xsd" (namespace range)))
+                                               :owl/DataTypeProperty
+                                               :owl/ObjectProperty)]
+                                    {:rdf/about (s/unform ::g/iri (:attr attr))
+                                     :rdfs/range range
+                                     :rdf/type type
+                                     :rdf/comment (:doc attr)}))
+                            (:attrs args))
+            :rdfs/subClassOf (concat (keep cardinality-restriction (:attrs args))
+                               (mapv #(s/unform ::g/iri %) (:supers args)))}]
+    (into {} (filter (fn [[_ v]]
+                       (not (nil? v)))
+               mm))))
 
 (defn class-rdr [definition]
   (apply class definition))

@@ -1,9 +1,9 @@
 [
 
- #arachne/class [:clojure/Var []
+ #arachne/class [:clojure/Var [:owl/Thing]
                  "Entity representing a Clojure Var. The IRI of the entity should be a URN of the form `urn:clojure:namespace/name` (i.e, one that Aristotle will interpret as a Clojure symbol when converting back to Clojure data.) "]
 
- #arachne/class [:clojure/Namespace []
+ #arachne/class [:clojure/Namespace [:owl/Thing]
                  "Entity representing a Clojure Namespace. The IRI of the entity should be a URN of the form `urn:clojure:namespace` (i.e, one that Aristotle will interpret as a Clojure symbol when converting back to Clojure data.) "]
 
  {:rdf/about :clojure/Var
@@ -43,7 +43,7 @@
                  "An Arachne module"
                  :arachne.module/dependencies :many :optional :arachne/Module
                  "A module's dependencies"
-                 :arachne.module/configure :many :optional :clojure.core/symbol
+                 :arachne.module/configure :many :optional :clojure/Var
                  "Configure functions to run on a module. Each configure function is a 1-arg function that accepts and returns a descriptor."]
 
  {:rdf/about :arachne.module/include
@@ -57,7 +57,7 @@
 
  #arachne/class [:arachne.descriptor/Validator []
                  "A validation function that will be used to validate this descriptor."
-                 :arachne.descriptor.validator/fn :one :required :clojure.core/symbol
+                 :arachne.descriptor.validator/fn :one :required :clojure/Var
                  "Function implementing the validator. The function should take a descriptor, and return a sequence of ArachneException objects. Nil or an empty sequence indicates that there were no validation failures."]
 
  #arachne/class [:arachne/Component []

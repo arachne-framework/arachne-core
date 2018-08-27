@@ -19,12 +19,16 @@
     (str (.getClassName ste) "(" (.getFileName ste) ":" (.getLineNumber ste) ")")))
 
 
-(def ^:private ^:dynamic *color* false)
+(def ^:dynamic *color* false)
 
-(defn- cfprint
+(defn cfstr
   [f & more]
   (let [f (if *color* f identity)]
-    (print (f (apply str (interpose " " more))))))
+    (f (apply str (interpose " " more)))))
+
+(defn cfprint
+  [f & more]
+  (print (apply cfstr f more)))
 
 (defn- c
   [color]

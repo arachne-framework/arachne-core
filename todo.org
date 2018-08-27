@@ -6,14 +6,48 @@
 * DONE enable tagged literal-based data dsl
 ** for schema dsl as well as files
 ** specify rdf/edn files, rdf files, or functions that return data pervasively
-* modernize error handling, use expound by default
-* Fix :line nil on pedestal logs
-* Improve class DSL to be more readable
-* Improved documentation system
+* DONE modernize error handling, use expound by default
+* DONE Fix :line nil on pedestal logs
+* DONE Improved documentation system
 ** Markdown
 ** Annotation for Clojure functions or RDF attributes
 ** Separate files, on classpath
 ** Inline doc browser (OWL aware)
-* merge to master
-* build, move to bitbucket, move to circleci 2
+* TODO Doc function for documentation system
+** Summary of entity
+** Doc rendering
+* TODO Write documentation for core entities
+* TODO Improve class DSL to be more readable
+* TODO Clean up namespace nesting on core schema
+* TODO merge to master
+* TODO build, move to bitbucket, move to circleci 2
+
+* Arachne Doc Ideas
+** Requirements
+*** fundamental storage of documentation is RDF, in Descriptor.
+**** any RDF subject can be annotated with documentation.
+*** text is structured (markdown?)
+*** Any documentation can contain refer to other documentation, by way of its RDF subject
+*** Documentation can be retrieved at REPL.
+*** Documentation can be compiled to HTML/PDF/etc.
+** Implementation
+
+Documentation is written in markdown files, specifically CommonMark.
+
+Documentation Subject will be delimited via HTML/CommonMark Processing Instructions.
+
+Parsing will consist of scanning the classpath, loading any *.rdf.md
+files, implementing the processing instructions, and inserting into
+the given descriptor. This will be implemented in its own
+"documentation" module.
+
+Parsing may eventually also read *.clj source files, and extract docstrings.
+
+Inline lookup is straightforward: the descriptor is queried, and the
+explicit documentation is rendered alongside the textual docs.
+
+Rendered documentation (can be deferred) is also straightforward:
+Given some extra information about order and hierarchy, and some
+filters (heuristics and explicit guidance), query the descriptor, parse the markdown, and 
+
 

@@ -154,7 +154,7 @@
                                    :arachne.component/constructor 'foo/quiz
                                    }}])
 
-  (def d (a/descriptor :org.arachne-framework/arachne-core error-descriptor true 32))
+  (def d (a/descriptor :org.arachne-framework/arachne-core error-descriptor true))
 
   (a/explain)
 
