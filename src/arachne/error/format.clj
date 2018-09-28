@@ -1,6 +1,7 @@
 (ns arachne.error.format
   (:refer-clojure :exclude [format])
-  (:require [io.aviso.ansi :as ansi]
+  (:require [arachne.repl :refer [*color* cfstr cfprint c colorize]]
+            [io.aviso.ansi :as ansi]
             [io.aviso.exception :as aviso]
             [expound.alpha :as expound]
             [clojure.string :as str]
@@ -17,36 +18,6 @@
   [^Throwable e]
   (let [^StackTraceElement ste (first (.getStackTrace e))]
     (str (.getClassName ste) "(" (.getFileName ste) ":" (.getLineNumber ste) ")")))
-
-
-(def ^:dynamic *color* false)
-
-(defn cfstr
-  [f & more]
-  (let [f (if *color* f identity)]
-    (f (apply str (interpose " " more)))))
-
-(defn cfprint
-  [f & more]
-  (print (apply cfstr f more)))
-
-(defn- c
-  [color]
-  (when *color*
-    (print color)))
-
-
-(defn- colorize
-  "Colorize a string using a rudimentary regex-based parser"
-  [base-color s]
-  (when s
-    (if *color*
-      (-> s
-        (str/replace #"`(.*?)`" (fn [[_ inner]]
-                                  (str (ansi/yellow inner) base-color)))
-        (str/replace #"\*(.*?)\*" (fn [[_ inner]]
-                                    (str (ansi/blue inner) base-color))))
-      s)))
 
 (defn justify
   "Clean up newlines so everything is left-justified"
@@ -99,19 +70,19 @@
 (defn format
   "Formats a String message for the exception, and returns a string. Options are:
 
-  :color? - use rudimentary ANSI color in the output (default false).
-  :suggestions? - Show any suggestions in the error (default true).
-  :ex-data-summary? - Show a table of the keys available in the exception's ex-data (default true.)
-  :cause? - Show the exception's cause (default true.)
-  :stacktrace? - Print a stacktrace for the exception (default false).
-  :pretty-stacktrace? - Print a stacktrace for the exception, formatted using io.aviso/pretty (default false).
+  :color - use rudimentary ANSI color in the output (default true).
+  :suggestions - Show any suggestions in the error (default true).
+  :ex-data-summary - Show a table of the keys available in the exception's ex-data (default true.)
+  :cause - Show the exception's cause (default true.)
+  :stacktrace - Print a stacktrace for the exception (default false).
+  :pretty-stacktrace - Print a stacktrace for the exception, formatted using io.aviso/pretty (default false).
 
   "
   [^Throwable
    e {:keys [color suggestions stacktrace ex-data-summary
              cause pretty-stacktrace]
       :as opts
-      :or {color false
+      :or {color *color*
            suggestions true
            ex-data-summary true
            cause true
@@ -131,13 +102,13 @@
         (c ansi/reset-font)
 
         (cfprint ansi/bold-red "\n\nMESSAGE:\n\n")
-        (print (colorize ansi/reset-font (or (:arachne.error/message d)
-                                                        (.getMessage e))))
+        (print (colorize (or (:arachne.error/message d)
+                           (.getMessage e))))
 
 
         (when-let [ex (:arachne.error/explanation d)]
           (cfprint ansi/bold-red "\n\nEXPLANATION:\n\n")
-          (print (colorize ansi/reset-font ex)))
+          (print (colorize ex)))
 
         (when-let [spec (:arachne.error/spec d)]
           (cfprint ansi/bold-red "\n\nSPEC FAILURE:\n\n")
@@ -157,7 +128,7 @@
             (doseq [[i s] (map-indexed (fn [i s] [i s]) suggs)]
               (print
                 " - "
-                (indent 3 (colorize ansi/reset-font s)))
+                (indent 3 (colorize s)))
               (when-not (= (inc i) (count suggs))
                 (print "\n")))))
 

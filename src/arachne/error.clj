@@ -170,8 +170,7 @@
 (def ^{:dynamic true
        :doc "Default options for how values are displayed. Can be reset or dynamically rebound to change how errors are explained. (see doc for `explain` function)"}
    *default-explain-opts*
-  {:color true
-   :suggestions true
+  {:suggestions true
    :ex-data-summary true
    :cause true
    :stacktrace true
@@ -182,7 +181,7 @@
 
   Options are:
 
-  :color - use rudimentary ANSI color in the output (default true).
+  :color - use rudimentary ANSI color in the output (default to arachne.repl/*color*).
   :suggestions - Show any suggestions in the error (default true).
   :ex-data-summary - Show a table of the keys available in the exception's ex-data (default true)
   :cause - Show the exception's cause (default true)
