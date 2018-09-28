@@ -10,23 +10,6 @@
             [clojure.spec.alpha :as s]
             [arachne.core.util :as u]))
 
-(defn ^:no-doc instance-ctor
-  "Component constructor that defines components by resolving a var"
-  [component]
-  @(util/require-and-resolve (:arachne.component/instance component)))
-
-(defn ^:no-doc add-instance-constructors
-  "Configure function: Implement :arachne.component/instance in terms
-  of :arachne.component/constructor"
-  [d]
-  (let [components (d/query d '[?c]
-                     '[:bgp [?c :arachne.component/instance ?i]])]
-    (if (empty? components)
-      d
-      (d/with-provenance `add-instance-constructors
-        (doseq [[c] components]
-          (d/update! d [c :arachne.component/constructor 'arachne.core/instance-ctor]))))))
-
 (defn ^:no-doc distinct-vars
   "Configure function: Assert that all :clojure/Var resources in the descriptor are mutually distinct"
   [d]
@@ -51,7 +34,7 @@
   - The IRI of the root Arachne module to load
   - A RDF/EDN data structure of data to add to the descriptor (optional)
   - A boolean indicator of whether or not to validate the descriptor
-    before returning (optional)."
+    before returning (optional, default true)."
   [& args]
   (apply e/assert-args `descriptor args)
   (let [{:keys [module data validate?]} (s/conform ::descriptor-args args)]

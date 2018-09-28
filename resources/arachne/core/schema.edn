@@ -69,9 +69,7 @@
 
          - 0 arguments: invoked with no arguments
          - 1 arguments: the entity map obtained by a wildcard pull on the component entity
-         - 2 arguments: the config itself and entity ID of the component entity"
-                 :arachne.component/instance :one :optional :clojure/Var
-                 "The initial instance of a component."]
+         - 2 arguments: the config itself and entity ID of the component entity"]
 
  #arachne/class [:arachne.component/Dependency []
                  "Entity describing the link from a component a dependent component"

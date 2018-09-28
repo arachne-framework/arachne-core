@@ -13,15 +13,25 @@
 ** Annotation for Clojure functions or RDF attributes
 ** Separate files, on classpath
 ** Inline doc browser (OWL aware)
-* TODO Doc function for documentation system
+* DONE Doc function for documentation system
 ** Summary of entity
 ** Doc rendering
+
+* DONE Refactor to support alternate renderers for documentation system
+* DONE Ensure docs render links in the REPL in a reasonable way
+** HTML
+** REPL
+** Linked Markdown
 * TODO Write documentation for core entities
 * TODO Improve class DSL to be more readable
+* DONE Normalize handling of color
+* TODO Add provenance information to docs
+* TODO Audit provenance to make sure all relevant information is being tracked
 * TODO Clean up namespace nesting on core schema
 * TODO merge to master
-* TODO build, move to bitbucket, move to circleci 2
+* TODO build, move to circleci 2
 
+* TODO topological sort of existing modules, start porting them
 * Arachne Doc Ideas
 ** Requirements
 *** fundamental storage of documentation is RDF, in Descriptor.

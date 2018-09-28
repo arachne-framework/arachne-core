@@ -2,5 +2,4 @@
   ;; Note: The root module does declare schema that can be found in
   ;; arachne/core/schema.edn, but it included prior to this, for
   ;; bootstrapping reasons.
-  :arachne.module/configure [arachne.core/add-instance-constructors
-                             arachne.core/distinct-vars]}]
+  :arachne.module/configure [arachne.core/distinct-vars]}]
