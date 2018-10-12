@@ -4,8 +4,7 @@
 
 The Arachne Core module:
 
-1. Provides APIs for creating and manipulating [descriptors](<?link
-   :arachne.doc.topic/descriptor ?>).
+1. Provides APIs for creating and manipulating [descriptors](<?link :arachne.doc.topic/descriptor ?>).
 2. Defines the foundational concepts upon which everything else is
 built.
 3. Provides implementations for basic low level modules and components,

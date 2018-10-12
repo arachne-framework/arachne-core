@@ -1,86 +1,50 @@
 [
 
- #arachne/class [:clojure/Var [:owl/Thing]
-                 "Entity representing a Clojure Var. The IRI of the entity should be a URN of the form `urn:clojure:namespace/name` (i.e, one that Aristotle will interpret as a Clojure symbol when converting back to Clojure data.) "]
-
- #arachne/class [:clojure/Namespace [:owl/Thing]
-                 "Entity representing a Clojure Namespace. The IRI of the entity should be a URN of the form `urn:clojure:namespace` (i.e, one that Aristotle will interpret as a Clojure symbol when converting back to Clojure data.) "]
+ #arachne/class [:clojure/Var [:owl/Thing]]  ;; Shouldn't need to be explicit, but helps the reasoner
+ #arachne/class [:clojure/Namespace [:owl/Thing]]
 
  {:rdf/about :clojure/Var
   :owl/disjointWith :clojure/Namespace}
 
  #arachne/class [:arachne/Provenance []
-                 "Entity representing the provenance of data."
-                 :arachne.provenance/function :one :required :clojure/Var
-                 "The function that was being executed when this data was generated."
-                 :arachne.provenance/stack-frame :one :optional :arachne/StackFrame
-                 "The stack frame from whence the data was generated."
-                 :arachne.provenance/parent :one :optional :arachne/Provenance
-                 "Link to another higher or more general provenance entity also pertaining to this data."]
+                 {:arachne.provenance/function [:one :required :clojure/Var]
+                  :arachne.provenance/stack-frame [:one :optional :arachne/StackFrame]
+                  :arachne.provenance/parent [:one :optional :arachne/Provenance]}]
 
  #arachne/class [:arachne/StackFrame []
-                 "Represenation of a JVM stack frame for debugging purposes"
-                 :arachne.stack-frame/class :one :optional :xsd/string
-                 "JVM class name"
-                 :arachne.stack-frame/source-file :one :optional :xsd/string
-                 "Java or Clojure source file"
-                 :arachne.stack-frame/source-line :one :optional :xsd/integer
-                 "Line number in the source file"]
+                 {:arachne.stack-frame/class [:one :optional :xsd/string]
+                  :arachne.stack-frame/source-file [:one :optional :xsd/string]
+                  :arachne.stack-frame/source-line [:one :optional :xsd/integer]}]
 
  {:rdf/about :arachne.descriptor/tx
   :rdfs/domain :rdf/Statement
-  :rdfs/range :arachne.descriptor/Tx
-  :rdf/comment "Link between an RDF statement and the Arachne transaction which created the statement."}
+  :rdfs/range :arachne.descriptor/Tx}
 
  #arachne/class [:arachne.descriptor/Tx []
-                 "Represents a single insertion point of data into an Arachne descriptor."
-                 :arachne.descriptor.tx/index :one :required :xsd/integer
-                 "The absolute insertion order of this transaction in the descriptor."
-                 :arachne.descriptor.tx/provenance :one :optional :arachne/Provenance
-                 "Link to information about where the data came from."]
+                 {:arachne.descriptor.tx/index [:one :required :xsd/integer]
+                  :arachne.descriptor.tx/provenance [:one :optional :arachne/Provenance]}]
 
  #arachne/class [:arachne/Module []
-                 "An Arachne module"
-                 :arachne.module/dependencies :many :optional :arachne/Module
-                 "A module's dependencies"
-                 :arachne.module/configure :many :optional :clojure/Var
-                 "Configure functions to run on a module. Each configure function is a 1-arg function that accepts and returns a descriptor."]
+                 {:arachne.module/dependencies [:many :optional :arachne/Module]
+                  :arachne.module/configure [:many :optional :clojure/Var]}]
 
  {:rdf/about :arachne.module/include
-  :rdf/comment "Data included in a module at initialization time, including OWL schema.
-   - strings should refer to classpath-relative RDF files, which will be loaded directly
-   - Clojure vars identify either a var containing RDF/EDN data, or a 0-arg Clojure function returning RDF/EDN data.
-"
   :rdfs/domain :arachne/Module
   :rdfs/range {:rdf/type :owl/Class
                :owl/unionOf [:xsd/string :clojure/Var :clojure/Namespace]}}
 
  #arachne/class [:arachne.descriptor/Validator []
-                 "A validation function that will be used to validate this descriptor."
-                 :arachne.descriptor.validator/fn :one :required :clojure/Var
-                 "Function implementing the validator. The function should take a descriptor, and return a sequence of ArachneException objects. Nil or an empty sequence indicates that there were no validation failures."]
+                 {:arachne.descriptor.validator/fn [:one :required :clojure/Var]}]
 
  #arachne/class [:arachne/Component []
-                 "The definition of a component used to build and Arachne system at runtime (using the Component library)"
-                 :arachne.component/dependencies :many :optional :arachne.component/Dependency
-                 "The dependencies of a component."
-                 :arachne.component/constructor :one :required :clojure/Var
-                 "Function that returns an uninitialized instance of a component. The function may take 0-2 arguments, with the following behaviors:
-
-         - 0 arguments: invoked with no arguments
-         - 1 arguments: the entity map obtained by a wildcard pull on the component entity
-         - 2 arguments: the config itself and entity ID of the component entity"]
+                 {:arachne.component/dependencies [:many :optional :arachne.component/Dependency]
+                  :arachne.component/constructor [:one :required :clojure/Var]}]
 
  #arachne/class [:arachne.component/Dependency []
-                 "Entity describing the link from a component a dependent component"
-                 :arachne.component.dependency/entity :one :required :arachne/Component
-                 "Links a component dependency to another component entity."
-                 :arachne.component.dependency/key :one :optional :xsd/string
-                 "The key with which to inject a dependency. The value will be parsed using `clojure.core/read-string`, allowing keys of any type. If omitted, the key will default to the iri of the dependency."]
+                 {:arachne.component.dependency/entity [:one :required :arachne/Component]
+                  :arachne.component.dependency/key [:one :optional :xsd/string]}]
 
  #arachne/class [:arachne/Runtime []
-                 "Entity describing a particular Arachne runtime"
-                 :arachne.runtime/components :many :required :arachne/Component
-                 "Top level components that constitute this runtime."]
+                 {:arachne.runtime/components [:many :required :arachne/Component]}]
 
  ]

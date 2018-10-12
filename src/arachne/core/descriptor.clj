@@ -169,14 +169,22 @@
      (e/attempt ::update-exception {:data data
                                     :metadata metadata
                                     :descriptor descriptor}
-                (update* descriptor data metadata)))))
+       (update* descriptor data metadata)))))
+
+(deferror ::descriptor-file-exception
+  :message "Error adding file `:path` to descriptor."
+  :explanation "While attempting to read a file to add it to the descriptor, an error was thrown."
+  :suggestions ["See this exception's cause for details of what went wrong."
+                "Make sure the file exists, and does not contain syntax errors"]
+  :ex-data-docs {:path "The path of the file containing the error."})
 
 (defn add-file!
   "Update a descriptor to contain the contents of the given
   classpath-relative RDF filename. All formats supported by Jena in
   addition to including RDF/EDN are supported."
   [descriptor path]
-  (let [g (-> (ar/graph :simple) (ar/read path))]
+  (let [g (e/attempt ::descriptor-file-exception {:path path}
+            (-> (ar/graph :simple) (ar/read path)))]
     (with-provenance `add-file!
       {:arachne.provenance/rdf-file (str path)}
       (update! descriptor g))))
