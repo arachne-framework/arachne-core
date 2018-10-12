@@ -199,16 +199,46 @@ This means that for every triple, it is possible to look up the
 corresponding `Tx` entity, and from there metadata on where and why
 that particular triple was added to the descriptor.
 
-<?about :arachne.descriptor/Provenance>
+<?about :arachne.descriptor/tx ?>
 
-Entity with information about the source of particular RDF data, such
+Associates a reified triple with the logical [Transaction](<?link :arachne.descriptor/Tx ?>) of which it is a part.
+
+<?about :arachne.descriptor.tx/index ?>
+
+Transactions to an Arachne descriptor are serialized, and this
+property indicates the index of a particular transaction. For example,
+the first-ever transaction to a descriptor has an index of 0, the second an
+index of 1, and so on.
+
+<?about :arachne.descriptor.tx/provenance ?>
+
+Links a [Transaction](<?link :arachne.descriptor/Tx ?>) with a
+[Provenance](<?link :arachne/Provenance ?>) entity, which aggregates
+additional data about the context in which the transaction was
+created.
+
+<?about :arachne/Provenance ?>
+
+Entity aggregating information about the source of particular RDF data, such
 as the [function](<?link :arachne.provenance/function ?>) that created
 it, the JVM [stack frame](<?link :arachne.provenance/stack-frame ?>)
 that was executing at the time, etc.
 
 Multiple provenance entries may pertain to the same transaction -- if
-so, they are nested using the [parent](<?link
-:arachne.provenance/parent ?>) properties. If a given Provenance entry
-pertains to a transaction, that implies that all its parents do too.
+so, they are nested using the [parent](<?link :arachne.provenance/parent ?>)
+properties. If a given Provenance entry pertains to a transaction,
+that implies that all its parents do too.
 
+<?about :arachne/StackFrame ?>
+
+Entity representing a JVM stack frame, attached to a
+[Provenance](<?link :arachne/Provenance ?>) entity for debugging
+purposes.
+
+<?about :arachne.descriptor/Validator ?>
+
+A Validator entity represents a function that is passed a descriptor,
+queries it, and returns a (possibly empty) set of validation
+errors. When validated, a descriptor queries and uses all the
+Validator entities that it contains for validation.
 

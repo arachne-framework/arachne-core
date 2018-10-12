@@ -22,7 +22,7 @@
 ** HTML
 ** REPL
 ** Linked Markdown
-* TODO Write documentation for core entities
+* DONE Write documentation for core entities
 * TODO Improve class DSL to be more readable
 * DONE Normalize handling of color
 * TODO Add provenance information to docs
