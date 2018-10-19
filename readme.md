@@ -1,6 +1,6 @@
 # arachne-core
 
-[![CircleCI](https://circleci.com/gh/arachne-framework/arachne-core/tree/master.svg?style=shield&circle-token=d25784e9a1041fe6b7ac7bd4ea64641bcc3c1a77)](https://circleci.com/gh/arachne-framework/arachne-core/tree/master)
+[![CircleCI](https://circleci.com/gh/arachne-framework/arachne-core.svg?style=svg)](https://circleci.com/gh/arachne-framework/arachne-core)
 
 This is the core Arachne module which bootstraps an Arachne runtime,
 and upon which all other Arachne modules depend.
