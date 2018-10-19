@@ -1,5 +1,5 @@
 {:paths ["src" "doc" "resources" "target"]
- :deps {org.clojure/clojure {:mvn/version "1.10.0-alpha4"}
+ :deps {org.clojure/clojure {:mvn/version "1.10.0-RC1"}
         org.clojure/tools.namespace {:mvn/version "0.3.0-alpha4"}
         org.clojure/java.classpath {:mvn/version "0.2.3"}
         clj-fuzzy/clj-fuzzy {:mvn/version "0.3.3"}
@@ -8,9 +8,11 @@
         com.stuartsierra/component {:mvn/version "0.3.1"}
         io.aviso/pretty {:mvn/version "0.1.30"}
         expound {:mvn/version "0.7.1"}
-        org.arachne-framework/aristotle {:local/root "../aristotle"}}
+        org.arachne-framework/aristotle {:git/url "https://github.com/arachne-framework/aristotle.git"
+                                         :sha "d2a338e4004b79bc47bd51de34a791bff0a44044"}}
  :aliases
  {:run-tests {:main-opts ["-m" "arachne.error.test-runner"]}
+  :local {:extra-deps {org.arachne-framework/aristotle {:local/root "../aristotle"}}}
   :test {:extra-paths ["test"]
          :extra-deps {com.cognitect/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git"
                                                  :sha "028a6d41ac9ac5d5c405dfc38e4da6b4cc1255d5"}
