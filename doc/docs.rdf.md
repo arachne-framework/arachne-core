@@ -30,14 +30,14 @@ deps. Typically, modules include Clojure code, data to add to the
 descriptor, and hooks to manipulate the descriptor at configuration
 time.
 
-Modules are defined by an `arachne.edn` file on the root of the JVM
+Modules are defined by an `arachne.rdf.edn` file on the root of the JVM
 classpath. This file should be an RDF/EDN file and defines the
 properties of the module, such as its
 [dependencies](<?link :arachne.module/dependencies ?>),
 [initializers](<?link :arachne.module/initializers ?>) and
 [configure functions](<?link :arachne.module/configure ?>).
 
-An Arachne application is itself a module, with a `arachne.edn`
+An Arachne application is itself a module, with a `arachne.rdf.edn`
 file. For information on how modules are loaded, see the
 [bootstrap process](?link :arachne.doc.topic/bootstrap ?>).
 
@@ -80,7 +80,7 @@ construct a descriptor out of defined modules, using the following
 steps:
 
 1. Creates an empty descriptor (RDF graph.)
-2. Discovers all the `arachne.edn` files on the classpath, adding
+2. Discovers all the `arachne.rdf.edn` files on the classpath, adding
    their contents to the descriptor. There are now RDF entities in
    the descriptor for each module and its properties.
 3. Forms a directed acyclic graph of modules and their

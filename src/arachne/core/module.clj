@@ -21,9 +21,9 @@
 (reg/prefix :arachne.* "urn:arachne:")
 
 (defn- module-definitions
-  "Return a set of all `arachne.edn` files on the classpath, as URLs."
+  "Return a set of all `arachne.rdf.edn` files on the classpath, as URLs."
   []
-  (->> "arachne.edn"
+  (->> "arachne.rdf.edn"
        (.getResources (.getContextClassLoader (Thread/currentThread)))
        enumeration-seq))
 
@@ -51,7 +51,7 @@
   :message "Could not find module `:module`"
   :explanation "Could not initialize module with IRI `:module`, because no subject with that name was found in the given descriptor. Known modules IRIs are:\n\n :known-modules-str."
   :suggestions ["Make sure the module IRI is correct and typo-free"
-                "Make sure the requested module definition file (arachne.edn) is on the classpath."]
+                "Make sure the requested module definition file (arachne.rdf.edn) is on the classpath."]
   :ex-data-docs {:descriptor "The descriptor"
                  :module "The missing IRI"
                  :known-modules "Modules discovered on the classpath."})

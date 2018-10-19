@@ -58,7 +58,7 @@
   (let [args (s/conform (:args (s/get-spec `with-provenance)) opts-and-body)
         function (:function args)
         stack-filter (-> args :options :stack-filter-pred)
-        provenance (:provenance args)
+        provenance (-> args :options :provenance)
         body (:body args)]
     `(let [pdata# ~(if stack-filter
                       `(stack-provenance-txdata ~function ~stack-filter)
@@ -116,7 +116,7 @@
   "Create a new, empty descriptor."
   []
   (-> (Descriptor. (ar/graph :jena-mini) (LockMutex.))
-    (add-file! "arachne/core/schema.edn")))
+    (add-file! "arachne/core/schema.rdf.edn")))
 
 (s/fdef new
   :args (s/cat)
@@ -186,7 +186,7 @@
   (let [g (e/attempt ::descriptor-file-exception {:path path}
             (-> (ar/graph :simple) (ar/read path)))]
     (with-provenance `add-file!
-      {:arachne.provenance/rdf-file (str path)}
+      :provenance {:arachne.provenance/rdf-file (str path)}
       (update! descriptor g))))
 
 (s/fdef update!

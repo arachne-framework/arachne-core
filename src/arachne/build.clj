@@ -18,7 +18,7 @@
   Arguments:
 
   module - A Clojure keyword identifying an Arachne module or application.
-  Usually this is defined in an `arachne.edn` file on the root of the classpath
+  Usually this is defined in an `arachne.rdf.edn` file on the root of the classpath
   in the current project.
 
   runtime - A Clojure keyword identifying the runtime that should be started.

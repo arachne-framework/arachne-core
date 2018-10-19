@@ -17,7 +17,7 @@ Start an Arachne application.
 Arguments:
 
 <module> - A Clojure keyword identifying an Arachne module or application. Usually this is
-          defined in an `arachne.edn` file on the root of the classpath.
+          defined in an `arachne.rdf.edn` file on the root of the classpath.
 
 <runtime> - An IRI identifying the runtime that should be started. The runtime must
           have been defined in the Arachne descriptor for the given module.

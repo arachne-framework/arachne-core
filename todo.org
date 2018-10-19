@@ -23,10 +23,10 @@
 ** REPL
 ** Linked Markdown
 * DONE Write documentation for core entities
-* TODO Improve class DSL to be more readable
+* DONE Improve class DSL to be more readable
 * DONE Normalize handling of color
-* TODO Add provenance information to docs
-* TODO Audit provenance to make sure all relevant information is being tracked
+* SKIP Add provenance information to docs
+* DONE Audit provenance to make sure all relevant information is being tracked
 * TODO Clean up namespace nesting on core schema
 * TODO merge to master
 * TODO build, move to circleci 2
