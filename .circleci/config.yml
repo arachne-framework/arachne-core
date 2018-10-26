@@ -28,7 +28,5 @@ jobs:
             - ~/.gitlibs
           key: v1-dependencies-{{ checksum "deps.edn" }}
 
-      - run: ./build
-
       # run tests!
       - run: clojure -Atest:run-tests

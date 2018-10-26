@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-mkdir -p target
-javac -cp `clojure -Spath` -d target `find src -name "*.java"`
+mkdir -p class
+javac -cp `clojure -Spath` -d class `find src -name "*.java"`
